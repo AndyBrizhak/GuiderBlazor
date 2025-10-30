@@ -1,0 +1,50 @@
+﻿@page "/"
+@rendermode InteractiveAuto
+
+<PageTitle>Guider - Каталог бизнесов</PageTitle>
+
+<div class="home-container">
+    <div class="hero-section">
+        <h1>Guider</h1>
+        <p>Каталог локальных бизнесов и услуг</p>
+    </div>
+
+    <PlacesList />
+</div>
+
+<style>
+    .home-container {
+        min-height: 100vh;
+        background: #f8f9fa;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .hero-section h1 {
+        margin: 0;
+        font-size: 3rem;
+        font-weight: 700;
+    }
+
+    .hero-section p {
+        margin: 1rem 0 0 0;
+        font-size: 1.25rem;
+        opacity: 0.95;
+    }
+
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+        }
+    }
+</style>

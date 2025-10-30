@@ -1,0 +1,177 @@
+﻿@using GuiderBlazor.Client.Models
+@rendermode InteractiveAuto
+
+<div class="filter-container">
+    <div class="filter-card">
+        <h3>Фильтры поиска</h3>
+
+        <div class="form-group">
+            <label>Поиск по названию:</label>
+            <input type="text"
+                   class="form-control"
+                   @bind="filters.SearchTerm"
+                   placeholder="Введите название..." />
+        </div>
+
+        <div class="form-group">
+            <label>Категория:</label>
+            <select class="form-control" @bind="filters.Category">
+                <option value="">Все категории</option>
+                <option value="services">Услуги</option>
+                <option value="restaurant">Рестораны</option>
+                <option value="hotel">Отели</option>
+                <option value="shop">Магазины</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Теги (через запятую):</label>
+            <input type="text"
+                   class="form-control"
+                   @bind="tagsInput"
+                   placeholder="Например: Bank, ATM" />
+        </div>
+
+        <div class="form-group">
+            <label>Режим тегов:</label>
+            <select class="form-control" @bind="filters.TagsMode">
+                <option value="any">Любой тег</option>
+                <option value="all">Все теги</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Сортировка:</label>
+            <select class="form-control" @bind="filters.SortField">
+                <option value="name">По названию</option>
+                <option value="category">По категории</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Порядок:</label>
+            <select class="form-control" @bind="filters.SortOrder">
+                <option value="ASC">По возрастанию</option>
+                <option value="DESC">По убыванию</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Результатов на странице:</label>
+            <select class="form-control" @bind="filters.PerPage">
+                <option value="6">6</option>
+                <option value="12">12</option>
+                <option value="24">24</option>
+                <option value="48">48</option>
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" @onclick="ApplyFilters">
+                Применить фильтры
+            </button>
+            <button class="btn btn-secondary" @onclick="ResetFilters">
+                Сбросить
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<PlaceFilterParams> OnFilterChanged { get; set; }
+
+    private PlaceFilterParams filters = new();
+    private string tagsInput = string.Empty;
+
+    private async Task ApplyFilters()
+    {
+        // Парсим теги из строки
+        if (!string.IsNullOrWhiteSpace(tagsInput))
+        {
+            filters.Tags = tagsInput
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .ToList();
+        }
+        else
+        {
+            filters.Tags = null;
+        }
+
+        filters.Page = 1; // Сбрасываем на первую страницу при фильтрации
+        await OnFilterChanged.InvokeAsync(filters);
+    }
+
+    private async Task ResetFilters()
+    {
+        filters = new PlaceFilterParams();
+        tagsInput = string.Empty;
+        await OnFilterChanged.InvokeAsync(filters);
+    }
+}
+
+<style>
+    .filter-container {
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+</style>
