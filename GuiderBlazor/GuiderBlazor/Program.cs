@@ -1,4 +1,5 @@
 using GuiderBlazor.Components;
+using GuiderBlazor.Client.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://api.guider.pro/")
+});
+builder.Services.AddScoped<IPlacesService, PlacesService>();
 
 var app = builder.Build();
 
