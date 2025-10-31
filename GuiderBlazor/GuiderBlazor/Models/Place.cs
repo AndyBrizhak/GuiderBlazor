@@ -86,7 +86,7 @@ public class SocialNetwork
 public class Owner
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; } = string.Empty;
 
     [JsonPropertyName("phone")]
     public string Phone { get; set; } = string.Empty;
@@ -128,22 +128,22 @@ public class PlaceFilterParams
 
     // Теги
     public List<string>? Tags { get; set; }
-    public string TagsMode { get; set; } = "any"; // "any" или "all"
+    public string TagsMode { get; set; } = "any"; // По умолчанию "any"
 
     // Геопространственный поиск
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
-    public double? Distance { get; set; } // в метрах
+    public double? Distance { get; set; }
 
     // Фильтр по времени работы
     public bool? IsOpen { get; set; }
 
-    // Пагинация
+    // Пагинация - значения по умолчанию как в API
     public int Page { get; set; } = 1;
     public int PerPage { get; set; } = 20;
 
-    // Сортировка
-    public string SortField { get; set; } = "name"; // name, category, status, createdAt, distance
-    public string SortOrder { get; set; } = "ASC"; // ASC или DESC
+    // Сортировка - значения по умолчанию как в API
+    public string SortField { get; set; } = "name";
+    public string SortOrder { get; set; } = "ASC";
 }
 
