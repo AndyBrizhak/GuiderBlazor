@@ -16,6 +16,9 @@ public class Place
     [JsonPropertyName("category")]
     public string Category { get; set; } = string.Empty;
 
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
 
@@ -98,33 +101,49 @@ public class Location
     public List<double> Coordinates { get; set; } = new();
 }
 
+// API возвращает массив напрямую, но с заголовком X-Total-Count
 public class PlacesResponse
 {
-    [JsonPropertyName("data")]
-    public List<Place> Data { get; set; } = new();
-
-    [JsonPropertyName("total")]
-    public int Total { get; set; }
-
-    [JsonPropertyName("page")]
+    public List<Place> Places { get; set; } = new();
+    public long TotalCount { get; set; }
     public int Page { get; set; }
-
-    [JsonPropertyName("perPage")]
     public int PerPage { get; set; }
-
-    [JsonPropertyName("totalPages")]
     public int TotalPages { get; set; }
 }
 
 public class PlaceFilterParams
 {
-    public string? SearchTerm { get; set; }
-    public List<string>? Tags { get; set; }
-    public string TagsMode { get; set; } = "any";
+    // Текстовый поиск
+    public string? Q { get; set; }
+
+    // Географические фильтры
+    public string? Province { get; set; }
+    public string? City { get; set; }
+
+    // Основные фильтры
+    public string? Name { get; set; }
+    public string? Url { get; set; }
     public string? Category { get; set; }
+    public string? Status { get; set; }
+
+    // Теги
+    public List<string>? Tags { get; set; }
+    public string TagsMode { get; set; } = "any"; // "any" или "all"
+
+    // Геопространственный поиск
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public double? Distance { get; set; } // в метрах
+
+    // Фильтр по времени работы
+    public bool? IsOpen { get; set; }
+
+    // Пагинация
     public int Page { get; set; } = 1;
-    public int PerPage { get; set; } = 12;
-    public string SortField { get; set; } = "name";
-    public string SortOrder { get; set; } = "ASC";
+    public int PerPage { get; set; } = 20;
+
+    // Сортировка
+    public string SortField { get; set; } = "name"; // name, category, status, createdAt, distance
+    public string SortOrder { get; set; } = "ASC"; // ASC или DESC
 }
 

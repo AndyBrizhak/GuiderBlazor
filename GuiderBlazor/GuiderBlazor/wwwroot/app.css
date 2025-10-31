@@ -59,6 +59,26 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+    .filter-card h3 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+
+.section-title {
+    font-weight: 600;
+    color: #555;
+    margin: 1.5rem 0 1rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
 .form-group {
     margin-bottom: 1rem;
 }
@@ -67,6 +87,14 @@ body {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
+        color: #333;
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.25rem;
+        color: #666;
+        font-size: 0.85rem;
     }
 
 .form-control {
@@ -76,6 +104,12 @@ body {
     border-radius: 4px;
     font-size: 1rem;
 }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
 
 .button-group {
     display: flex;

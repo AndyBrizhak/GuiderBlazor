@@ -3,75 +3,153 @@
 
 <div class="filter-container">
     <div class="filter-card">
-        <h3>Фильтры поиска</h3>
-
+        <h3>Search Filters</h3>
+        
         <div class="form-group">
-            <label>Поиск по названию:</label>
-            <input type="text"
-                   class="form-control"
-                   @bind="filters.SearchTerm"
-                   placeholder="Введите название..." />
+            <label>Search (name, description):</label>
+            <input type="text" 
+                   class="form-control" 
+                   @bind="filters.Q" 
+                   placeholder="Enter search query..."/>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Province/State:</label>
+                <input type="text" 
+                       class="form-control" 
+                       @bind="filters.Province" 
+                       placeholder="e.g., Guanacaste Province"/>
+            </div>
+
+            <div class="form-group">
+                <label>City:</label>
+                <input type="text" 
+                       class="form-control" 
+                       @bind="filters.City" 
+                       placeholder="e.g., Playa del Coco"/>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Category:</label>
+                <select class="form-control" @bind="filters.Category">
+                    <option value="">All categories</option>
+                    <option value="to-eat">To Eat</option>
+                    <option value="adventures">Adventures</option>
+                    <option value="shops">Shops</option>
+                    <option value="services">Services</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Status:</label>
+                <select class="form-control" @bind="filters.Status">
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Категория:</label>
-            <select class="form-control" @bind="filters.Category">
-                <option value="">Все категории</option>
-                <option value="services">Услуги</option>
-                <option value="restaurant">Рестораны</option>
-                <option value="hotel">Отели</option>
-                <option value="shop">Магазины</option>
-            </select>
+            <label>Tags (comma separated):</label>
+            <input type="text" 
+                   class="form-control" 
+                   @bind="tagsInput" 
+                   placeholder="e.g., Bank, ATM, wifi"/>
+            <small>Separate tags with commas</small>
         </div>
 
         <div class="form-group">
-            <label>Теги (через запятую):</label>
-            <input type="text"
-                   class="form-control"
-                   @bind="tagsInput"
-                   placeholder="Например: Bank, ATM" />
-        </div>
-
-        <div class="form-group">
-            <label>Режим тегов:</label>
+            <label>Tags mode:</label>
             <select class="form-control" @bind="filters.TagsMode">
-                <option value="any">Любой тег</option>
-                <option value="all">Все теги</option>
+                <option value="any">Any tag (OR)</option>
+                <option value="all">All tags (AND)</option>
             </select>
         </div>
 
-        <div class="form-group">
-            <label>Сортировка:</label>
-            <select class="form-control" @bind="filters.SortField">
-                <option value="name">По названию</option>
-                <option value="category">По категории</option>
-            </select>
+        <div class="section-title">Geo Search (optional)</div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Latitude:</label>
+                <input type="number" 
+                       step="0.0001"
+                       class="form-control" 
+                       @bind="latitudeInput" 
+                       placeholder="50.4501"/>
+            </div>
+
+            <div class="form-group">
+                <label>Longitude:</label>
+                <input type="number" 
+                       step="0.0001"
+                       class="form-control" 
+                       @bind="longitudeInput" 
+                       placeholder="30.5234"/>
+            </div>
+
+            <div class="form-group">
+                <label>Radius (meters):</label>
+                <input type="number" 
+                       class="form-control" 
+                       @bind="distanceInput" 
+                       placeholder="5000"/>
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Порядок:</label>
-            <select class="form-control" @bind="filters.SortOrder">
-                <option value="ASC">По возрастанию</option>
-                <option value="DESC">По убыванию</option>
+            <label>Opening hours:</label>
+            <select class="form-control" @bind="isOpenInput">
+                <option value="">All</option>
+                <option value="true">Open only</option>
+                <option value="false">Closed only</option>
             </select>
         </div>
 
-        <div class="form-group">
-            <label>Результатов на странице:</label>
-            <select class="form-control" @bind="filters.PerPage">
-                <option value="6">6</option>
-                <option value="12">12</option>
-                <option value="24">24</option>
-                <option value="48">48</option>
-            </select>
+        <div class="section-title">Sorting</div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sort by:</label>
+                <select class="form-control" @bind="filters.SortField">
+                    <option value="name">Name</option>
+                    <option value="category">Category</option>
+                    <option value="status">Status</option>
+                    <option value="createdAt">Created date</option>
+                    <option value="distance">Distance (geo search)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Order:</label>
+                <select class="form-control" @bind="filters.SortOrder">
+                    <option value="ASC">Ascending (A-Z)</option>
+                    <option value="DESC">Descending (Z-A)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Results per page:</label>
+                <select class="form-control" @bind="filters.PerPage">
+                    <option value="6">6</option>
+                    <option value="12">12</option>
+                    <option value="20">20</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                </select>
+            </div>
         </div>
 
         <div class="button-group">
             <button class="btn btn-primary" @onclick="ApplyFilters">
-                Применить фильтры
+                🔍 Apply Filters
             </button>
             <button class="btn btn-secondary" @onclick="ResetFilters">
-                Сбросить
+                🔄 Reset
             </button>
         </div>
     </div>
@@ -83,10 +161,14 @@
 
     private PlaceFilterParams filters = new();
     private string tagsInput = string.Empty;
+    private string? latitudeInput;
+    private string? longitudeInput;
+    private string? distanceInput;
+    private string isOpenInput = string.Empty;
 
     private async Task ApplyFilters()
     {
-        // Парсим теги из строки
+        // Parse tags from string
         if (!string.IsNullOrWhiteSpace(tagsInput))
         {
             filters.Tags = tagsInput
@@ -99,7 +181,29 @@
             filters.Tags = null;
         }
 
-        filters.Page = 1; // Сбрасываем на первую страницу при фильтрации
+        // Parse geospatial parameters
+        if (double.TryParse(latitudeInput, out double lat))
+            filters.Latitude = lat;
+        else
+            filters.Latitude = null;
+
+        if (double.TryParse(longitudeInput, out double lon))
+            filters.Longitude = lon;
+        else
+            filters.Longitude = null;
+
+        if (double.TryParse(distanceInput, out double dist))
+            filters.Distance = dist;
+        else
+            filters.Distance = null;
+
+        // Parse isOpen filter
+        if (bool.TryParse(isOpenInput, out bool isOpen))
+            filters.IsOpen = isOpen;
+        else
+            filters.IsOpen = null;
+
+        filters.Page = 1; // Reset to first page on filter
         await OnFilterChanged.InvokeAsync(filters);
     }
 
@@ -107,6 +211,10 @@
     {
         filters = new PlaceFilterParams();
         tagsInput = string.Empty;
+        latitudeInput = null;
+        longitudeInput = null;
+        distanceInput = null;
+        isOpenInput = string.Empty;
         await OnFilterChanged.InvokeAsync(filters);
     }
 }

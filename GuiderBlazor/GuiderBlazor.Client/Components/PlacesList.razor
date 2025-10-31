@@ -10,13 +10,13 @@
     {
         <div class="loading">
             <div class="spinner"></div>
-            <p>Загрузка мест...</p>
+            <p>Loading places...</p>
         </div>
     }
-    else if (placesResponse?.Data?.Any() == true)
+    else if (placesResponse?.Places?.Any() == true)
     {
         <div class="places-grid">
-            @foreach (var place in placesResponse.Data)
+            @foreach (var place in placesResponse.Places)
             {
                 <PlaceCard Place="place" />
             }
@@ -24,46 +24,46 @@
 
         <div class="pagination">
             <div class="pagination-info">
-                Показано @placesResponse.Data.Count из @placesResponse.Total результатов
-                (Страница @placesResponse.Page из @placesResponse.TotalPages)
+                Showing @placesResponse.Places.Count of @placesResponse.TotalCount results
+                (Page @placesResponse.Page of @placesResponse.TotalPages)
             </div>
-
+            
             <div class="pagination-controls">
-                <button class="btn-page"
-                        @onclick="FirstPage"
+                <button class="btn-page" 
+                        @onclick="FirstPage" 
                         disabled="@(currentFilters.Page == 1)">
-                    Первая
+                    First
                 </button>
-
-                <button class="btn-page"
-                        @onclick="PreviousPage"
+                
+                <button class="btn-page" 
+                        @onclick="PreviousPage" 
                         disabled="@(currentFilters.Page == 1)">
-                    ← Предыдущая
+                    ← Previous
                 </button>
-
+                
                 <span class="page-numbers">
-                    @for (int i = Math.Max(1, currentFilters.Page - 2);
-                                    i <= Math.Min(placesResponse.TotalPages, currentFilters.Page + 2);
-                                    i++)
+                    @for (int i = Math.Max(1, currentFilters.Page - 2); 
+                          i <= Math.Min(placesResponse.TotalPages, currentFilters.Page + 2); 
+                          i++)
                     {
                         var pageNum = i;
-                        <button class="btn-page-num @(pageNum == currentFilters.Page ? "active" : "")"
+                        <button class="btn-page-num @(pageNum == currentFilters.Page ? "active" : "")" 
                                 @onclick="() => GoToPage(pageNum)">
                             @pageNum
                         </button>
                     }
                 </span>
-
-                <button class="btn-page"
-                        @onclick="NextPage"
+                
+                <button class="btn-page" 
+                        @onclick="NextPage" 
                         disabled="@(currentFilters.Page >= placesResponse.TotalPages)">
-                    Следующая →
+                    Next →
                 </button>
-
-                <button class="btn-page"
-                        @onclick="LastPage"
+                
+                <button class="btn-page" 
+                        @onclick="LastPage" 
                         disabled="@(currentFilters.Page >= placesResponse.TotalPages)">
-                    Последняя
+                    Last
                 </button>
             </div>
         </div>
@@ -71,8 +71,8 @@
     else if (!isLoading)
     {
         <div class="no-results">
-            <h3>Результаты не найдены</h3>
-            <p>Попробуйте изменить параметры фильтрации</p>
+            <h3>No results found</h3>
+            <p>Try changing your filter criteria</p>
         </div>
     }
 </div>
@@ -97,9 +97,9 @@
     {
         isLoading = true;
         StateHasChanged();
-
+        
         placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
-
+        
         isLoading = false;
         StateHasChanged();
     }
