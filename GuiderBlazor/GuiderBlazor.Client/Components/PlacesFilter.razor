@@ -31,27 +31,44 @@
             </div>
         </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label>Category:</label>
-                <select class="form-control" @bind="filters.Category">
-                    <option value="">All categories</option>
-                    <option value="to-eat">To Eat</option>
-                    <option value="adventures">Adventures</option>
-                    <option value="shops">Shops</option>
-                    <option value="services">Services</option>
-                </select>
+        <div class="form-group">
+            <label>Category:</label>
+            <div class="category-buttons">
+                <button type="button"
+                        class="category-btn all @(filters.Category == "" ? "active" : "")"
+                        @onclick='() => SetCategory("")'>
+                    All
+                </button>
+                <button type="button"
+                        class="category-btn services @(filters.Category == "services" ? "active" : "")"
+                        @onclick='() => SetCategory("services")'>
+                    Services
+                </button>
+                <button type="button"
+                        class="category-btn to-eat @(filters.Category == "to-eat" ? "active" : "")"
+                        @onclick='() => SetCategory("to-eat")'>
+                    Foods & Drinks
+                </button>
+                <button type="button"
+                        class="category-btn adventures @(filters.Category == "adventures" ? "active" : "")"
+                        @onclick='() => SetCategory("adventures")'>
+                    Adventures
+                </button>
+                <button type="button"
+                        class="category-btn shops @(filters.Category == "shops" ? "active" : "")"
+                        @onclick='()=> SetCategory("shops")'> Shopping
+                </button>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label>Status:</label>
-                <select class="form-control" @bind="filters.Status">
-                    <option value="">All statuses</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="pending">Pending</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label>Status:</label>
+            <select class="form-control" @bind="filters.Status">
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -165,6 +182,13 @@
     private string? longitudeInput;
     private string? distanceInput;
     private string isOpenInput = string.Empty;
+
+    // ==== НОВЫЙ МЕТОД ДЛЯ КНОПОК ====
+    private void SetCategory(string category)
+    {
+        filters.Category = category;
+        // Примечание: фильтр будет применен только при нажатии "Apply Filters"
+    }
 
     private async Task ApplyFilters()
     {
