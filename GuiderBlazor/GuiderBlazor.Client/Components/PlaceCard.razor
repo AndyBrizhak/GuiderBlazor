@@ -1,7 +1,7 @@
 ﻿@using GuiderBlazor.Shared.Models
-@inject NavigationManager Navigation
+@inject NavigationManager Navigation // Этот инжект больше не нужен, но если он используется где-то еще в компоненте, оставьте.
 
-<div class="place-card" @onclick="NavigateToDetails">
+<a href="/place/@Place.Id" class="place-card">
     <div class="card-image">
         @if (Place.ImgLink?.Any() == true)
         {
@@ -17,42 +17,40 @@
 
     <div class="card-content">
         <h3 class="card-title">@Place.Name</h3>
-
-        <div class="card-category">
-            <span class="category-badge">@Place.Category</span>
-        </div>
-
-        @if (Place.Tags?.Any() == true)
-        {
-            <div class="card-tags">
-                @foreach (var tag in Place.Tags.Take(3))
+        <p class="card-address">
+            @if (!string.IsNullOrEmpty(Place.Address?.City))
+            {
+                <span>@Place.Address.City</span>
+            }
+            @if (!string.IsNullOrEmpty(Place.Address?.Province) && !string.IsNullOrEmpty(Place.Address?.City))
+            {
+                <span>, @Place.Address.Province</span>
+            }
+            else if (!string.IsNullOrEmpty(Place.Address?.Province))
+            {
+                <span>@Place.Address.Province</span>
+            }
+        </p>
+        <div class="card-tags">
+            @foreach (var tag in Place.Tags ?? new List<string>())
+            {
+                @if (!string.IsNullOrEmpty(tag))
                 {
                     <span class="tag">@tag</span>
                 }
-            </div>
-        }
-
-        @if (Place.Address != null)
-        {
-            <div class="card-location">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>@Place.Address.City, @Place.Address.Country</span>
-            </div>
-        }
+            }
+        </div>
     </div>
-</div>
+</a>
 
 @code {
     [Parameter, EditorRequired]
     public Place Place { get; set; } = null!;
 
-    private void NavigateToDetails()
-    {
-        Navigation.NavigateTo($"/place/{Place.Id}");
-    }
+    // Метод NavigateToDetails() больше не нужен, так как мы используем обычную ссылку <a>
+    // private void NavigateToDetails()
+    // {
+    //     Navigation.NavigateTo($"/place/{Place.Id}");
+    // }
 }
-
 
