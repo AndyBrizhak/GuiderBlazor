@@ -1,4 +1,4 @@
-﻿using GuiderBlazor.Client.Models;
+﻿using GuiderBlazor.Shared.Models;
 using System.Net.Http.Json;
 
 namespace GuiderBlazor.Client.Services;

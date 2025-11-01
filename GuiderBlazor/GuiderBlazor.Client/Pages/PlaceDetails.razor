@@ -1,5 +1,5 @@
 ﻿@page "/place/{id}"
-@using GuiderBlazor.Client.Models
+@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Client.Services
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
@@ -85,7 +85,7 @@
                     </div>
                 }
 
-                @if (place.Phone?.Callable > 0)
+                @if (!string.IsNullOrEmpty(place.Phone?.Callable))
                 {
                     <div class="info-item">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">

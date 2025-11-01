@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
+using Shared.Utils;
 
-namespace GuiderBlazor.Client.Models;
+namespace GuiderBlazor.Shared.Models;
 public class Place
 {
     [JsonPropertyName("id")]
@@ -67,10 +68,12 @@ public class Address
 public class Phone
 {
     [JsonPropertyName("callable")]
-    public long Callable { get; set; }
+    [JsonConverter(typeof(NumberToStringConverter))]
+    public string? Callable { get; set; }
 
     [JsonPropertyName("whatsapp")]
-    public string Whatsapp { get; set; } = string.Empty;
+    [JsonConverter(typeof(NumberToStringConverter))]
+    public string? Whatsapp { get; set; } = string.Empty;
 }
 
 public class SocialNetwork
@@ -88,7 +91,8 @@ public class Owner
     public string? Name { get; set; } = string.Empty;
 
     [JsonPropertyName("phone")]
-    public long? Phone { get; set; }
+    [JsonConverter(typeof(NumberToStringConverter))]
+    public string? Phone { get; set; }
 }
 
 public class Location

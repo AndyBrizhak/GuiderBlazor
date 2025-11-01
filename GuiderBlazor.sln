@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuiderBlazor", "GuiderBlazo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuiderBlazor.Client", "GuiderBlazor\GuiderBlazor.Client\GuiderBlazor.Client.csproj", "{27B4A774-A4A7-4850-9460-69208426A2D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{FA50044B-46A3-495A-B606-EBC04A709733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{27B4A774-A4A7-4850-9460-69208426A2D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27B4A774-A4A7-4850-9460-69208426A2D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27B4A774-A4A7-4850-9460-69208426A2D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA50044B-46A3-495A-B606-EBC04A709733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA50044B-46A3-495A-B606-EBC04A709733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA50044B-46A3-495A-B606-EBC04A709733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA50044B-46A3-495A-B606-EBC04A709733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
