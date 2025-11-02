@@ -112,6 +112,26 @@
                 }
             </div>
 
+            @if (place.Owner?.Any() == true)
+            {
+                @foreach (var owner in place.Owner)
+                {
+                    <div class="info-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <div>
+                            <strong>Owner: @owner.Name</strong><br />
+                            @if (!string.IsNullOrEmpty(owner.Phone))
+                            {
+                                <a href="tel:+@owner.Phone">+@owner.Phone</a>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
             @if (!string.IsNullOrEmpty(place.SocialNetwork?.Facebook) || !string.IsNullOrEmpty(place.SocialNetwork?.Instagram))
             {
                 <div class="info-section">

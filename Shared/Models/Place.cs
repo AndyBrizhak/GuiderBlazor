@@ -11,13 +11,14 @@ public class Place
     public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("description")]
+    [JsonConverter(typeof(DescriptionConverter))]
     public string Description { get; set; } = string.Empty;
 
     [JsonPropertyName("category")]
     public string Category { get; set; } = string.Empty;
 
     [JsonPropertyName("status")]
-    public string Status { get; set; } = string.Empty;
+    public string? Status { get; set; } = string.Empty;
 
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
@@ -26,28 +27,63 @@ public class Place
     public List<string> ImgLink { get; set; } = new();
 
     [JsonPropertyName("address")]
-    public Address Address { get; set; } = new();
+    public Address? Address { get; set; } = new();
 
     [JsonPropertyName("phone")]
-    public Phone Phone { get; set; } = new();
+    public Phone? Phone { get; set; } = new();
 
     [JsonPropertyName("social_network")]
-    public SocialNetwork SocialNetwork { get; set; } = new();
+    public SocialNetwork? SocialNetwork { get; set; } = new();
 
+    //[JsonPropertyName("url")]
+    //public string? Url { get; set; } = string.Empty;
+
+    // 1. "Теневое" свойство для "url" из JSON
+    // Оно будет принимать значение, только если API пришлет "url"
     [JsonPropertyName("url")]
-    public string Url { get; set; } = string.Empty;
+    public string? UrlProperty { get; set; }
+
+    // 2. "Теневое" свойство для "web" из JSON
+    // Оно будет принимать значение, только если API пришлет "web"
+    [JsonPropertyName("web")]
+    public string? WebProperty { get; set; }
+
+    // 3. Ваше "настоящее" свойство Url, которое использует приложение
+    // Оно невидимо для JSON, но содержит правильную логику.
+    [JsonIgnore]
+    public string? Url
+    {
+        get
+        {
+            // 1. Если "url" существует, используем его (высший приоритет)
+            if (!string.IsNullOrEmpty(UrlProperty))
+            {
+                return UrlProperty;
+            }
+
+            // 2. Если "url" нет, но есть "web", используем "web"
+            if (!string.IsNullOrEmpty(WebProperty))
+            {
+                return WebProperty;
+            }
+
+            // 3. Если нет ни того, ни другого, возвращаем null
+            return null;
+        }
+    }
 
     [JsonPropertyName("preview_link")]
-    public string PreviewLink { get; set; } = string.Empty;
+    public string? PreviewLink { get; set; } = string.Empty;
 
     [JsonPropertyName("keywords")]
-    public List<string> Keywords { get; set; } = new();
+    public List<string>? Keywords { get; set; } = new();
 
     [JsonPropertyName("owner")]
-    public Owner? Owner { get; set; }
+    [JsonConverter(typeof(OwnerListConverter))]
+    public List<Owner>? Owner { get; set; } = new();
 
     [JsonPropertyName("schedule")]
-    public List<ScheduleEntry> Schedule { get; set; } = new();
+    public List<ScheduleEntry>? Schedule { get; set; } = new();
 
     [JsonPropertyName("location")]
     public Location? Location { get; set; }
