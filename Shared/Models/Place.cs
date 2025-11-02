@@ -34,8 +34,8 @@ public class Place
     [JsonPropertyName("social_network")]
     public SocialNetwork SocialNetwork { get; set; } = new();
 
-    [JsonPropertyName("web")]
-    public string Web { get; set; } = string.Empty;
+    [JsonPropertyName("url")]
+    public string Url { get; set; } = string.Empty;
 
     [JsonPropertyName("preview_link")]
     public string PreviewLink { get; set; } = string.Empty;
@@ -45,6 +45,9 @@ public class Place
 
     [JsonPropertyName("owner")]
     public Owner? Owner { get; set; }
+
+    [JsonPropertyName("schedule")]
+    public List<ScheduleEntry> Schedule { get; set; } = new();
 
     [JsonPropertyName("location")]
     public Location? Location { get; set; }
@@ -148,4 +151,22 @@ public class PlaceFilterParams
     // Сортировка - значения по умолчанию как в API
     public string SortField { get; set; } = "name";
     public string SortOrder { get; set; } = "ASC";
+}
+
+public class ScheduleEntry
+{
+    [JsonPropertyName("days")]
+    public List<string> Days { get; set; } = new();
+
+    [JsonPropertyName("hours")]
+    public List<HoursEntry> Hours { get; set; } = new();
+}
+
+public class HoursEntry
+{
+    [JsonPropertyName("start")]
+    public string Start { get; set; } = string.Empty;
+
+    [JsonPropertyName("end")]
+    public string End { get; set; } = string.Empty;
 }
