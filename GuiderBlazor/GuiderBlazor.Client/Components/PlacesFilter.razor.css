@@ -238,3 +238,65 @@
         padding-top: 1rem;
         border-top: 1px solid #e9ecef;
     }
+
+    /* --- Конец стилей для кнопок категорий --- */
+
+/* --- Стили для обновленного заголовка фильтра --- */
+
+.filter-header {
+    /* Делаем весь заголовок кликабельной кнопкой */
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: background-color 0.2s;
+    /* (Существующие стили) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+}
+
+    .filter-header:hover {
+        background-color: #f1f1f1;
+    }
+
+    .filter-header h3 {
+        /* (Существующий стиль) */
+        margin: 0;
+        font-size: 1.1rem; /* Сделаем шрифт чуть меньше */
+    }
+
+/* --- Стили для новой иконки (SVG + Текст) --- */
+
+.filter-toggle-icon {
+    /* (Существующие стили) */
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+    /* ➕ Новые стили для выравнивания */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #007bff; /* Сделаем иконку и текст синими */
+}
+
+    /* ➕ Стили для SVG внутри иконки */
+    .filter-toggle-icon svg {
+        transition: transform 0.3s ease;
+    }
+
+    /* (Существующий стиль, но примененный к SVG) */
+    .filter-toggle-icon.is-open svg {
+        transform: rotate(180deg);
+    }
+
+/* --- Стили для перемещенных кнопок Apply/Reset --- */
+
+.advanced-filters .button-group {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    /* Добавляем линию-разделитель над кнопками */
+    border-top: 1px solid #e9ecef;
+}

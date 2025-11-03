@@ -4,9 +4,11 @@
 <div class="filter-container">
     <div class="filter-card">
         <div class="filter-header" @onclick="ToggleAdvancedFilter">
-            <h3>Search Filters</h3>
+            <h3>@(!isAdvancedFilterOpen ? "Show" : "Hide") Advanced Filters</h3>
             <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
-                ▼
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z" />
+                </svg>
             </span>
         </div>
         
@@ -15,27 +17,27 @@
             <div class="category-buttons">
                 <button type="button"
                         class="category-btn all @(filters.Category == "" ? "active" : "")"
-                        @onclick='() => SetCategory("")'>
+                        @onclick='async () => await SetCategory("")'>
                     All
                 </button>
                 <button type="button"
                         class="category-btn services @(filters.Category == "services" ? "active" : "")"
-                        @onclick='() => SetCategory("services")'>
+                        @onclick='async () => await SetCategory("services")'>
                     Services
                 </button>
                 <button type="button"
                         class="category-btn to-eat @(filters.Category == "to-eat" ? "active" : "")"
-                        @onclick='() => SetCategory("to-eat")'>
+                        @onclick='async () => await SetCategory("to-eat")'>
                     Foods & Drinks
                 </button>
                 <button type="button"
                         class="category-btn adventures @(filters.Category == "adventures" ? "active" : "")"
-                        @onclick='() => SetCategory("adventures")'>
+                        @onclick='async () => await SetCategory("adventures")'>
                     Adventures
                 </button>
                 <button type="button"
                         class="category-btn shops @(filters.Category == "shops" ? "active" : "")"
-                        @onclick='() => SetCategory("shops")'>
+                        @onclick='async () => await SetCategory("shops")'>
                     Shopping
                 </button>
             </div>
@@ -184,17 +186,19 @@
                     <option value="48">48</option>
                 </select>
             </div>
+                
         </div>
+            <div class="button-group">
+                <button class="btn btn-primary" @onclick="ApplyFilters">
+                    🔍 Apply Filters
+                </button>
+                <button class="btn btn-secondary" @onclick="ResetFilters">
+                    🔄 Reset
+                </button>
+            </div>
         </div>
 
-        <div class="button-group">
-            <button class="btn btn-primary" @onclick="ApplyFilters">
-                🔍 Apply Filters
-            </button>
-            <button class="btn btn-secondary" @onclick="ResetFilters">
-                🔄 Reset
-            </button>
-        </div>
+        
     </div>
 </div>
 
@@ -217,11 +221,13 @@
         isAdvancedFilterOpen = !isAdvancedFilterOpen;
     }
 
-    // ==== НОВЫЙ МЕТОД ДЛЯ КНОПОК ====
-    private void SetCategory(string category)
+    private async Task SetCategory(string category)
     {
         filters.Category = category;
-        // Примечание: фильтр будет применен только при нажатии "Apply Filters"
+        filters.Page = 1; // Сбрасываем на 1 страницу
+
+        // Немедленно вызываем событие, чтобы PlacesList обновился
+        await OnFilterChanged.InvokeAsync(filters);
     }
 
     private async Task ApplyFilters()
