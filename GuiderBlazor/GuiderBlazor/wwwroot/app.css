@@ -31,7 +31,7 @@ html, body {
 /* Home Page Styles (если они используются в главном макете) */
 .home-container {
     min-height: 100vh;
-    background: #f8f9fa;
+    background: transparent;
 }
 
 .hero-section {
