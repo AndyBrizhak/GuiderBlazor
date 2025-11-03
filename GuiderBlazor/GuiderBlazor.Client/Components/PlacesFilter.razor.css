@@ -118,15 +118,15 @@
     color: #333;
 }
 
-    /* Эффект при наведении на неактивную кнопку */
+/* Эффект при наведении на неактивную кнопку */
     .category-btn:not(.active):hover {
         background-color: #e0e0e0;
         transform: translateY(-1px);
     }
 
-    /* --- Стили для активных кнопок и цвета --- */
+/* --- Стили для активных кнопок и цвета --- */
 
-    /* "All" (Серый) */
+/* "All" (Серый) */
     .category-btn.all.active {
         background-color: #555;
         color: white;
@@ -142,12 +142,12 @@
         color: #6b46c1;
     }
 
-        .category-btn.services.active {
+    .category-btn.services.active {
             background-color: #6b46c1;
             color: white;
         }
 
-        .category-btn.services:not(.active):hover {
+     .category-btn.services:not(.active):hover {
             background-color: #e9d8ff;
         }
 
@@ -157,12 +157,12 @@
         color: #dd6b20;
     }
 
-        .category-btn.to-eat.active {
+    .category-btn.to-eat.active {
             background-color: #dd6b20;
             color: white;
         }
 
-        .category-btn.to-eat:not(.active):hover {
+    .category-btn.to-eat:not(.active):hover {
             background-color: #feebc8;
         }
 
@@ -172,12 +172,12 @@
         color: #38a169;
     }
 
-        .category-btn.adventures.active {
+    .category-btn.adventures.active {
             background-color: #38a169;
             color: white;
         }
 
-        .category-btn.adventures:not(.active):hover {
+     .category-btn.adventures:not(.active):hover {
             background-color: #c6f6d5;
         }
 
@@ -187,11 +187,54 @@
         color: #d53f8c;
     }
 
-        .category-btn.shops.active {
+     .category-btn.shops.active {
             background-color: #d53f8c;
             color: white;
         }
 
-        .category-btn.shops:not(.active):hover {
+     .category-btn.shops:not(.active):hover {
             background-color: #fed7e2;
         }
+
+/* ➕ Стили для заголовка (чтобы сделать его кликабельным) */
+    .filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer; /* Показывает, что можно нажать */
+    margin-bottom: 1.5rem; /* Отступ, как у старого h3 */
+}
+
+    .filter-header h3 {
+        margin: 0; /* Убираем отступы у заголовка */
+    }
+
+/* ➕ Стили для иконки-стрелки */
+    .filter-toggle-icon {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+    /* Анимация поворота стрелки */
+    .filter-toggle-icon.is-open {
+        transform: rotate(180deg);
+    }
+
+/* ➕ Стили для "сворачивания" */
+    .advanced-filters {
+    /* Скрываем по умолчанию */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding-top: 0;
+    border-top: 0;
+}
+
+    .advanced-filters.is-active {
+        /* Показываем, задавая максимальную высоту */
+        max-height: 2000px; /* (большое значение, чтобы все влезло) */
+        transition: max-height 0.5s ease-in;
+        /* Добавляем разделитель, когда открыто */
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }

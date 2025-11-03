@@ -3,51 +3,13 @@
 
 <div class="filter-container">
     <div class="filter-card">
-        <h3>Search Filters</h3>
+        <div class="filter-header" @onclick="ToggleAdvancedFilter">
+            <h3>Search Filters</h3>
+            <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
+                ▼
+            </span>
+        </div>
         
-        <div class="form-group">
-            <label>Search (name, description):</label>
-            <input type="text" 
-                   class="form-control" 
-                   @bind="filters.Q" 
-                   placeholder="Enter search query..."/>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Province/State:</label>
-                <input type="text" 
-                       class="form-control" 
-                       @bind="filters.Province" 
-                       placeholder="e.g., Guanacaste Province"/>
-            </div>
-
-            <div class="form-group">
-                <label>City:</label>
-                <input type="text" 
-                       class="form-control" 
-                       @bind="filters.City" 
-                       placeholder="e.g., Playa del Coco"/>
-            </div>
-
-            <div class="form-group">
-                <label>Name:</label>
-                <input type="text"
-                       class="form-control"
-                       @bind="filters.Name"
-                       placeholder="Exact name..." />
-            </div>
-
-            <div class="form-group">
-                <label>URL (slug):</label>
-                <input type="text"
-                       class="form-control"
-                       @bind="filters.Url"
-                       placeholder="e.g., angels_salon" />
-            </div>
-            
-        </div>
-
         <div class="form-group">
             <label>Category:</label>
             <div class="category-buttons">
@@ -73,71 +35,115 @@
                 </button>
                 <button type="button"
                         class="category-btn shops @(filters.Category == "shops" ? "active" : "")"
-                        @onclick='()=> SetCategory("shops")'> Shopping
+                        @onclick='() => SetCategory("shops")'>
+                    Shopping
                 </button>
             </div>
         </div>
 
+        <div class="advanced-filters @(isAdvancedFilterOpen ? "is-active" : "")">
 
-
-        <div class="form-group">
-            <label>Status:</label>
-            <select class="form-control" @bind="filters.Status">
-                <option value="">All statuses</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Tags (comma separated):</label>
-            <input type="text" 
-                   class="form-control" 
-                   @bind="tagsInput" 
-                   placeholder="e.g., Bank, ATM, wifi"/>
-            <small>Separate tags with commas</small>
-        </div>
-
-        <div class="form-group">
-            <label>Tags mode:</label>
-            <select class="form-control" @bind="filters.TagsMode">
-                <option value="any">Any tag (OR)</option>
-                <option value="all">All tags (AND)</option>
-            </select>
-        </div>
-
-        <div class="section-title">Geo Search (optional)</div>
-
-        <div class="form-row">
             <div class="form-group">
-                <label>Latitude:</label>
-                <input type="number" 
-                       step="0.0001"
-                       class="form-control" 
-                       @bind="latitudeInput" 
-                       placeholder="50.4501"/>
+                <label>Search (name, description):</label>
+                <input type="text"
+                       class="form-control"
+                       @bind="filters.Q"
+                       placeholder="Enter search query..." />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Province/State:</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="filters.Province"
+                           placeholder="e.g., Guanacaste Province" />
+                </div>
+
+                <div class="form-group">
+                    <label>City:</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="filters.City"
+                           placeholder="e.g., Playa del Coco" />
+                </div>
+
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="filters.Name"
+                           placeholder="Exact name..." />
+                </div>
+
+                <div class="form-group">
+                    <label>URL (slug):</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="filters.Url"
+                           placeholder="e.g., angels_salon" />
+                </div>
+
             </div>
 
             <div class="form-group">
-                <label>Longitude:</label>
-                <input type="number" 
-                       step="0.0001"
-                       class="form-control" 
-                       @bind="longitudeInput" 
-                       placeholder="30.5234"/>
+                <label>Status:</label>
+                <select class="form-control" @bind="filters.Status">
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                </select>
             </div>
 
             <div class="form-group">
-                <label>Radius (meters):</label>
-                <input type="number" 
-                       class="form-control" 
-                       @bind="distanceInput" 
-                       placeholder="5000"/>
+                <label>Tags (comma separated):</label>
+                <input type="text"
+                       class="form-control"
+                       @bind="tagsInput"
+                       placeholder="e.g., Bank, ATM, wifi" />
+                <small>Separate tags with commas</small>
             </div>
-        </div>
 
-        <div class="form-group">
+            <div class="form-group">
+                <label>Tags mode:</label>
+                <select class="form-control" @bind="filters.TagsMode">
+                    <option value="any">Any tag (OR)</option>
+                    <option value="all">All tags (AND)</option>
+                </select>
+            </div>
+
+            <div class="section-title">Geo Search (optional)</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Latitude:</label>
+                    <input type="number"
+                           step="0.0001"
+                           class="form-control"
+                           @bind="latitudeInput"
+                           placeholder="50.4501" />
+                </div>
+
+                <div class="form-group">
+                    <label>Longitude:</label>
+                    <input type="number"
+                           step="0.0001"
+                           class="form-control"
+                           @bind="longitudeInput"
+                           placeholder="30.5234" />
+                </div>
+
+                <div class="form-group">
+                    <label>Radius (meters):</label>
+                    <input type="number"
+                           class="form-control"
+                           @bind="distanceInput"
+                           placeholder="5000" />
+                </div>
+            </div>
+   
+            <div class="form-group">
             <label>Opening hours:</label>
             <select class="form-control" @bind="isOpenInput">
                 <option value="">All</option>
@@ -146,9 +152,9 @@
             </select>
         </div>
 
-        <div class="section-title">Sorting</div>
+            <div class="section-title">Sorting</div>
 
-        <div class="form-row">
+            <div class="form-row">
             <div class="form-group">
                 <label>Sort by:</label>
                 <select class="form-control" @bind="filters.SortField">
@@ -179,6 +185,7 @@
                 </select>
             </div>
         </div>
+        </div>
 
         <div class="button-group">
             <button class="btn btn-primary" @onclick="ApplyFilters">
@@ -201,6 +208,14 @@
     private string? longitudeInput;
     private string? distanceInput;
     private string isOpenInput = string.Empty;
+
+    // ➕ НАЧАЛО: C# логика для сворачивания фильтров
+    private bool isAdvancedFilterOpen = false; // По умолчанию фильтры скрыты
+
+    private void ToggleAdvancedFilter()
+    {
+        isAdvancedFilterOpen = !isAdvancedFilterOpen;
+    }
 
     // ==== НОВЫЙ МЕТОД ДЛЯ КНОПОК ====
     private void SetCategory(string category)

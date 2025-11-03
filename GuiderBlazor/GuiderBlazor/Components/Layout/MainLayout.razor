@@ -1,9 +1,52 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<div class="page-container">
+
+    <nav class="main-nav">
+        <a href="/" class="nav-brand">Guider.pro</a>
+
+        <button class="hamburger-button" @onclick="ToggleNavMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <div class="nav-links @(isNavMenuOpen ? "is-active" : "")">
+            <a href="/">Home</a>
+            <a href="/category/adventures">Adventures</a>
+            <a href="/category/to-eat">Food & Drinks</a>
+            <a href="/category/services">Services</a>
+        </div>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; @DateTime.Now.Year Guider.pro. Все права защищены.</p>
+            <div class="footer-links">
+                <a href="/about">About Us</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/sitemap.xml">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+</div>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool isNavMenuOpen = false;
+
+    private void ToggleNavMenu()
+    {
+        isNavMenuOpen = !isNavMenuOpen;
+    }
+}
