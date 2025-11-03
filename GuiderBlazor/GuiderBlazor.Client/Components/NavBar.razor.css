@@ -1,0 +1,112 @@
+﻿/* Файл: NavBar.razor.css */
+
+.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface);
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+    .nav-links a {
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+        .nav-links a:hover {
+            color: #007bff;
+        }
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .theme-toggle:hover {
+        background: var(--bg-surface-hover);
+    }
+
+    .theme-toggle .icon {
+        font-size: 1.25rem;
+    }
+
+.hamburger-button {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
+}
+
+    .hamburger-button span {
+        width: 2rem;
+        height: 0.25rem;
+        background: var(--text-primary);
+        border-radius: 10px;
+        transition: all 0.3s linear;
+        position: relative;
+        transform-origin: 1px;
+    }
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: var(--bg-surface);
+        box-shadow: 0 4px 6px var(--shadow-color);
+        position: absolute;
+        top: 60px;
+        left: 0;
+        padding: 1rem 0;
+    }
+
+        .nav-links.is-active {
+            display: flex;
+        }
+
+        .nav-links a {
+            padding: 1rem 1.5rem;
+        }
+
+    .hamburger-button {
+        display: flex;
+    }
+}

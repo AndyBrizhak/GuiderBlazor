@@ -32,20 +32,23 @@
 .no-results {
     text-align: center;
     padding: 4rem 2rem;
-    color: #666;
+    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+    color: var(--text-secondary);
 }
 
 .pagination {
-    background: white;
+    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+    background: var(--bg-surface);
+    box-shadow: 0 2px 4px var(--shadow-color);
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .pagination-info {
     text-align: center;
     margin-bottom: 1rem;
-    color: #666;
+    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+    color: var(--text-secondary);
     font-size: 0.95rem;
 }
 
@@ -59,8 +62,10 @@
 
 .btn-page, .btn-page-num {
     padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
-    background: white;
+    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
@@ -68,8 +73,9 @@
 }
 
     .btn-page:hover:not(:disabled), .btn-page-num:hover:not(.active) {
-        background: #f8f9fa;
-        border-color: #007bff;
+        /* ➕ ИСПРАВЛЕНО: Используем переменные */
+        background: var(--bg-surface-hover);
+        border-color: #007bff; /* Акцентный цвет можно оставить */
     }
 
     .btn-page:disabled {
@@ -78,6 +84,7 @@
     }
 
     .btn-page-num.active {
+        /* Акцентный цвет оставляем */
         background: #007bff;
         color: white;
         border-color: #007bff;

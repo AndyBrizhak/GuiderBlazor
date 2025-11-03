@@ -35,110 +35,16 @@ main {
     padding: 1.5rem; /* Добавляем отступы вокруг контента */
 }
 
-/*
-=========================================
-    3. Стили для Navbar
-=========================================
-*/
-.main-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #ffffff;
-    padding: 0.75rem 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    /* "Прилипает" к верху при прокрутке */
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.nav-brand {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #333;
-    text-decoration: none;
-}
-
-.nav-links {
-    display: flex;
-    gap: 1.5rem;
-}
-
-    .nav-links a {
-        text-decoration: none;
-        color: #555;
-        font-weight: 500;
-        transition: color 0.2s;
-    }
-
-        .nav-links a:hover {
-            color: #007bff;
-        }
+/* ❌❌❌ УДАЛЕНЫ ВСЕ СТИЛИ ДЛЯ .main-nav, .nav-links, .hamburger-button и т.д. ❌❌❌ */
 
 /*
 =========================================
-    4. Стили для Гамбургер-меню (Мобильные)
-=========================================
-*/
-.hamburger-button {
-    display: none; /* Скрыт по умолчанию на ПК */
-    flex-direction: column;
-    justify-content: space-around;
-    width: 2rem;
-    height: 2rem;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    z-index: 10;
-}
-
-    .hamburger-button span {
-        width: 2rem;
-        height: 0.25rem;
-        background: #333;
-        border-radius: 10px;
-        transition: all 0.3s linear;
-        position: relative;
-        transform-origin: 1px;
-    }
-
-/* Стили для мобильных устройств */
-@media (max-width: 768px) {
-    .nav-links {
-        display: none; /* Прячем ссылки */
-        flex-direction: column;
-        width: 100%;
-        background: #fff;
-        position: absolute;
-        top: 60px; /* Высота вашего navbar */
-        left: 0;
-        padding: 1rem 0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-        /* Когда C# добавляет класс "is-active", показываем меню */
-        .nav-links.is-active {
-            display: flex;
-        }
-
-        .nav-links a {
-            padding: 1rem 1.5rem; /* Делаем ссылки крупнее */
-        }
-
-    .hamburger-button {
-        display: flex; /* Показываем гамбургер-кнопку */
-    }
-}
-
-/*
-=========================================
-    5. Стили для Footer
+    5. Стили для Footer (Остаются здесь)
 =========================================
 */
 .main-footer {
-    background: #343a40; /* Темный фон для футера */
+    /* Оставляем футер темным в обеих темах для контраста */
+    background: #343a40;
     color: #f8f9fa;
     padding: 2rem 1.5rem;
     text-align: center;
