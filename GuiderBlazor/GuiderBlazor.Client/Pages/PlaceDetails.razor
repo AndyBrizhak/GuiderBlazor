@@ -3,7 +3,7 @@
 @using GuiderBlazor.Client.Services
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
-@rendermode InteractiveAuto
+@* @rendermode InteractiveAuto *@
 
 <PageTitle>@(place?.Name ?? "Loading...")</PageTitle>
 
@@ -18,7 +18,8 @@
     else if (place != null)
     {
         <div class="details-header">
-            <button class="btn-back" @onclick="GoBack">← Back to list</button>
+            @* <button class="btn-back" @onclick="GoBack">← Back to list</button> *@
+            <a href="/" class="btn-back">← Back to list</a>
             <h1>@place.Name</h1>
             <span class="category-badge">@place.Category</span>
         </div>
