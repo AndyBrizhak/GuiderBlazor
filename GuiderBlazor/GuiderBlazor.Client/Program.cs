@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using GuiderBlazor.Client.Services;
+using GuiderBlazor.Shared.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

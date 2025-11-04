@@ -1,7 +1,7 @@
 ﻿using GuiderBlazor.Shared.Models;
 
 
-namespace GuiderBlazor.Client.Services
+namespace GuiderBlazor.Shared.Services
 {
     public interface IPlacesService
     {

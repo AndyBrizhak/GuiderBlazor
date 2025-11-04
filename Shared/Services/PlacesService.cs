@@ -1,7 +1,7 @@
 ﻿using GuiderBlazor.Shared.Models;
 using System.Net.Http.Json;
 
-namespace GuiderBlazor.Client.Services;
+namespace GuiderBlazor.Shared.Services;
 
 public class PlacesService : IPlacesService
 {

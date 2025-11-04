@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="GuiderBlazor.styles.css" />
     <HeadOutlet />
+
+    <script>
+        (function() {
+            // Эта логика (из theme.js) должна выполниться ДО отрисовки <body>
+            // чтобы применить тему из localStorage и избежать "вспышки".
+            var theme = localStorage.getItem('theme') || 'light-theme';
+            document.documentElement.className = theme;
+        })();
+    </script>
 </head>
 
 <body>
@@ -15,7 +24,8 @@
     <script src="_framework/blazor.web.js"></script>
 
     <script src="js/theme.js"></script>
-    <script>loadTheme();</script>
+
+    @* <script>loadTheme();</script> *@
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 using GuiderBlazor.Components;
-using GuiderBlazor.Client.Services;
+using GuiderBlazor.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
