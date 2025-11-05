@@ -1,7 +1,9 @@
 ﻿@inherits LayoutComponentBase
+@inject IHttpContextAccessor HttpContextAccessor
+
 <div class="page-container">
 
-    <NavBar />
+    <NavBar IsDarkModeInitial="isDarkMode" />
 
     <main>
         @Body
@@ -25,3 +27,14 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool isDarkMode = false; // 3. Локальная переменная
+
+    protected override void OnInitialized()
+    {
+        // 4. Читаем cookie на сервере ДО рендеринга
+        var themeCookie = HttpContextAccessor.HttpContext?.Request.Cookies["theme"];
+        isDarkMode = (themeCookie == "dark-theme");
+    }
+}

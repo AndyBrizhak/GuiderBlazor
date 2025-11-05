@@ -7,12 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("https://api.guider.pro/")
 });
 builder.Services.AddScoped<IPlacesService, PlacesService>();
+
+
 
 var app = builder.Build();
 

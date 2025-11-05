@@ -11,10 +11,10 @@
 
     <script>
         (function() {
-            // Эта логика (из theme.js) должна выполниться ДО отрисовки <body>
-            // чтобы применить тему из localStorage и избежать "вспышки".
             var theme = localStorage.getItem('theme') || 'light-theme';
             document.documentElement.className = theme;
+            // ⬇️ ДОБАВЬТЕ ЭТУ СТРОКУ:
+            document.cookie = `theme=${theme};path=/;max-age=31536000`;
         })();
     </script>
 </head>

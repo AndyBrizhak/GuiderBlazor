@@ -1,39 +1,24 @@
-﻿@rendermode InteractiveAuto 
+﻿@rendermode InteractiveServer
 @inject IJSRuntime JSRuntime 
+
 
 <nav class="main-nav">
     <a href="/" class="nav-brand">Guider.pro</a>
 
-    <div class="nav-links @(isNavMenuOpen ? "is-active" : "")">
-        <a href="/">Home</a>
-        <a href="/category/adventures">Adventures</a>
-        <a href="/category/to-eat">Food & Drinks</a>
-        <a href="/category/services">Services</a>
-    </div>
-
-    <div class="nav-actions">
-        
-        <button class="theme-toggle" @onclick="ToggleTheme">
-            @if (isDarkMode)
-            {
-                <span class="icon">☀️</span> 
-            }
-            else
-            {
-                <span class="icon">🌙</span> 
-            }
-        </button>
-
-        <button class="hamburger-button" @onclick="ToggleNavMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </div>
+    <button class="theme-toggle" @onclick="ToggleTheme">
+        @if (isDarkMode)
+        {
+            <span class="icon">☀️</span>
+        }
+        else
+        {
+            <span class="icon">🌙</span>
+        }
+    </button>
 </nav>
 
 @code {
-    // 1. Логика гамбургера
+    // Логика гамбургера
     private bool isNavMenuOpen = false;
 
     private void ToggleNavMenu()
@@ -41,22 +26,28 @@
         isNavMenuOpen = !isNavMenuOpen;
     }
 
-    // 2. Логика для темной темы
-    private bool isDarkMode = false; 
+    private bool isDarkMode; // 1. Внутреннее состояние
+    private bool hasBeenInitialized = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    // 2. Параметр, получаемый от MainLayout
+    [Parameter]
+    public bool IsDarkModeInitial { get; set; }
+
+    protected override void OnParametersSet()
     {
-        if (firstRender)
+        // 3. Устанавливаем начальное состояние ТОЛЬКО ОДИН РАЗ
+        //    (После этого компонент живет своей жизнью)
+        if (!hasBeenInitialized)
         {
-            isDarkMode = await JSRuntime.InvokeAsync<bool>("loadTheme");
-            StateHasChanged(); 
+            isDarkMode = IsDarkModeInitial;
+            hasBeenInitialized = true;
         }
     }
 
     private async Task ToggleTheme()
     {
         isDarkMode = !isDarkMode;
-        var theme = isDarkMode ? "dark-theme" : "light-theme";
-        await JSRuntime.InvokeVoidAsync("applyTheme", theme);
+        await JSRuntime.InvokeVoidAsync("applyTheme", isDarkMode ? "dark-theme" : "light-theme");
     }
+    
 }
