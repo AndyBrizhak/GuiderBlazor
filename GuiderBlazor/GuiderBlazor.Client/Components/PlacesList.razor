@@ -1,7 +1,8 @@
 ﻿@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
 @inject IPlacesService PlacesService
-@rendermode InteractiveAuto
+@* @rendermode InteractiveAuto *@
+@rendermode InteractiveServer
 
 <div class="places-list-container">
     <PlacesFilter OnFilterChanged="HandleFilterChanged" />
