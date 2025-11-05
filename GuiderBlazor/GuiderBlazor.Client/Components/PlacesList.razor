@@ -79,7 +79,10 @@
 
 @code {
     private PlacesResponse? placesResponse;
-    private PlaceFilterParams currentFilters = new();
+    private PlaceFilterParams currentFilters = new()
+    {
+        PerPage = 6 // ⬅️ Устанавливаем 6 карточек по умолчанию
+    };
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()

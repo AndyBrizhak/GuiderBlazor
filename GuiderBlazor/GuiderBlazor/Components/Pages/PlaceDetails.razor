@@ -1,12 +1,7 @@
 ﻿@page "/place/{id}"
-
-
-
 @using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
-
 @attribute [StreamRendering]
-
 @inject IPlacesService PlacesService
 
 
@@ -131,28 +126,28 @@
     private Place? place;
     private bool isLoading = true;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadPlace();
-    }
-
+    // 🏆 Оставляем ТОЛЬКО OnParametersSetAsync для загрузки с параметром.
     protected override async Task OnParametersSetAsync()
     {
-        if (!string.IsNullOrEmpty(Id))
+        // Убедимся, что ID не пустой
+        if (string.IsNullOrEmpty(Id))
         {
-            await LoadPlace();
+            isLoading = false;
+            place = null;
+            return;
         }
-    }
 
-    private async Task LoadPlace()
-    {
+        // 1. Устанавливаем флаг, чтобы показать спиннер
         isLoading = true;
-        // Этот вызов будет выполнен на сервере до отправки HTML
+
+        // 2. Выполняем загрузку данных ОДИН РАЗ
         place = await PlacesService.GetPlaceByIdAsync(Id);
+
+        // 3. Загрузка завершена
         isLoading = false;
     }
 
-    
+    // P.S. Все остальные методы (OnInitializedAsync и LoadPlace) удалены.
 }
 
 
