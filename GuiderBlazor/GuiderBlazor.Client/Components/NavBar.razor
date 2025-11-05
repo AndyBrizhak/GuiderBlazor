@@ -34,7 +34,7 @@
 </nav>
 
 @code {
-    // 1. Логика гамбургера (она у вас уже была и работала)
+    // 1. Логика гамбургера
     private bool isNavMenuOpen = false;
 
     private void ToggleNavMenu()
@@ -42,25 +42,55 @@
         isNavMenuOpen = !isNavMenuOpen;
     }
 
-    // 2. Логика темы (остается без изменений)
+    // 2. Логика темы
     private bool isDarkMode;
-    private bool hasBeenInitialized = false;
+
+    // ⬇️ 1. НУЖНО: Отслеживать предыдущее состояние
+    private bool _previousIsDarkModeInitial;
 
     [Parameter]
     public bool IsDarkModeInitial { get; set; }
 
+    protected override void OnInitialized()
+    {
+        // ⬇️ 2. НУЖНО: Установить начальное состояние для C#
+        isDarkMode = IsDarkModeInitial;
+        _previousIsDarkModeInitial = IsDarkModeInitial;
+    }
+
     protected override void OnParametersSet()
     {
-        if (!hasBeenInitialized)
+        // ⬇️ 3. НУЖНО: Обновлять C#-состояние при каждой навигации
+        // (Это обновит иконку ☀️/🌙)
+        isDarkMode = IsDarkModeInitial;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // ⬇️ 4. ГЛАВНОЕ ИСПРАВЛЕНИЕ:
+        // Запускаем JS-синхронизацию, если:
+        // (a) Это первая загрузка приложения
+        // (b) ИЛИ если параметр от MainLayout изменился (т.е. произошла навигация)
+
+        bool parameterChanged = _previousIsDarkModeInitial != IsDarkModeInitial;
+
+        if (firstRender || parameterChanged)
         {
-            isDarkMode = IsDarkModeInitial;
-            hasBeenInitialized = true;
+            var theme = isDarkMode ? "dark-theme" : "light-theme";
+            await JSRuntime.InvokeVoidAsync("applyTheme", theme);
+
+            // Обновляем наш "трекер"
+            _previousIsDarkModeInitial = IsDarkModeInitial;
         }
     }
 
     private async Task ToggleTheme()
     {
         isDarkMode = !isDarkMode;
+
+        // ⬇️ 5. НУЖНО: Обновить "трекер" при клике
+        _previousIsDarkModeInitial = isDarkMode;
+
         await JSRuntime.InvokeVoidAsync("applyTheme", isDarkMode ? "dark-theme" : "light-theme");
     }
 }
