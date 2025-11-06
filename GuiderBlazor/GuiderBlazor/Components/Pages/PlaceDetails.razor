@@ -32,7 +32,7 @@
             }
         </div>
 
-        @if (place.ImgLink?.Any() == true)
+     @*    @if (place.ImgLink?.Any() == true)
         {
             <div class="image-gallery">
                 @if (place.ImgLink.Count == 1)
@@ -48,6 +48,39 @@
                         }
                     </div>
                 }
+            </div>
+        } *@
+
+        @if (place.ImgLink?.Any() == true)
+        {
+            @* (A) Контейнер, который будет прокручиваться *@
+            <div class="horizontal-scroll-container"
+                 aria-label="Image Gallery"
+                 role="region">
+
+                @* (B) "Трек", который содержит все элементы *@
+                <ul class="scroll-track">
+                    @foreach (var img in place.ImgLink)
+                    {
+                        @* (C) Каждый элемент списка - это ссылка-картинка *@
+                        <li class="scroll-item">
+                            @*
+                               - href="@img" : Ссылка ведет на само изображение (отлично для SEO).
+                               - target="_blank" : Открывает в новой вкладке.
+                               - itemprop="image" : Сообщает Google, что это изображение
+                                                    принадлежит этому LocalBusiness.
+                            *@
+                            <a href="@img"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               aria-label="View full-size image"
+                               itemprop="image">
+
+                                <img src="@img" alt="@($"Image of {place.Name}")" />
+                            </a>
+                        </li>
+                    }
+                </ul>
             </div>
         }
 
