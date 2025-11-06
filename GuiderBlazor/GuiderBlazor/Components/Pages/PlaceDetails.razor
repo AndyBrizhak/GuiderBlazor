@@ -4,10 +4,12 @@
 @attribute [StreamRendering]
 @inject IPlacesService PlacesService
 
-
 <PageTitle>@(place?.Name ?? "Loading...")</PageTitle>
 
-<div class="place-details-container">
+@* Используем <article> с семантическими атрибутами schema.org
+  для улучшения локального SEO (LocalBusiness).
+*@
+<article class="place-details-container" itemscope itemtype="http://schema.org/LocalBusiness">
     @if (isLoading)
     {
         <div class="loading">
@@ -18,10 +20,16 @@
     else if (place != null)
     {
         <div class="details-header">
-            <a href="/" class="btn-back">← Back to list</a>
+            @* itemprop="name" указывает поисковику, 
+              что это название компании.
+            *@
+            <h1 itemprop="name">@place.Name</h1>
 
-            <h1>@place.Name</h1>
-            <span class="category-badge">@place.Category</span>
+            @if (place.Address != null && !string.IsNullOrEmpty(place.Address.City))
+            {
+                @* itemprop="addressLocality" - это город *@
+                <span class="place-city" itemprop="addressLocality">@place.Address.City</span>
+            }
         </div>
 
         @if (place.ImgLink?.Any() == true)
@@ -29,14 +37,14 @@
             <div class="image-gallery">
                 @if (place.ImgLink.Count == 1)
                 {
-                    <img src="@place.ImgLink[0]" alt="@place.Name" class="single-image" />
+                    <img src="@place.ImgLink[0]" alt="@place.Name" class="single-image" itemprop="image" />
                 }
                 else
                 {
                     <div class="gallery-grid">
                         @foreach (var img in place.ImgLink.Take(6))
                         {
-                            <img src="@img" alt="@place.Name" />
+                            <img src="@img" alt="@place.Name" itemprop="image" />
                         }
                     </div>
                 }
@@ -44,68 +52,143 @@
         }
 
         <div class="details-content">
+            @* Используем <section> для основного контента 
+              и <aside> для боковой панели (контакты, часы).
+            *@
+            <section class="main-info">
 
-            @if (!string.IsNullOrEmpty(place.Description))
-            {
-                <div class="info-section">
-                    <h2>Description</h2>
-                    <div class="description">@((MarkupString)place.Description)</div>
-                </div>
-            }
-
-            <div class="info-section">
-                <h2>Info</h2>
-                @if (place.Address != null)
+                @* Заголовок "Description" удален *@
+                @if (!string.IsNullOrEmpty(place.Description))
                 {
-                    // 1. Собираем адрес из существующих полей, которые не пустые
-                    var addressParts = new List<string>();
-                    if (!string.IsNullOrEmpty(place.Address.Street)) { addressParts.Add(place.Address.Street); }
-                    if (!string.IsNullOrEmpty(place.Address.City)) { addressParts.Add(place.Address.City); }
-                    if (!string.IsNullOrEmpty(place.Address.Province)) { addressParts.Add(place.Address.Province); }
-                    if (!string.IsNullOrEmpty(place.Address.Country)) { addressParts.Add(place.Address.Country); } // ⬅️ ИСПРАВЛЕНО
+                    <div class="info-section" itemprop="description">
+                        @* Используем (MarkupString) для корректного 
+                          отображения <br /> из описания.
+                        *@
+                        <p>@((MarkupString)place.Description.Replace("\n", "<br />"))</p>
+                    </div>
+                }
 
-                    // 2. Показываем блок, только если есть хотя бы одна часть адреса
-                    if (addressParts.Any())
+                @* Заголовок "Tags" удален *@
+                @if (place.Tags?.Any() == true)
+                {
+                    <div class="tags-container">
+                        @foreach (var tag in place.Tags)
+                        {
+                            <span class="tag" itemprop="keywords">@tag</span>
+                        }
+                    </div>
+                }
+            </section>
+
+            <aside class="sidebar-info">
+
+                @* Заголовок "Information" удален. *@
+                <div class="info-section">
+
+                    @* 1. Адрес (с семантикой PostalAddress) *@
+                    @if (place.Address != null)
                     {
-                        <div class="info-item">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                            <div>
-                                <strong>Address:</strong><br />
-                                @string.Join(", ", addressParts)
-                            </div>
+                        <div class="info-item" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                            <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <span>
+                                @if (!string.IsNullOrEmpty(place.Address.Street))
+                                {
+                                    <span itemprop="streetAddress">@place.Address.Street</span>
+                        
+                                    <br />
+                                }
+                                <span itemprop="addressLocality">@place.Address.City</span>,
+                                <span itemprop="addressRegion">@place.Address.Province</span><br />
+                                <span itemprop="addressCountry">@place.Address.Country</span>
+                            </span>
                         </div>
                     }
-                }
-                @if (!string.IsNullOrEmpty(place.Phone?.Callable))
-                {
-                    <div class="info-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                        </svg>
-                        <div>
-                            <strong>Phone:</strong><br />
-                            <a href="tel:+@place.Phone.Callable">+@place.Phone.Callable</a>
+
+                    @* 2. Ссылка на Google Maps (заменяет старый блок "Location") *@
+                    @* @if (place.Address?.Location != null && place.Address.Location.Coordinates?.Count == 2)
+                    {
+                        <div class="info-item">
+                            <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            <a href="@($"https://www.google.com/maps?q={place.Address.Location.Coordinates[1]},{place.Address.Location.Coordinates[0]}")"
+                               target="_blank" rel="noopener noreferrer">
+                                Open in Google Maps
+                            </a>
                         </div>
+                    }
+
+                    
+                    @if (place.Phone?.Phones?.Any() == true)
+                    {
+                        foreach (var phone in place.Phone.Phones.Where(p => !string.IsNullOrEmpty(p)))
+                        {
+                            <div class="info-item">
+                                <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                <a href="@($"tel:{phone}")" itemprop="telephone">@phone</a>
+                            </div>
+                        }
+                    } *@
+
+                    @* 4. ИСПРАВЛЕНО: Кликабельные ссылки WhatsApp (из 'Whatsapp') *@
+                    @* @if (place.Phone?.Whatsapp?.Any() == true)
+                    {
+                        foreach (var wa in place.Phone.Whatsapp.Where(w => !string.IsNullOrEmpty(w)))
+                        {
+                            <div class="info-item">
+                                <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                <a href="@($"https://wa.me/{wa}")" target="_blank" rel="noopener noreferrer">
+                                    Chat on WhatsApp
+                                </a>
+                            </div>
+                        }
+                    } *@
+
+                    
+                    @* 6. Ссылки на соцсети (ВКЛЮЧАЯ Telegram) *@
+                    @if (place.SocialNetwork != null)
+                    {
+                        if (!string.IsNullOrEmpty(place.SocialNetwork.Facebook))
+                        {
+                            <div class="info-item">
+                                <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                                <a href="@place.SocialNetwork.Facebook" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Facebook</a>
+                            </div>
+                        }
+                        if (!string.IsNullOrEmpty(place.SocialNetwork.Instagram))
+                        {
+                            <div class="info-item">
+                                <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                                <a href="@place.SocialNetwork.Instagram" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Instagram</a>
+                            </div>
+                        }
+                        @* Свойство 'Telegram' существует в вашей модели SocialNetwork *@
+                        @* @if (!string.IsNullOrEmpty(place.SocialNetwork.Telegram))
+                        {
+                            <div class="info-item">
+                                <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13 2 9l20-7-9 11zM22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+                                <a href="@place.SocialNetwork.Telegram" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Telegram</a>
+                            </div>
+                        } *@
+                    }
+                </div>
+
+                @* 7. График работы (Свойство 'Schedule' существует в Address) *@
+                @* @if (place.Address?.Schedule?.Any() == true)
+                {
+                    <div class="info-section">
+                        <h2>Opening Hours</h2>
+                        <ul class="schedule-list">
+                            @foreach (var entry in place.Address.Schedule)
+                            {
+                                <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
+                                    <span class="day" itemprop="dayOfWeek">@entry.Day</span>
+                                    <span class="time" itemprop="opens">@entry.Time</span>
+                                </li>
+                            }
+                        </ul>
                     </div>
                 }
-
-            </div>
-
-            @if (place.Location?.Coordinates?.Any() == true)
-            {
-                <div class="info-section">
-                    <h2>Location</h2>
-                    <div class="map-placeholder">
-                        <p>Coordinates: @place.Location.Coordinates[1], @place.Location.Coordinates[0]</p>
-                        <a href="https://www.google.com/maps?q=@place.Location.Coordinates[1],@place.Location.Coordinates[0]" target="_blank" class="btn-map">
-                            Open in Google Maps
-                        </a>
-                    </div>
-                </div>
-            }
+ *@
+            </aside>
         </div>
     }
     else
@@ -113,11 +196,10 @@
         <div class="error-message">
             <h2>Place not found</h2>
             <p>Unfortunately, information about this place is not available.</p>
-                      
             <a href="/" class="btn-back">← Back to list</a>
         </div>
     }
-</div>
+</article>
 
 @code {
     [Parameter]
@@ -143,11 +225,9 @@
         // 2. Выполняем загрузку данных ОДИН РАЗ
         place = await PlacesService.GetPlaceByIdAsync(Id);
 
-        // 3. Загрузка завершена
+        // 3. Снимаем флаг, чтобы показать контент
         isLoading = false;
     }
-
-    // P.S. Все остальные методы (OnInitializedAsync и LoadPlace) удалены.
 }
 
 
