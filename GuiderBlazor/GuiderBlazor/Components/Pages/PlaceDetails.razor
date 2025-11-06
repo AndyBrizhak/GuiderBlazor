@@ -82,15 +82,19 @@
 
             <aside class="sidebar-info">
 
-                @* Заголовок "Information" удален. *@
+                
                 <div class="info-section">
 
                     @* 1. Адрес (с семантикой PostalAddress) *@
                     @if (place.Address != null)
                     {
                         <div class="info-item" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                            <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            <span>
+                            <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"></path>
+                                <line x1="8" y1="2" x2="8" y2="18"></line>
+                                <line x1="16" y1="6" x2="16" y2="22"></line>
+                            </svg>
+                           @*  <span>
                                 @if (!string.IsNullOrEmpty(place.Address.Street))
                                 {
                                     <span itemprop="streetAddress">@place.Address.Street</span>
@@ -100,7 +104,52 @@
                                 <span itemprop="addressLocality">@place.Address.City</span>,
                                 <span itemprop="addressRegion">@place.Address.Province</span><br />
                                 <span itemprop="addressCountry">@place.Address.Country</span>
-                            </span>
+                            </span> *@
+                            <div class="address-details">
+                                @* 1. Улица (Street) *@
+                                @if (!string.IsNullOrEmpty(place.Address.Street))
+                                {
+                                    <span itemprop="streetAddress">@place.Address.Street</span>
+                                    <br />
+                                }
+
+                                @{
+                                    // Этот флаг нужен, чтобы решить, ставить ли запятую
+                                    // между городом и провинцией.
+                                    bool cityWasRendered = false;
+                                }
+
+                                @* 2. Город (City) *@
+                                @if (!string.IsNullOrEmpty(place.Address.City))
+                                {
+                                    <span itemprop="addressLocality">@place.Address.City</span>
+                                    cityWasRendered = true;
+                                }
+
+                                @* 3. Провинция (Province) *@
+                                @if (!string.IsNullOrEmpty(place.Address.Province))
+                                {
+                                    // Добавляем запятую, только если перед этим был город
+                                    if (cityWasRendered)
+                                    {
+                                        @:,
+                                    }
+                                    <span itemprop="addressRegion">@place.Address.Province</span>
+                                }
+
+                                @* 4. Перенос строки (BR) *@
+                                @* Добавляем <br>, только если был Город ИЛИ Провинция *@
+                                @if (cityWasRendered || !string.IsNullOrEmpty(place.Address.Province))
+                                {
+                                    <br />
+                                }
+
+                                @* 5. Страна (Country) *@
+                                @if (!string.IsNullOrEmpty(place.Address.Country))
+                                {
+                                    <span itemprop="addressCountry">@place.Address.Country</span>
+                                }
+                            </div>
                         </div>
                     }
 
@@ -174,14 +223,7 @@
                                 <a href="@place.SocialNetwork.Instagram" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Instagram</a>
                             </div>
                         }
-                        @* Свойство 'Telegram' существует в вашей модели SocialNetwork *@
-                        @* @if (!string.IsNullOrEmpty(place.SocialNetwork.Telegram))
-                        {
-                            <div class="info-item">
-                                <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13 2 9l20-7-9 11zM22 2l-7 20-4-9-9-4 20-7z"></path></svg>
-                                <a href="@place.SocialNetwork.Telegram" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Telegram</a>
-                            </div>
-                        } *@
+                        
                     }
                 </div>
 
