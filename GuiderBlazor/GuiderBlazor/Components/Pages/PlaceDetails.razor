@@ -227,23 +227,43 @@
                     }
                 </div>
 
-                @* 7. График работы (Свойство 'Schedule' существует в Address) *@
-                @* @if (place.Address?.Schedule?.Any() == true)
+                @* 7. График работы (ИСПРАВЛЕНО) *@
+                @if (place.Schedule?.Any() == true)
                 {
                     <div class="info-section">
-                        <h2>Opening Hours</h2>
+                        @* <h2>Opening Hours</h2> *@
                         <ul class="schedule-list">
-                            @foreach (var entry in place.Address.Schedule)
+
+                            @* Цикл по List<ScheduleEntry>. 
+                                'entry' - это один ScheduleEntry.
+                            *@
+                            @foreach (var entry in place.Schedule.Where(s => s.Days.Any() && s.Hours.Any()))
                             {
+                                // 1. Объединяем список дней (Days) в одну строку.
+                                //    Например: ["Monday", "Tuesday"] -> "Monday, Tuesday"
+                                var daysDisplay = string.Join(", ", entry.Days);
+
+                                // 2. Объединяем список часов (Hours) в одну строку.
+                                //    Используем Linq .Select() для преобразования каждого HoursEntry
+                                //    в строку "Start - End".
+                                //    Например: [{S:"09:00", E:"12:00"}, {S:"13:00", E:"17:00"}] -> "09:00 - 12:00, 13:00 - 17:00"
+                                var hoursDisplay = string.Join(", ",
+                                entry.Hours.Select(h => $"{h.Start} - {h.End}")
+                                );
+
                                 <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
-                                    <span class="day" itemprop="dayOfWeek">@entry.Day</span>
-                                    <span class="time" itemprop="opens">@entry.Time</span>
+
+                                    @* Выводим объединенные дни *@
+                                    <span class="day" itemprop="dayOfWeek">@daysDisplay</span>
+
+                                    @* Выводим объединенные часы *@
+                                    <span class="time" itemprop="opens">@hoursDisplay</span>
                                 </li>
                             }
                         </ul>
                     </div>
                 }
- *@
+                
             </aside>
         </div>
     }
