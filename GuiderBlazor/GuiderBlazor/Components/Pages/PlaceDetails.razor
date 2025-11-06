@@ -104,19 +104,30 @@
                         </div>
                     }
 
-                    @* 2. Ссылка на Google Maps (заменяет старый блок "Location") *@
-                    @* @if (place.Address?.Location != null && place.Address.Location.Coordinates?.Count == 2)
+                    @if (place.Location != null && place.Location.Coordinates?.Count == 2)
                     {
                         <div class="info-item">
-                            <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            <a href="@($"https://www.google.com/maps?q={place.Address.Location.Coordinates[1]},{place.Address.Location.Coordinates[0]}")"
-                               target="_blank" rel="noopener noreferrer">
+                            <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                                                        
+                            @{
+                                // Предполагаем, что Координаты [1] - это Широта (Latitude)
+                                // Координаты [0] - это Долгота (Longitude)
+                                // InvariantCulture гарантирует, что 10.5 не станет "10,5"
+                                var latitude = place.Location.Coordinates[1].ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                var longitude = place.Location.Coordinates[0].ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                var mapUrl = $"https://www.google.com/maps?q={latitude},{longitude}";
+                            }
+                            <a href="@mapUrl" target="_blank" rel="noopener noreferrer">
                                 Open in Google Maps
                             </a>
                         </div>
                     }
 
                     
+                    @* 
                     @if (place.Phone?.Phones?.Any() == true)
                     {
                         foreach (var phone in place.Phone.Phones.Where(p => !string.IsNullOrEmpty(p)))
