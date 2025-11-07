@@ -14,10 +14,6 @@ This project leverages Blazor's Static Server-Side Rendering (SSR) and Stream Re
 - **Responsive Design**: Mobile-first CSS ensures the catalog is usable on all devices, with a "hamburger" menu for navigation.
 - **Shared Logic**: The `GuiderBlazor.Shared` project ensures that models and services are shared between the server (SSR) and client (interactive) projects, reducing code duplication.
 
-## 🗺️ Project Structure
-
-/ ├── GuiderBlazor/ # Main Server Project (SSR, Startup) │ ├── Components/ │ │ ├── App.razor # Root component, hosts <head> │ │ ├── Layout/ │ │ │ ├── MainLayout.razor # Main site layout (static) │ │ │ └── NavBar.razor # Top navigation (interactive) │ │ └── Pages/ │ │ ├── Home.razor # Home page (static, hosts PlacesList) │ │ ├── PlaceDetails.razor # Business detail page (SSR + Stream Rendering) │ │ └── Error.razor │ ├── wwwroot/ │ │ ├── app.css # Main stylesheet with CSS variables │ │ └── js/ │ │ └── theme.js # JS Interop for theme management │ ├── Program.cs # App startup, service registration │ └── GuiderBlazor.csproj │ ├── GuiderBlazor.Client/ # Client Project (Interactive Components) │ ├── Components/ │ │ ├── PlacesFilter.razor # Interactive filter UI │ │ ├── PlacesList.razor # Interactive list + pagination │ │ └── PlaceCard.razor # Static card component │ └── \_Imports.razor │ └── GuiderBlazor.Shared/ # Shared Project ├── Models/ │ ├── Place.cs # Main business model │ └── PlaceFilterParams.cs # Filter model └── Services/ ├── IPlacesService.cs # Service interface └── PlacesService.cs # Service implementation (HttpClient)
-
 ## 🚀 Tech Stack
 
 - **.NET 8**
