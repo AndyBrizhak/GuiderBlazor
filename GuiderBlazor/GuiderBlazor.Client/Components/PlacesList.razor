@@ -1,11 +1,16 @@
 ﻿@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
 @inject IPlacesService PlacesService
-@* @rendermode InteractiveAuto *@
-@rendermode InteractiveServer
+@inject NavigationManager Navigation // 1. Подключаем NavigationManager
+
 
 <div class="places-list-container">
-    <PlacesFilter OnFilterChanged="HandleFilterChanged" />
+
+    @* Шаг 1 (ВЫ СДЕЛАЛИ): Мы передаем 'currentFilters' ВНУТРЬ компонента PlacesFilter,
+      чтобы он мог отобразить текущее состояние из URL.
+    *@
+    <PlacesFilter CurrentFilters="currentFilters"
+                  OnFilterChanged="HandleFilterChanged" />
 
     @if (isLoading)
     {
@@ -28,124 +33,147 @@
                 Showing @placesResponse.Places.Count of @placesResponse.TotalCount results
                 (Page @placesResponse.Page of @placesResponse.TotalPages)
             </div>
-            
+
             <div class="pagination-controls">
-                <button class="btn-page" 
-                        @onclick="FirstPage" 
+                @* 7. ИЗМЕНЕНО: Пагинация теперь вызывает 'ChangePage' *@
+                <button class="btn-page"
+                        @onclick="() => ChangePage(1)"
                         disabled="@(currentFilters.Page == 1)">
                     First
                 </button>
-                
-                <button class="btn-page" 
-                        @onclick="PreviousPage" 
+
+                <button class="btn-page"
+                        @onclick="() => ChangePage(currentFilters.Page - 1)"
                         disabled="@(currentFilters.Page == 1)">
                     ← Previous
                 </button>
-                
-                <span class="page-numbers">
-                    @for (int i = Math.Max(1, currentFilters.Page - 2); 
-                          i <= Math.Min(placesResponse.TotalPages, currentFilters.Page + 2); 
-                          i++)
-                    {
-                        var pageNum = i;
-                        <button class="btn-page-num @(pageNum == currentFilters.Page ? "active" : "")" 
-                                @onclick="() => GoToPage(pageNum)">
-                            @pageNum
-                        </button>
-                    }
-                </span>
-                
-                <button class="btn-page" 
-                        @onclick="NextPage" 
+
+                <button class="btn-page"
+                        @onclick="() => ChangePage(currentFilters.Page + 1)"
                         disabled="@(currentFilters.Page >= placesResponse.TotalPages)">
                     Next →
                 </button>
-                
-                <button class="btn-page" 
-                        @onclick="LastPage" 
+
+                <button class="btn-page"
+                        @onclick="() => ChangePage(placesResponse.TotalPages)"
                         disabled="@(currentFilters.Page >= placesResponse.TotalPages)">
                     Last
                 </button>
             </div>
         </div>
     }
-    else if (!isLoading)
+    else
     {
         <div class="no-results">
-            <h3>No results found</h3>
-            <p>Try changing your filter criteria</p>
+            <h2>No places found</h2>
+            <p>Try adjusting your filters or search query.</p>
         </div>
     }
 </div>
 
 @code {
+    // 2. Определяем параметры, которые компонент будет читать из URL
+    [SupplyParameterFromQuery]
+    public string? Q { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Category { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Province { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? City { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int Page { get; set; } = 1;
+
+    // Устанавливаем 6 по умолчанию, как в вашем коде
+    [SupplyParameterFromQuery]
+    public int PerPage { get; set; } = 6;
+
     private PlacesResponse? placesResponse;
-    private PlaceFilterParams currentFilters = new()
-    {
-        PerPage = 6 // ⬅️ Устанавливаем 6 карточек по умолчанию
-    };
+    private PlaceFilterParams currentFilters = new(); // Этот объект будет "состоянием"
     private bool isLoading = true;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadPlaces();
-    }
 
-    private async Task HandleFilterChanged(PlaceFilterParams filters)
-    {
-        currentFilters = filters;
-        await LoadPlaces();
-    }
-
-    private async Task LoadPlaces()
+    // 3. ИЗМЕНЕНО: OnParametersSetAsync ВМЕСТО OnInitializedAsync
+    // Этот метод будет вызываться КАЖДЫЙ РАЗ, когда параметры URL меняются
+    protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
-        StateHasChanged();
-        
+
+        // 4. Собираем 'currentFilters' из параметров URL
+        currentFilters = new PlaceFilterParams
+        {
+            Q = this.Q,
+            Category = this.Category,
+            Province = this.Province,
+            City = this.City,
+            Page = this.Page,
+            PerPage = this.PerPage
+        };
+
+        // 5. Загружаем данные на основе фильтров из URL
         placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
-        
         isLoading = false;
-        StateHasChanged();
+
+        // StateHasChanged() не нужен, т.к. OnParametersSetAsync сам вызывает перерисовку.
     }
 
-    private async Task FirstPage()
+    // 6. ИЗМЕНЕНО: HandleFilterChanged ТЕПЕРЬ МЕНЯЕТ URL
+    private void HandleFilterChanged(PlaceFilterParams newFilters)
     {
-        currentFilters.Page = 1;
-        await LoadPlaces();
+        // Мы не вызываем LoadPlaces(). Мы меняем URL.
+        // Смена URL вызовет OnParametersSetAsync, который загрузит данные.
+        Navigation.NavigateTo(GetQueryString(newFilters));
     }
 
-    private async Task PreviousPage()
+    // 7. ИЗМЕНЕНО: Пагинация ТЕПЕРЬ МЕНЯЕТ URL
+    private void ChangePage(int newPage)
     {
-        if (currentFilters.Page > 1)
+        if (newPage < 1) newPage = 1;
+        if (placesResponse != null && newPage > placesResponse.TotalPages)
         {
-            currentFilters.Page--;
-            await LoadPlaces();
+            newPage = placesResponse.TotalPages;
         }
+
+        currentFilters.Page = newPage;
+        Navigation.NavigateTo(GetQueryString(currentFilters));
     }
 
-    private async Task NextPage()
+    // 8. Вспомогательный метод для построения URL (Query String)
+    private string GetQueryString(PlaceFilterParams filters)
     {
-        if (placesResponse != null && currentFilters.Page < placesResponse.TotalPages)
-        {
-            currentFilters.Page++;
-            await LoadPlaces();
-        }
-    }
+        var queryParams = new Dictionary<string, object?>();
 
-    private async Task LastPage()
-    {
-        if (placesResponse != null)
-        {
-            currentFilters.Page = placesResponse.TotalPages;
-            await LoadPlaces();
-        }
-    }
+        // Добавляем только те параметры, которые имеют значение
+        if (!string.IsNullOrEmpty(filters.Q))
+            queryParams["Q"] = filters.Q;
 
-    private async Task GoToPage(int pageNumber)
-    {
-        currentFilters.Page = pageNumber;
-        await LoadPlaces();
+        if (!string.IsNullOrEmpty(filters.Category))
+            queryParams["Category"] = filters.Category;
+
+        if (!string.IsNullOrEmpty(filters.Province))
+            queryParams["Province"] = filters.Province;
+
+        if (!string.IsNullOrEmpty(filters.City))
+            queryParams["City"] = filters.City;
+
+        if (filters.Page > 1)
+            queryParams["Page"] = filters.Page;
+
+        if (filters.PerPage != 6) // 6 - наше значение по умолчанию
+            queryParams["PerPage"] = filters.PerPage;
+
+        // (добавьте сюда Tags, Lat/Lon и т.д., если они тоже должны быть в URL)
+
+        var queryString = string.Join("&", queryParams
+            .Where(kvp => kvp.Value != null)
+            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
+
+        // Возвращаем / (главную) или /?Q=search...
+        return string.IsNullOrEmpty(queryString) ? "/" : $"?{queryString}";
     }
 }
-
 

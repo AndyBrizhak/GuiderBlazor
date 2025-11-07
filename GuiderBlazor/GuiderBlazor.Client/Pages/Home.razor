@@ -1,7 +1,6 @@
 ﻿@page "/"
 @using GuiderBlazor.Client.Components
-@* @rendermode InteractiveAuto *@
-@attribute [StreamRendering]
+@rendermode InteractiveServer
 
 <PageTitle>Guider - Business Catalog</PageTitle>
 
@@ -11,6 +10,7 @@
         <p>Local Business & Services Catalog</p>
     </div>
 
+    @* ⬇️ ДОБАВЬТЕ РЕЖИМ РЕНДЕРА ЗДЕСЬ *@
     <PlacesList />
 </div>
 

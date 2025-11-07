@@ -1,6 +1,4 @@
 ﻿@using GuiderBlazor.Shared.Models
-@* @rendermode InteractiveAuto *@
-@rendermode InteractiveServer
 
 <div class="filter-container">
     <div class="filter-card">
@@ -16,6 +14,10 @@
         <div class="form-group">
             <label>Category:</label>
             <div class="category-buttons">
+                @* Кнопки категорий (и другие поля) теперь будут
+                   правильно отображать активное состояние, т.к. 'filters'
+                   обновляется в OnParametersSet.
+                 *@
                 <button type="button"
                         class="category-btn all @(filters.Category == "" ? "active" : "")"
                         @onclick='async () => await SetCategory("")'>
@@ -204,18 +206,40 @@
 </div>
 
 @code {
+
+    [Parameter]
+    public PlaceFilterParams CurrentFilters { get; set; } = new();
+
     [Parameter]
     public EventCallback<PlaceFilterParams> OnFilterChanged { get; set; }
 
+    // 'filters' - это ВНУТРЕННЕЕ состояние компонента
     private PlaceFilterParams filters = new();
+
+    // Внутреннее состояние для полей, требующих парсинга
     private string tagsInput = string.Empty;
     private string? latitudeInput;
     private string? longitudeInput;
     private string? distanceInput;
     private string isOpenInput = string.Empty;
 
-    // ➕ НАЧАЛО: C# логика для сворачивания фильтров
+    // C# логика для сворачивания фильтров
     private bool isAdvancedFilterOpen = false; // По умолчанию фильтры скрыты
+
+    // ⬇️ ДОБАВЛЕНО: OnParametersSet
+    // Этот метод синхронизирует 'filters' (внутреннее состояние)
+    // с 'CurrentFilters' (состояние из URL, пришедшее от родителя).
+    protected override void OnParametersSet()
+    {
+        filters = CurrentFilters;
+
+        // Также обновляем UI-поля, которые не привязаны к 'filters' напрямую
+        tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
+        latitudeInput = filters.Latitude?.ToString();
+        longitudeInput = filters.Longitude?.ToString();
+        distanceInput = filters.Distance?.ToString();
+        isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
+    }
 
     private void ToggleAdvancedFilter()
     {
@@ -225,10 +249,8 @@
     private async Task SetCategory(string category)
     {
         filters.Category = category;
-        filters.Page = 1; // Сбрасываем на 1 страницу
-
-        // Немедленно вызываем событие, чтобы PlacesList обновился
-        await OnFilterChanged.InvokeAsync(filters);
+        // При нажатии на категорию сразу применяем фильтр
+        await ApplyFilters();
     }
 
     private async Task ApplyFilters()
@@ -274,12 +296,15 @@
 
     private async Task ResetFilters()
     {
+        // Сбрасываем внутреннее состояние
         filters = new PlaceFilterParams();
         tagsInput = string.Empty;
         latitudeInput = null;
         longitudeInput = null;
         distanceInput = null;
         isOpenInput = string.Empty;
+
+        // Сообщаем родителю, что фильтры сброшены
         await OnFilterChanged.InvokeAsync(filters);
     }
 }
