@@ -2,14 +2,16 @@
 @inject IJSRuntime JSRuntime
 
 <nav class="main-nav">
-    <a href="/" class="nav-brand">Guider.pro</a>
+    <a href="/" class="nav-brand">
+        <img src="/images/logo.svg" alt="Guider.pro Logo" class="nav-logo" />
+    </a>
 
-    <div class="nav-links @(isNavMenuOpen ? "is-active" : "")">
+    @* <div class="nav-links @(isNavMenuOpen ? "is-active" : "")">
         <a href="/">Home</a>
         <a href="/category/adventures">Adventures</a>
         <a href="/category/to-eat">Food & Drinks</a>
         <a href="/category/services">Services</a>
-    </div>
+    </div> *@
 
     <div class="nav-actions">
 

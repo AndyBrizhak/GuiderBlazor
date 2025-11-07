@@ -14,5 +14,8 @@
     <ProjectReference Include="..\GuiderBlazor.Client\GuiderBlazor.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.21" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
 
 </Project>
