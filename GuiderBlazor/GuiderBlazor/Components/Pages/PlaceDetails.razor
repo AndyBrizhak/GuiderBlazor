@@ -1,4 +1,4 @@
-﻿@page "/place/{id}"
+﻿@page "/place/{url}"
 @using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
 @attribute [StreamRendering]
@@ -312,16 +312,14 @@
 
 @code {
     [Parameter]
-    public string Id { get; set; } = string.Empty;
-
+    public string Url { get; set; } = string.Empty;
     private Place? place;
     private bool isLoading = true;
 
-    // 🏆 Оставляем ТОЛЬКО OnParametersSetAsync для загрузки с параметром.
     protected override async Task OnParametersSetAsync()
     {
-        // Убедимся, что ID не пустой
-        if (string.IsNullOrEmpty(Id))
+        
+        if (string.IsNullOrEmpty(Url))
         {
             isLoading = false;
             place = null;
@@ -332,7 +330,7 @@
         isLoading = true;
 
         // 2. Выполняем загрузку данных ОДИН РАЗ
-        place = await PlacesService.GetPlaceByIdAsync(Id);
+        place = await PlacesService.GetPlaceByUrlAsync(Url);
 
         // 3. Снимаем флаг, чтобы показать контент
         isLoading = false;

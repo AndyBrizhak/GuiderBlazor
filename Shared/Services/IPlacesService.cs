@@ -7,5 +7,6 @@ namespace GuiderBlazor.Shared.Services
     {
         Task<PlacesResponse?> GetPlacesAsync(PlaceFilterParams filters);
         Task<Place?> GetPlaceByIdAsync(string id);
+        Task<Place?> GetPlaceByUrlAsync(string url);
     }
 }

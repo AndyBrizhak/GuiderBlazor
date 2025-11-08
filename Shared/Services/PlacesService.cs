@@ -89,6 +89,21 @@ public class PlacesService : IPlacesService
         }
     }
 
+    public async Task<Place?> GetPlaceByUrlAsync(string url)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<Place>($"places/url/{url}");
+            return response;
+        }
+        catch (Exception ex)
+        {
+            // Логгируем ошибку, если место по URL не найдено или API вернул ошибку
+            Console.WriteLine($"Error fetching place by URL ({url}): {ex.Message}");
+            return null; // Возвращаем null, чтобы страница PlaceDetails могла показать "не найдено"
+        }
+    }
+
     private string BuildQueryString(PlaceFilterParams filters)
     {
         var queryParams = new List<string>();

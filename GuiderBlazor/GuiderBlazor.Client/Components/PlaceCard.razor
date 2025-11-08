@@ -1,7 +1,7 @@
 ﻿@using GuiderBlazor.Shared.Models
 @inject NavigationManager Navigation // Этот инжект больше не нужен, но если он используется где-то еще в компоненте, оставьте.
 
-<a href="/place/@Place.Id" class="place-card">
+<a href="/place/@Place.Url" class="place-card">
     <div class="card-image">
         @if (Place.ImgLink?.Any() == true)
         {
