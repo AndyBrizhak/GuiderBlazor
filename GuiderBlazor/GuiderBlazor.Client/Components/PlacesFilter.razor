@@ -1,4 +1,5 @@
 ﻿@using GuiderBlazor.Shared.Models
+@rendermode InteractiveServer
 
 <div class="filter-container">
     <div class="filter-card">
@@ -182,11 +183,11 @@
             <div class="form-group">
                 <label>Results per page:</label>
                 <select class="form-control" @bind="filters.PerPage">
-                    <option value="1">1</option>
+                    <option value="4">4</option>
+                    <option value="8">8</option>
                     <option value="12">12</option>
+                    <option value="16">16</option>
                     <option value="20">20</option>
-                    <option value="24">24</option>
-                    <option value="48">48</option>
                 </select>
             </div>
                 
@@ -291,13 +292,20 @@
             filters.IsOpen = null;
 
         filters.Page = 1; // Reset to first page on filter
+        if (filters.PerPage <= 0)
+            filters.PerPage = 4; // Устанавливаем по умолчанию, если не задано
+
         await OnFilterChanged.InvokeAsync(filters);
     }
 
     private async Task ResetFilters()
     {
         // Сбрасываем внутреннее состояние
-        filters = new PlaceFilterParams();
+        filters = new PlaceFilterParams
+        {
+            Page = 1,      // ✅ Явно
+            PerPage = 4    // ✅ Явно
+        };
         tagsInput = string.Empty;
         latitudeInput = null;
         longitudeInput = null;
