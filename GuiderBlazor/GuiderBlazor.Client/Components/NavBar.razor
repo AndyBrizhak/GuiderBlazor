@@ -8,9 +8,6 @@
 
     <div class="nav-links @(isNavMenuOpen ? "is-active" : "")">
         <a href="/">Home</a>
-        @* <a href="/category/adventures">Adventures</a>
-        <a href="/category/to-eat">Food & Drinks</a>
-        <a href="/category/services">Services</a> *@
     </div>
 
     <div class="nav-actions">
@@ -36,44 +33,72 @@
 </nav>
 
 @code {
-    // 1. Логика гамбургера
     private bool isNavMenuOpen = false;
     private void ToggleNavMenu()
     {
         isNavMenuOpen = !isNavMenuOpen;
     }
 
-    // 2. Логика темы (УПРОЩЕНО)
-
-    // Это внутреннее C#-состояние, оно управляет ТОЛЬКО иконкой ☀️/🌙
     private bool isDarkMode;
 
-    // Этот параметр приходит из MainLayout (который читает cookie)
     [Parameter]
     public bool IsDarkModeInitial { get; set; }
 
-    // Устанавливаем состояние иконки при первой загрузке
     protected override void OnInitialized()
     {
         isDarkMode = IsDarkModeInitial;
+        // Console.WriteLine($"[NavBar] OnInitialized: isDarkMode={isDarkMode}, IsDarkModeInitial={IsDarkModeInitial}");
     }
 
-    // Устанавливаем состояние иконки при навигации
-    // (когда сервер повторно рендерит MainLayout)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            // Console.WriteLine($"[NavBar] OnAfterRenderAsync START: firstRender={firstRender}, isDarkMode={isDarkMode}");
+
+            var currentTheme = await JSRuntime.InvokeAsync<bool>("loadTheme");
+            // Console.WriteLine($"[NavBar] loadTheme returned: {currentTheme}");
+
+            if (isDarkMode != currentTheme)
+            {
+                // Console.WriteLine($"[NavBar] MISMATCH! Updating: {isDarkMode} -> {currentTheme}");
+                isDarkMode = currentTheme;
+                StateHasChanged();
+            }
+            else
+            {
+                // Console.WriteLine($"[NavBar] Theme is in sync: {isDarkMode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[NavBar] ERROR: {ex.Message}");
+        }
+    }
+
     protected override void OnParametersSet()
     {
+        // Console.WriteLine($"[NavBar] OnParametersSet: isDarkMode={isDarkMode}, IsDarkModeInitial={IsDarkModeInitial}");
         isDarkMode = IsDarkModeInitial;
     }
 
-    // Этот метод - ЕДИНСТВЕННОЕ место, которое меняет тему
     private async Task ToggleTheme()
     {
-        // 1. Меняем C# состояние (для иконки)
-        isDarkMode = !isDarkMode;
+        try
+        {
+            // Console.WriteLine($"[NavBar] ToggleTheme BEFORE: isDarkMode={isDarkMode}");
 
-        // 2. Вызываем JS, который сделает всю работу
-        // (установит <html>.className, localStorage И cookie)
-        var theme = isDarkMode ? "dark-theme" : "light-theme";
-        await JSRuntime.InvokeVoidAsync("applyTheme", theme);
+            isDarkMode = !isDarkMode;
+            var theme = isDarkMode ? "dark-theme" : "light-theme";
+
+            // Console.WriteLine($"[NavBar] ToggleTheme AFTER: isDarkMode={isDarkMode}, theme={theme}");
+
+            await JSRuntime.InvokeVoidAsync("applyTheme", theme);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[NavBar] ToggleTheme ERROR: {ex.Message}");
+            isDarkMode = !isDarkMode;
+        }
     }
 }

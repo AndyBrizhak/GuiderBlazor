@@ -10,11 +10,24 @@
     <link rel="stylesheet" href="GuiderBlazor.styles.css" />
     <HeadOutlet />
 
+    <!-- КРИТИЧЕСКИ ВАЖНО: Применяем тему ДО загрузки Blazor -->
     <script>
         (function() {
-            var theme = localStorage.getItem('theme') || 'light-theme';
+            // Проверяем cookie (серверная тема)
+            var cookieTheme = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('theme='))
+                ?.split('=')[1];
+
+            // Проверяем localStorage (клиентская тема)
+            var localTheme = localStorage.getItem('theme');
+
+            // Приоритет: localStorage > cookie > default
+            var theme = localTheme || cookieTheme || 'light-theme';
+
+            // Применяем тему мгновенно
             document.documentElement.className = theme;
-            // ⬇️ ДОБАВЬТЕ ЭТУ СТРОКУ:
+            localStorage.setItem('theme', theme);
             document.cookie = `theme=${theme};path=/;max-age=31536000`;
         })();
     </script>
@@ -22,11 +35,10 @@
 
 <body>
     <Routes />
+
+    <!-- Загружаем скрипты в правильном порядке -->
     <script src="_framework/blazor.web.js"></script>
-
     <script src="js/theme.js"></script>
-
-    @* <script>loadTheme();</script> *@
 </body>
 
 </html>
