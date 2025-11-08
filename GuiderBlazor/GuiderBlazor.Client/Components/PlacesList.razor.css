@@ -1,20 +1,16 @@
 ﻿.places-list-container {
     max-width: 1400px;
     margin: 0 auto;
-    /* ⬇️ ИЗМЕНЕНИЕ: Убираем боковые отступы (они есть в <main>)
-       и уменьшаем верхний/нижний отступ */
-    padding: 1rem 0; /* 16px сверху/снизу */
+    padding: 1rem 0;
 }
 
 @media (min-width: 768px) {
     .places-list-container {
-        /* ⬆️ Возвращаем старые отступы для десктопа */
         padding: 2rem 1rem;
     }
 }
 
 .loading {
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ для спиннера */
     padding: 2rem 1rem;
 }
 
@@ -30,92 +26,79 @@
 .places-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    /* ⬇️ ИЗМЕНЕНИЕ: Значительно уменьшаем gap и margin для мобильных */
-    gap: 1rem; /* Было 2rem (32px) */
-    margin-bottom: 1.5rem; /* Было 2rem (32px) */
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 @media (min-width: 768px) {
     .places-grid {
-        /* ⬆️ Возвращаем gap для десктопа */
         gap: 2rem;
     }
 }
 
 .no-results {
     text-align: center;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
-    padding: 2rem 1rem; /* Было 4rem 2rem */
+    padding: 2rem 1rem;
     color: var(--text-secondary);
 }
+
+/* --- Стили пагинации --- */
 
 .pagination {
     background: var(--bg-surface);
     box-shadow: 0 2px 4px var(--shadow-color);
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
-    padding: 1rem; /* Было 1.5rem */
-    border-radius: 8px;
-}
-
-.pagination-info {
-    text-align: center;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
-    margin-bottom: 0.75rem; /* Было 1rem */
-    color: var(--text-secondary);
-    font-size: 0.95rem;
+    padding: 1rem;
+    border-radius: 12px;
 }
 
 .pagination-controls {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    gap: 0.25rem;
+    flex-wrap: nowrap;
 }
 
-.btn-page, .btn-page-num {
-    padding: 0.5rem 1rem;
+.pagination-info {
+    text-align: center;
+    margin-bottom: 0;
+    padding: 0 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.btn-page {
+    padding: 0;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--border-color);
     background: var(--bg-surface);
     color: var(--text-primary);
-    border-radius: 4px;
+    border-radius: 50%;
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.3s;
+    text-decoration: none; /* ⬆️ Добавлено для <a> */
 }
 
-    .btn-page:hover:not(:disabled), .btn-page-num:hover:not(.active) {
+    .btn-page svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .btn-page:hover:not(.disabled) { /* ⬆️ Изменено :disabled на .disabled */
         background: var(--bg-surface-hover);
         border-color: #007bff;
+        color: #007bff;
     }
 
-    .btn-page:disabled {
-        opacity: 0.5;
+    /* --- ⬇️ НОВЫЙ СТИЛЬ ДЛЯ <a> ССЫЛОК ⬇️ --- */
+    .btn-page.disabled {
+        opacity: 0.4;
         cursor: not-allowed;
+        pointer-events: none; /* ⬆️ Запрещает клики */
     }
-
-    .btn-page-num.active {
-        background: #007bff;
-        color: white;
-        border-color: #007bff;
-    }
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
-}
-
-/* Стили из @media блока */
-@media (max-width: 768px) {
-    .places-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .pagination-controls {
-        flex-direction: column;
-    }
-
-    .page-numbers {
-        order: -1;
-    }
-}
