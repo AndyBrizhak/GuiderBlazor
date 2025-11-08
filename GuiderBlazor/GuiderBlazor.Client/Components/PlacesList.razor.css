@@ -1,15 +1,21 @@
 ﻿.places-list-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Убираем боковые отступы (они есть в <main>)
+       и уменьшаем верхний/нижний отступ */
+    padding: 1rem 0; /* 16px сверху/снизу */
+}
+
+@media (min-width: 768px) {
+    .places-list-container {
+        /* ⬆️ Возвращаем старые отступы для десктопа */
+        padding: 2rem 1rem;
+    }
 }
 
 .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ для спиннера */
+    padding: 2rem 1rem;
 }
 
 .spinner {
@@ -18,36 +24,43 @@
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    /* Использует @keyframes spin из app.css */
     animation: spin 1s linear infinite;
 }
 
 .places-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Значительно уменьшаем gap и margin для мобильных */
+    gap: 1rem; /* Было 2rem (32px) */
+    margin-bottom: 1.5rem; /* Было 2rem (32px) */
+}
+
+@media (min-width: 768px) {
+    .places-grid {
+        /* ⬆️ Возвращаем gap для десктопа */
+        gap: 2rem;
+    }
 }
 
 .no-results {
     text-align: center;
-    padding: 4rem 2rem;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
+    padding: 2rem 1rem; /* Было 4rem 2rem */
     color: var(--text-secondary);
 }
 
 .pagination {
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     background: var(--bg-surface);
     box-shadow: 0 2px 4px var(--shadow-color);
-    padding: 1.5rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
+    padding: 1rem; /* Было 1.5rem */
     border-radius: 8px;
 }
 
 .pagination-info {
     text-align: center;
-    margin-bottom: 1rem;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
+    margin-bottom: 0.75rem; /* Было 1rem */
     color: var(--text-secondary);
     font-size: 0.95rem;
 }
@@ -62,7 +75,6 @@
 
 .btn-page, .btn-page-num {
     padding: 0.5rem 1rem;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     border: 1px solid var(--border-color);
     background: var(--bg-surface);
     color: var(--text-primary);
@@ -73,9 +85,8 @@
 }
 
     .btn-page:hover:not(:disabled), .btn-page-num:hover:not(.active) {
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         background: var(--bg-surface-hover);
-        border-color: #007bff; /* Акцентный цвет можно оставить */
+        border-color: #007bff;
     }
 
     .btn-page:disabled {
@@ -84,7 +95,6 @@
     }
 
     .btn-page-num.active {
-        /* Акцентный цвет оставляем */
         background: #007bff;
         color: white;
         border-color: #007bff;

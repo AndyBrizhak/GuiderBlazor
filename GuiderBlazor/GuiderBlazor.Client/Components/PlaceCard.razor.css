@@ -1,15 +1,10 @@
-﻿/* ПРИМЕЧАНИЕ: 
-   Ваш app.css стилизовал .place-card (тег <a>). 
-   Если вы хотите, чтобы ссылка вела себя как div, добавьте:
-   text-decoration: none;
-   color: inherit;
-*/
-.place-card {
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
+﻿.place-card {
     background: var(--bg-surface);
     box-shadow: 0 2px 8px var(--shadow-color);
     color: var(--text-primary);
-    border-radius: 8px;
+    /* ⬇️ ИЗМЕНЕНИЕ: Увеличено для более плавных углов */
+    border-radius: 12px; /* Было 8px */
+
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
@@ -21,7 +16,6 @@
 
     .place-card:hover {
         transform: translateY(-4px);
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         box-shadow: 0 4px 16px var(--shadow-color);
     }
 
@@ -29,13 +23,18 @@
     width: 100%;
     height: 200px;
     overflow: hidden;
-    background: #f0f0f0; /* Заглушка, можно оставить */
+    /* ⬇️ ИЗМЕНЕНИЕ: Фон будет виден, если 'contain' создаст полосы */
+    background: var(--bg-surface-hover);
 }
 
     .card-image img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        /* ⬇️ ИЗМЕНЕНИЕ: 'contain' сохраняет пропорции и 
+           показывает все изображение (могут быть полосы).
+           'cover' (как было) сохраняет пропорции, но ОБРЕЗАЕТ.
+        */
+        object-fit: contain; /* Было 'cover' */
     }
 
 .no-image {
@@ -44,24 +43,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
-    background: var(--bg-hero); /* Используем фон из app.css */
-    color: var(--text-on-hero);
+    background: var(--bg-surface-hover);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
 .card-content {
-    padding: 1.25rem;
+    padding: 1rem;
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .card-content {
+        padding: 1.25rem;
+    }
 }
 
 .card-title {
     margin: 0 0 0.75rem 0;
     font-size: 1.25rem;
     font-weight: 600;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -79,6 +82,7 @@
     padding: 0.25rem 0.75rem;
     background: #e3f2fd;
     color: #1976d2;
+    /* ⬇️ ИЗМЕНЕНИЕ: Увеличено */
     border-radius: 12px;
     font-size: 0.875rem;
     font-weight: 500;
@@ -95,10 +99,10 @@
 .tag {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     background: var(--bg-surface-hover);
     color: var(--text-secondary);
-    border-radius: 4px;
+    /* ⬇️ ИЗМЕНЕНИЕ: Увеличено */
+    border-radius: 6px; /* Было 4px */
     font-size: 0.8rem;
 }
 
@@ -106,7 +110,6 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     color: var(--text-secondary);
     font-size: 0.9rem;
     margin-top: auto;

@@ -2,15 +2,13 @@
 @using GuiderBlazor.Client.Components
 @attribute [StreamRendering]
 
-<PageTitle>Guider - Business Catalog</PageTitle>
-
+@* <PageTitle>Guider - Business Catalog</PageTitle> *@
 <div class="home-container">
     <div class="hero-section">
-        <h1>Guider</h1>
+      @*   <h1>Guider</h1> *@
         <p>Local Business & Services Catalog</p>
     </div>
-        
-    <PlacesList @rendermode="InteractiveServer" />
+     <PlacesList @rendermode="InteractiveServer" />
 </div>
 
 

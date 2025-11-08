@@ -1,34 +1,38 @@
 ﻿.filter-container {
-    padding: 1rem;
-    margin-bottom: 2rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Убираем горизонтальный padding (он есть в <main>) */
+    padding: 0;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ снизу */
+    margin-bottom: 1.5rem; /* Было 2rem */
 }
 
 .filter-card {
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     background: var(--bg-surface);
     box-shadow: 0 2px 4px var(--shadow-color);
     transition: background-color 0.3s ease;
     border-radius: 8px;
-    padding: 1.5rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем padding для мобильных */
+    padding: 1rem; /* Было 1.5rem */
 }
 
-    /* Этот .filter-card h3 больше не используется, 
-       так как h3 теперь внутри .filter-header,
-       но мы все равно его обновим.
-    */
-    .filter-card h3 {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
-        color: var(--text-primary);
+@media (min-width: 768px) {
+    .filter-card {
+        /* ⬆️ Возвращаем padding для десктопа */
+        padding: 1.5rem;
     }
+}
+
+.filter-card h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
 
 .section-title {
     font-weight: 600;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     color: var(--text-secondary);
     border-top: 1px solid var(--border-color);
-    margin: 1.5rem 0 1rem 0;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступы */
+    margin: 1rem 0 1rem 0; /* Было 1.5rem ... 1rem */
     padding-top: 1rem;
 }
 
@@ -39,21 +43,20 @@
 }
 
 .form-group {
-    margin-bottom: 1rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
+    margin-bottom: 0.75rem; /* Было 1rem */
 }
 
     .form-group label {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         color: var(--text-primary);
     }
 
     .form-group small {
         display: block;
         margin-top: 0.25rem;
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         color: var(--text-secondary);
         font-size: 0.85rem;
     }
@@ -62,7 +65,6 @@
     width: 100%;
     padding: 0.5rem;
     font-size: 1rem;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     background: var(--bg-surface);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
@@ -71,19 +73,17 @@
 
     .form-control:focus {
         outline: none;
-        border-color: #007bff; /* Акцентный цвет можно оставить */
+        border-color: #007bff;
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
     }
 
 .button-group {
     display: flex;
     gap: 1rem;
-    margin-top: 1.5rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
+    margin-top: 1rem; /* Было 1.5rem */
 }
 
-/* Акцентные кнопки. Мы не меняем их, 
-   чтобы они оставались яркими в обеих темах.
-*/
 .btn {
     padding: 0.5rem 1.5rem;
     border: none;
@@ -111,8 +111,6 @@
         background-color: #545b62;
     }
 
-/* --- Стили для кнопок категорий --- */
-
 .category-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -128,27 +126,21 @@
     font-weight: 600;
     font-size: 0.9em;
     transition: all 0.2s ease-in-out;
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     background-color: var(--bg-surface-hover);
     color: var(--text-secondary);
 }
 
-    /* Эффект при наведении на неактивную кнопку */
     .category-btn:not(.active):hover {
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         background-color: var(--bg-surface);
         border: 1px solid var(--border-color);
         transform: translateY(-1px);
     }
 
-    /* --- Стили для активных кнопок (Оставляем их яркими) --- */
-
-    /* "All" (Серый) */
     .category-btn.all.active {
         background-color: #555;
         color: white;
     }
-    /* ... (остальные цветные .active стили остаются без изменений) ... */
+
     .category-btn.services {
         background-color: #f3e8ff;
         color: #6b46c1;
@@ -189,36 +181,30 @@
             color: white;
         }
 
-
-/* --- Стили для обновленного заголовка фильтра --- */
-
 .filter-header {
-    /* ➕ ИСПРАВЛЕНО: Используем переменные */
     border: 1px solid var(--border-color);
     background-color: var(--bg-surface-hover);
-    padding: 1rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем padding */
+    padding: 0.75rem 1rem; /* Было 1rem */
     border-radius: 8px;
     transition: background-color 0.2s;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    margin-bottom: 1.5rem;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
+    margin-bottom: 1rem; /* Было 1.5rem */
 }
 
     .filter-header:hover {
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         background-color: var(--bg-surface);
     }
 
     .filter-header h3 {
         margin: 0;
         font-size: 1.1rem;
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         color: var(--text-primary);
     }
-
-/* --- Стили для новой иконки (SVG + Текст) --- */
 
 .filter-toggle-icon {
     font-size: 1rem;
@@ -227,7 +213,7 @@
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
-    color: #007bff; /* Акцентный цвет */
+    color: #007bff;
 }
 
     .filter-toggle-icon svg {
@@ -238,28 +224,24 @@
         transform: rotate(180deg);
     }
 
-/* --- Стили для "сворачивания" --- */
 .advanced-filters {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     padding-top: 0;
-    border-top: 0; /* Убираем, т.к. is-active добавит свой */
+    border-top: 0;
 }
 
     .advanced-filters.is-active {
         max-height: 2000px;
         transition: max-height 0.5s ease-in;
         padding-top: 1rem;
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
         border-top: 1px solid var(--border-color);
     }
 
-
-    /* --- Стили для перемещенных кнопок Apply/Reset --- */
     .advanced-filters .button-group {
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        /* ➕ ИСПРАВЛЕНО: Используем переменные */
+        /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступы */
+        margin-top: 1rem; /* Было 1.5rem */
+        padding-top: 1rem; /* Было 1.5rem */
         border-top: 1px solid var(--border-color);
     }

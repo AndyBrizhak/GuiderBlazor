@@ -1,10 +1,11 @@
 ﻿@using GuiderBlazor.Shared.Models
-@inject NavigationManager Navigation // Этот инжект больше не нужен, но если он используется где-то еще в компоненте, оставьте.
+@inject NavigationManager Navigation
 
 <a href="/place/@Place.Url" class="place-card">
     <div class="card-image">
         @if (Place.ImgLink?.Any() == true)
         {
+            @* ⬇️ ИЗМЕНЕНИЕ: Добавлено @Place.Name в alt-тег для SEO *@
             <img src="@Place.ImgLink.First()" alt="@Place.Name" />
         }
         else
@@ -17,20 +18,31 @@
 
     <div class="card-content">
         <h3 class="card-title">@Place.Name</h3>
-        <p class="card-address">
-            @if (!string.IsNullOrEmpty(Place.Address?.City))
-            {
-                <span>@Place.Address.City</span>
-            }
-            @if (!string.IsNullOrEmpty(Place.Address?.Province) && !string.IsNullOrEmpty(Place.Address?.City))
-            {
-                <span>, @Place.Address.Province</span>
-            }
-            else if (!string.IsNullOrEmpty(Place.Address?.Province))
-            {
-                <span>@Place.Address.Province</span>
-            }
-        </p>
+
+        @* ⬇️ ИЗМЕНЕНИЕ: Я заменил .card-address на .card-location из вашего CSS
+           (CSS для .card-address отсутствовал)
+        *@
+        <div class="card-location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>
+                @if (!string.IsNullOrEmpty(Place.Address?.City))
+                {
+                    @Place.Address.City
+                }
+                @if (!string.IsNullOrEmpty(Place.Address?.Province) && !string.IsNullOrEmpty(Place.Address?.City))
+                {
+                    @*, @Place.Address.Province*@
+                }
+                else if (!string.IsNullOrEmpty(Place.Address?.Province))
+                {
+                    @Place.Address.Province
+                }
+            </span>
+        </div>
+
         <div class="card-tags">
             @foreach (var tag in Place.Tags ?? new List<string>())
             {
@@ -46,11 +58,5 @@
 @code {
     [Parameter, EditorRequired]
     public Place Place { get; set; } = null!;
-
-    // Метод NavigateToDetails() больше не нужен, так как мы используем обычную ссылку <a>
-    // private void NavigateToDetails()
-    // {
-    //     Navigation.NavigateTo($"/place/{Place.Id}");
-    // }
 }
 
