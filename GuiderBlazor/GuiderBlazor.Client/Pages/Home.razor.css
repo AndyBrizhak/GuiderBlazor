@@ -2,9 +2,9 @@
     /* 1. Фон теперь берется из переменной --bg-surface (как у карточек) */
     /* Он будет автоматически меняться вместе с темой. */
     background: var(--bg-surface);
-    /* 2. Уменьшенные отступы, как вы и просили */
-    padding: 1.5rem 1rem;
-    margin-bottom: 1.5rem; /* (Раньше было 2rem) */
+    /* 2. Уменьшенные отступы */
+    padding: 0.25rem 1rem;
+    margin-bottom: 0.5rem; /* (Раньше было 2rem) */
     /* 3. Добавляем вид "карточки" с тенью и скруглением */
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-color);
@@ -18,6 +18,6 @@
     .hero-section p {
         color: var(--text-primary);
         margin: 0; /* Сбрасываем старый отступ */
-        font-size: 1.25rem;
+        font-size: 1rem;
         opacity: 1; /* Сбрасываем старую прозрачность */
     }

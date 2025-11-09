@@ -2,7 +2,7 @@
     /* ⬇️ ИЗМЕНЕНИЕ: Убираем горизонтальный padding (он есть в <main>) */
     padding: 0;
     /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ снизу */
-    margin-bottom: 1.5rem; /* Было 2rem */
+    margin-bottom: 0.5rem; /* Было 2rem */
 }
 
 .filter-card {

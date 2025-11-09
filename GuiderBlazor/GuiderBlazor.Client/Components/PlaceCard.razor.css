@@ -49,7 +49,7 @@
 }
 
 .card-content {
-    padding: 1rem;
+    padding: 0.5rem 1rem;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -57,13 +57,13 @@
 
 @media (min-width: 768px) {
     .card-content {
-        padding: 1.25rem;
+        padding: 1rem;
     }
 }
 
 .card-title {
     margin: 0 0 0.75rem 0;
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
     overflow: hidden;
@@ -93,7 +93,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .tag {
