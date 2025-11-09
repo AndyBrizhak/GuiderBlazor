@@ -114,6 +114,8 @@
 
     .filter-toggle-icon svg {
         transition: transform 0.3s ease;
+        width: 20px;
+        height: 20px;
     }
 
     .filter-toggle-icon.is-open svg {
