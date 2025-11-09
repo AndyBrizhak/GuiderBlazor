@@ -30,11 +30,10 @@
 
 main {
     flex: 1;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступы для мобильных */
     padding: 0.5rem 0.5rem; /* 12px сверху/снизу, 8px по бокам */
 }
 
-/* ⬆️ ДОБАВЛЕНО: Возвращаем просторные отступы на больших экранах */
+/* Возвращаем просторные отступы на больших экранах */
 @media (min-width: 768px) {
     main {
         padding: 1.5rem; /* 24px, как было */
@@ -43,17 +42,16 @@ main {
 
 /*
 =========================================
-    5. Стили для Footer (Остаются здесь)
+     Стили для Footer 
 =========================================
 */
 .main-footer {
     background: #343a40;
     color: #f8f9fa;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступы футера для мобильных */
     padding: 0.5rem 1rem;
 }
 
-/* ⬆️ ДОБАВЛЕНО: Возвращаем отступы на больших экранах */
+/*  отступы на больших экранах */
 @media (min-width: 768px) {
     .main-footer {
         padding: 2rem 1.5rem;
@@ -81,3 +79,69 @@ main {
         .footer-links a:hover {
             text-decoration: underline;
         }
+
+    /* Стили для заголовка "Browse by Province:" */
+    .footer-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f8f9fa; /* (Тот же цвет, что и у ссылок) */
+    text-align: center; /* Выравниваем по центру, как и ссылки */
+}
+    /* Стили для текста копирайта (<p>&copy; ...</p>) */
+    .footer-content p {
+        text-align: center;
+        margin: 1rem 0 0 0;
+        font-size: 0.875rem;
+        color: #adb5bd; /* Более светлый серый */
+    }
+
+
+    /* =========================================
+        Стили для скроллера Провинций
+    =========================================
+    */
+    .province-scroller {
+        display: flex;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        gap: 8px; /* Отступ между "чипами" */
+        padding: 0.75rem 1rem; /* Отступы внутри скроллера */
+        /* Скрываем ползунок */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+        -webkit-overflow-scrolling: touch; /* Плавный свайп на iOS */
+    }
+
+        .province-scroller::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+
+        /* Стили для метки "Explore:" */
+        .province-scroller .scroller-label {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #adb5bd; /* Вторичный цвет */
+        }
+
+        /* Стили для ссылок-чипов */
+        .province-scroller a {
+            flex-shrink: 0; /* Запрещаем сжатие */
+            display: inline-block;
+            padding: 6px 12px;
+            background: #495057; /* Чуть светлее фона */
+            color: #f8f9fa;
+            border-radius: 16px; /* Делаем "чипом" */
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+            .province-scroller a:hover {
+                background: #6c757d;
+            }

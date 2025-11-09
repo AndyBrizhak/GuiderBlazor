@@ -1,0 +1,6 @@
+﻿User-agent: *
+Allow: /
+
+Указываем путь к карте сайта
+(Обязательно замените на ваш настоящий домен)
+Sitemap: https://www.google.com/search?q=https://api.guider.pro/sitemap.xml
