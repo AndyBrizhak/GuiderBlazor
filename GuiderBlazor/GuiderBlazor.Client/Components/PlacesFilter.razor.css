@@ -1,8 +1,6 @@
 ﻿.filter-container {
-    /* ⬇️ ИЗМЕНЕНИЕ: Убираем горизонтальный padding (он есть в <main>) */
     padding: 0;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ снизу */
-    margin-bottom: 0.5rem; /* Было 2rem */
+    margin-bottom: 0.5rem;
 }
 
 .filter-card {
@@ -10,190 +8,88 @@
     box-shadow: 0 2px 4px var(--shadow-color);
     transition: background-color 0.3s ease;
     border-radius: 8px;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем padding для мобильных */
-    padding: 1rem; /* Было 1.5rem */
+    padding: 1rem;
+    overflow: hidden;
 }
 
 @media (min-width: 768px) {
     .filter-card {
-        /* ⬆️ Возвращаем padding для десктопа */
         padding: 1.5rem;
     }
 }
 
-.filter-card h3 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: var(--text-primary);
-}
-
-.section-title {
-    font-weight: 600;
-    color: var(--text-secondary);
-    border-top: 1px solid var(--border-color);
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступы */
-    margin: 1rem 0 1rem 0; /* Было 1.5rem ... 1rem */
-    padding-top: 1rem;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.form-group {
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
-    margin-bottom: 0.75rem; /* Было 1rem */
-}
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--text-primary);
-    }
-
-    .form-group small {
-        display: block;
-        margin-top: 0.25rem;
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-    }
-
-.form-control {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-}
-
-    .form-control:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-
-.button-group {
+/* =========================================
+    СТИЛИ ДЛЯ КАТЕГОРИЙ (GOOGLE MAPS)
+=========================================
+*/
+.category-scroller {
     display: flex;
-    gap: 1rem;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
-    margin-top: 1rem; /* Было 1.5rem */
-}
-
-.btn {
-    padding: 0.5rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-    .btn-secondary:hover {
-        background-color: #545b62;
-    }
-
-.category-buttons {
-    display: flex;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    flex-wrap: nowrap;
     gap: 8px;
-    margin-top: 5px;
+    margin: -0.5rem -1rem 1rem -1rem;
+    padding: 0.5rem 1rem;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    -webkit-overflow-scrolling: touch; /* Плавный свайп на iOS */
 }
+
+    .category-scroller::-webkit-scrollbar {
+        display: none;
+    }
 
 .category-btn {
-    padding: 8px 16px;
-    border: 1px solid transparent;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9em;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     transition: all 0.2s ease-in-out;
-    background-color: var(--bg-surface-hover);
-    color: var(--text-secondary);
+    cursor: pointer;
+    /* --- ⬇️ ДОБАВЛЕНО ⬇️ --- */
+    text-decoration: none; /* Убираем подчеркивание у <a> */
 }
 
-    .category-btn:not(.active):hover {
-        background-color: var(--bg-surface);
-        border-color: var(--border-color);
-        transform: translateY(-1px);
+    .category-btn svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
     }
 
-    .category-btn.all.active {
-        background-color: #555;
-        color: white;
+    .category-btn:hover {
+        background-color: var(--bg-surface-hover);
+        border-color: var(--text-secondary);
     }
 
-    .category-btn.services {
-        background-color: #f3e8ff;
-        color: #6b46c1;
+    .category-btn.active {
+        background-color: #007bff;
+        color: #ffffff;
+        border-color: #007bff;
     }
 
-        .category-btn.services.active {
-            background-color: #6b46c1;
-            color: white;
-        }
 
-    .category-btn.to-eat {
-        background-color: #fffaf0;
-        color: #dd6b20;
-    }
-
-        .category-btn.to-eat.active {
-            background-color: #dd6b20;
-            color: white;
-        }
-
-    .category-btn.adventures {
-        background-color: #f0fff4;
-        color: #38a169;
-    }
-
-        .category-btn.adventures.active {
-            background-color: #38a169;
-            color: white;
-        }
-
-    .category-btn.shops {
-        background-color: #fff5f7;
-        color: #d53f8c;
-    }
-
-        .category-btn.shops.active {
-            background-color: #d53f8c;
-            color: white;
-        }
+/* =========================================
+    ОСТАЛЬНЫЕ СТИЛИ ФИЛЬТРА
+=========================================
+*/
 
 .filter-header {
     border: 1px solid var(--border-color);
     background-color: var(--bg-surface-hover);
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем padding */
-    padding: 0.75rem 1rem; /* Было 1rem */
+    padding: 0.75rem 1rem;
     border-radius: 8px;
     transition: background-color 0.2s;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ */
-    margin-bottom: 1rem; /* Было 1.5rem */
+    margin-bottom: 0;
 }
 
     .filter-header:hover {
@@ -237,11 +133,92 @@
         transition: max-height 0.5s ease-in;
         padding-top: 1rem;
         border-top: 1px solid var(--border-color);
+        margin-top: 1rem;
     }
 
-    .advanced-filters .button-group {
-        /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступы */
-        margin-top: 1rem; /* Было 1.5rem */
-        padding-top: 1rem; /* Было 1.5rem */
-        border-top: 1px solid var(--border-color);
+.section-title {
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    margin: 1rem 0 1rem 0;
+    padding-top: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 0.75rem;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-primary);
     }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+
+.advanced-filters .button-group {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
