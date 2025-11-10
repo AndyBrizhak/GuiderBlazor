@@ -101,16 +101,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Status:</label>
-                    <select class="form-control" @bind="filters.Status">
-                        <option value="">All statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="pending">Pending</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label>Tags (comma separated):</label>
                     <input type="text"
                            class="form-control"
@@ -290,6 +280,7 @@
             filters.IsOpen = null;
 
         filters.Page = 1; // Reset to first page on filter
+        filters.Status = "active";
         if (filters.PerPage <= 0)
             filters.PerPage = 4; // Устанавливаем по умолчанию, если не задано
 
@@ -302,7 +293,8 @@
         filters = new PlaceFilterParams
         {
             Page = 1,
-            PerPage = 4
+            PerPage = 4,
+            Status = "active"
         };
         tagsInput = string.Empty;
         latitudeInput = null;
@@ -326,7 +318,9 @@
             PerPage = filters.PerPage,
             // Сбрасываем страницу и устанавливаем категорию
             Page = 1,
-            Category = category
+            Category = category,
+            Status = "active"
+
         };
 
         return GetQueryString(linkFilters);
@@ -341,7 +335,8 @@
             Category = "",
             Province = province,
             City = "",
-            PerPage = 4
+            PerPage = 4,
+            Status = "active"
         };
 
         return GetQueryString(linkFilters);
