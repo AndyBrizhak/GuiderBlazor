@@ -32,24 +32,22 @@
             }
         </div>
 
-     @*    @if (place.ImgLink?.Any() == true)
+        @if (place.Address != null && !string.IsNullOrEmpty(place.Address.Province))
         {
-            <div class="image-gallery">
-                @if (place.ImgLink.Count == 1)
-                {
-                    <img src="@place.ImgLink[0]" alt="@place.Name" class="single-image" itemprop="image" />
-                }
-                else
-                {
-                    <div class="gallery-grid">
-                        @foreach (var img in place.ImgLink.Take(6))
-                        {
-                            <img src="@img" alt="@place.Name" itemprop="image" />
-                        }
-                    </div>
-                }
-            </div>
-        } *@
+            <nav class="breadcrumbs" aria-label="breadcrumb">
+                <ol>
+                    <li><a href="/">Home</a></li>
+                    <li>
+                        @* Ссылка использует slug (например, "guanacaste") *@
+                        <a href="/location/@place.Address.Province">
+                            @* Текст форматируется (например, "Guanacaste") *@
+                            @FormatProvinceName(place.Address.Province)
+                        </a>
+                    </li>
+                    <li><span aria-current="page">@place.Name</span></li>
+                </ol>
+            </nav>
+        }
 
         @if (place.ImgLink?.Any() == true)
         {
@@ -315,6 +313,26 @@
     public string Url { get; set; } = string.Empty;
     private Place? place;
     private bool isLoading = true;
+
+    private string FormatProvinceName(string provinceSlug)
+    {
+        if (string.IsNullOrEmpty(provinceSlug)) return string.Empty;
+
+        // Превращает "san-jose" в "San José" или "guanacaste" в "Guanacaste"
+        var parts = provinceSlug.Split('-');
+        var formattedParts = parts.Select(part =>
+            char.ToUpper(part[0]) + part.Substring(1)
+        );
+
+        var result = string.Join(" ", formattedParts);
+
+        // Особые случаи для акцентов
+        if (result == "San Jose") return "San José";
+        if (result == "Limon") return "Limón";
+        if (result == "Cartago") return "Cartago";
+
+        return result;
+    }
 
     protected override async Task OnParametersSetAsync()
     {

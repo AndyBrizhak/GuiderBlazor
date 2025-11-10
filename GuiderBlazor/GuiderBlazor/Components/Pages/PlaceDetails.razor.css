@@ -1,4 +1,56 @@
-﻿.place-details-container {
+﻿/*
+=========================================
+    СТИЛИ ДЛЯ ХЛЕБНЫХ КРОШЕК
+=========================================
+*/
+.breadcrumbs {
+    font-size: 0.9rem;
+    margin: 0 0 1.5rem 0; /* Отступ под крошками */
+    color: var(--text-secondary);
+}
+
+    .breadcrumbs ol {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .breadcrumbs li {
+        display: inline-flex;
+        align-items: center;
+    }
+
+        /* Разделитель (стрелка) */
+        .breadcrumbs li:not(:last-child)::after {
+            content: '›'; /* (или '>') */
+            margin: 0 0.5rem;
+            color: var(--text-secondary);
+        }
+
+    .breadcrumbs a {
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .breadcrumbs a:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+    /* Активная (текущая) страница */
+    .breadcrumbs span {
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+
+
+
+.place-details-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
