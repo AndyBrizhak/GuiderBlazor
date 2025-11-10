@@ -9,7 +9,7 @@
     transition: background-color 0.3s ease;
     border-radius: 8px;
     padding: 1rem;
-    overflow: hidden;
+    overflow: hidden; /* ⬅️ Важно для скроллеров */
 }
 
 @media (min-width: 768px) {
@@ -19,7 +19,7 @@
 }
 
 /* =========================================
-    СТИЛИ ДЛЯ КАТЕГОРИЙ (GOOGLE MAPS)
+    СТИЛИ ДЛЯ КАТЕГОРИЙ
 =========================================
 */
 .category-scroller {
@@ -27,43 +27,52 @@
     overflow-x: auto;
     flex-wrap: nowrap;
     gap: 8px;
-    margin: -0.5rem -1rem 1rem -1rem;
-    padding: 0.5rem 1rem;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-    -webkit-overflow-scrolling: touch; /* Плавный свайп на iOS */
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ и добавляем рамку */
+    margin: -1rem -1rem 0 -1rem; /* Убираем нижний отступ */
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color); /* Добавляем разделитель */
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+/* Медиа-запрос для десктопа */
+@media (min-width: 768px) {
+    .category-scroller {
+        margin: -1.5rem -1.5rem 0 -1.5rem;
+        padding: 1rem 1.5rem;
+    }
 }
 
-    .category-scroller::-webkit-scrollbar {
-        display: none;
-    }
+
+.category-scroller::-webkit-scrollbar {
+    display: none;
+}
 
 .category-btn {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.5rem;
     padding: 6px 12px;
-    border-radius: 16px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    background-color: var(--bg-surface);
+    background: var(--bg-surface);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    transition: all 0.2s ease-in-out;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
     cursor: pointer;
-    /* --- ⬇️ ДОБАВЛЕНО ⬇️ --- */
-    text-decoration: none; /* Убираем подчеркивание у <a> */
 }
 
     .category-btn svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
     }
 
     .category-btn:hover {
-        background-color: var(--bg-surface-hover);
+        background: var(--bg-surface-hover);
         border-color: var(--text-secondary);
     }
 
@@ -75,25 +84,23 @@
 
 
 /* =========================================
-    ОСТАЛЬНЫЕ СТИЛИ ФИЛЬТРА
+    СТИЛИ ДЛЯ HEADER (ADVANCED FILTERS)
 =========================================
 */
-
 .filter-header {
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-surface-hover);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0;
     border-radius: 8px;
     transition: background-color 0.2s;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    margin-bottom: 0;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ сверху */
+    margin-top: 0.5rem; /* Было неявно 1rem от province-scroller */
 }
 
     .filter-header:hover {
-        background-color: var(--bg-surface);
+        background-color: var(--bg-surface-hover);
     }
 
     .filter-header h3 {
@@ -122,29 +129,27 @@
         transform: rotate(180deg);
     }
 
+/* =========================================
+    СТИЛИ ДЛЯ ADVANCED FILTERS (FORM)
+=========================================
+*/
 .advanced-filters {
-    max-height: 0;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    padding-top: 0;
-    border-top: 0;
 }
 
-    .advanced-filters.is-active {
-        max-height: 2000px;
-        transition: max-height 0.5s ease-in;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-color);
-        margin-top: 1rem;
+    .advanced-filters > * {
+        overflow: hidden;
     }
 
-.section-title {
-    font-weight: 600;
-    color: var(--text-secondary);
-    border-top: 1px solid var(--border-color);
-    margin: 1rem 0 1rem 0;
-    padding-top: 1rem;
-}
+    .advanced-filters.is-open {
+        grid-template-rows: 1fr;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        margin-top: 0.5rem;
+    }
 
 .form-row {
     display: grid;
@@ -189,38 +194,118 @@
 .button-group {
     display: flex;
     gap: 1rem;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
 }
 
 .btn {
-    padding: 0.5rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    padding: 0.6rem 1.2rem;
     font-size: 1rem;
-    transition: background-color 0.3s;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .btn-primary {
     background-color: #007bff;
-    color: white;
+    color: #fff;
 }
 
     .btn-primary:hover {
         background-color: #0056b3;
     }
 
+    .btn-primary:disabled {
+        background-color: #a0a0a0;
+        cursor: not-allowed;
+    }
+
 .btn-secondary {
     background-color: #6c757d;
-    color: white;
+    color: #fff;
 }
 
     .btn-secondary:hover {
-        background-color: #545b62;
+        background-color: #5a6268;
     }
 
-.advanced-filters .button-group {
+
+/*
+=========================================
+    СТИЛИ ДЛЯ СКРОЛЛЕРА ПРОВИНЦИЙ
+=========================================
+*/
+.province-scroller {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ и убираем рамку сверху */
+    margin: 0 -1rem; /* Убираем вертикальные отступы */
+    padding: 0.75rem 1rem;
+    /* border-top: 1px solid var(--border-color); */ /* Убрано */
+    border-bottom: 1px solid var(--border-color);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+/* Медиа-запрос для десктопа */
+@media (min-width: 768px) {
+    .province-scroller {
+        margin: 0 -1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+
+.province-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+/* ⬇️ ИЗМЕНЕНИЕ: Объединяем селекторы для меток */
+.province-scroller .scroller-label,
+.category-scroller .scroller-label {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* "Чипы" (кнопки) провинций */
+.province-chip {
+    flex-shrink: 0;
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .province-chip:hover {
+        background: var(--bg-surface-hover);
+        border-color: var(--text-secondary);
+    }
+
+    /* Активный "чип" */
+    .province-chip.active {
+        background-color: #007bff;
+        color: #ffffff;
+        border-color: #007bff;
+    }
+
+.section-title {
+    font-weight: 600;
+    color: var(--text-primary);
     margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
 }

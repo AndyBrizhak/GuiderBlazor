@@ -3,54 +3,57 @@
 
 <div class="filter-container">
     <div class="filter-card">
-
         <div class="category-scroller">
-            @* --- ⬇️ ВОТ ИЗМЕНЕНИЯ ⬇️ --- *@
-            @* 1. <button> заменен на <a> *@
-            @* 2. @onclick заменен на href *@
+            <span class="scroller-label">Category:</span>
             <a class="category-btn @(filters.Category == "" ? "active" : "")"
                href="@GetUrlForCategory("")">
-                @* 1. All (Иконка "Сетка") *@
-                @* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3.75 3.75a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75zm0 6a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75zm.75 5.25a.75.75 0 01-.75.75h-1.5a.75.75 0 01-.75-.75v-1.5a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75v1.5zM9 3.75a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75zm.75 5.25a.75.75 0 01-.75.75h-1.5a.75.75 0 01-.75-.75v-1.5a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75v1.5zm0 6a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75zM14.25 3.75a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75zm.75 5.25a.75.75 0 01-.75.75h-1.5a.75.75 0 01-.75-.75v-1.5a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75v1.5zm0 6a.75.75 0 00-1.5 0v1.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75v-1.5a.75.75 0 00-.75-.75z" clip-rule="evenodd" />
-                </svg> *@
                 All
             </a>
             <a class="category-btn @(filters.Category == "services" ? "active" : "")"
                href="@GetUrlForCategory("services")">
-                @* 2. Services (Иконка "Портфель") *@
-                @* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h12.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75v-7.5zM4.5 7.5v6h11v-6H4.5zM3.75 4.5A.75.75 0 013 3.75v-.75a.75.75 0 01.75-.75h12.5a.75.75 0 01.75.75v.75a.75.75 0 01-.75.75H3.75zM7.5 3h5v.75h-5V3z" clip-rule="evenodd" />
-                </svg> *@
                 Services
             </a>
             <a class="category-btn @(filters.Category == "to-eat" ? "active" : "")"
                href="@GetUrlForCategory("to-eat")">
-                @* 3. Foods (Иконка "Торт") *@
-                @* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 2.5c-1.12 0-2.128.23-3.033.642A.75.75 0 006.18 4.028a11.16 11.16 0 017.64 0 .75.75 0 00.784-1.358A12.66 12.66 0 0010 2.5zM4.34 6.002A.75.75 0 014 6.75v.013a11.16 11.16 0 000 6.474.75.75 0 01-1.42.49 12.66 12.66 0 010-7.447.75.75 0 011.06-.49l.7.7zM16.42 14.24a.75.75 0 001.06.49 12.66 12.66 0 000-7.447.75.75 0 00-1.06-.49l-.7.7a.75.75 0 00-.339 1.013c.09.21.16.429.21.657a11.16 11.16 0 010 3.804c-.05.228-.12.447-.21.657a.75.75 0 00.339 1.013l.7.7zM10 17.5a12.66 12.66 0 01-3.033-.642.75.75 0 00-.784 1.358 11.16 11.16 0 007.64 0 .75.75 0 00-.784-1.358A12.66 12.66 0 0110 17.5z" clip-rule="evenodd" />
-                </svg> *@
                 Foods
             </a>
             <a class="category-btn @(filters.Category == "adventures" ? "active" : "")"
                href="@GetUrlForCategory("adventures")">
-                @* 4. Adventures (Иконка "Солнце") *@
-                @* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM14.243 4.243a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM4.757 13.182a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM17.25 10a.75.75 0 010 1.5h-1.5a.75.75 0 010-1.5h1.5zM4.25 10a.75.75 0 010 1.5h-1.5a.75.75 0 010-1.5h1.5zM13.182 4.757a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM4.243 14.243a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM10 5.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zM10 7a3 3 0 100 6 3 3 0 000-6z" clip-rule="evenodd" />
-                </svg> *@
                 Adventures
             </a>
             <a class="category-btn @(filters.Category == "shops" ? "active" : "")"
                href="@GetUrlForCategory("shops")">
-                @* 5. Shopping (Иконка "Сумка") *@
-                @* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8.25 3.75A1.5 1.5 0 019.75 2.25h.5a1.5 1.5 0 011.5 1.5v.75c.348 0 .684.043 1.01.125C13.86 3.25 14.828 2 16 2a2 2 0 110 4c-1.172 0-2.14-.25-3.24-.625a.75.75 0 01-.51-.125v.75A1.5 1.5 0 019.75 8.25h-.5A1.5 1.5 0 018.25 6.75v-.75c-.348 0-.684-.043-1.01-.125C6.14 6.75 5.172 8 4 8a2 2 0 110-4c1.172 0 2.14.25 3.24.625a.75.75 0 01.51.125v-.75zM4.5 5a1 1 0 100 2 1 1 0 000-2zM15.5 5a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
-                    <path d="M6.08 7.42a.75.75 0 01.448.665l.024.18a8.25 8.25 0 001.32.73 1.5 1.5 0 011.258 0 8.25 8.25 0 001.32-.73l.024-.18a.75.75 0 01.448-.665N12 7.218c.55.038 1.08.114 1.591.218a.75.75 0 01.448.665l.024.18a8.25 8.25 0 001.32.73 1.5 1.5 0 011.258 0 8.25 8.25 0 001.32-.73l.024-.18a.75.75 0 01.448-.665C18.66 7.301 20 7.53 20 8.25v6.25A2.5 2.5 0 0117.5 17h-15A2.5 2.5 0 010 14.5V8.25c0-.72.14-1.42.39-2.06a.75.75 0 01.665-.448C1.51 5.854 2.14 6 2.75 6c.61 0 1.24-.146 1.76-.39a.75.75 0 01.665.448C5.49 6.58 6 7.28 6 8v.25c0 .35.03.69.08.1018zM1.5 8.25v6.25a1 1 0 001 1h15a1 1 0 001-1V8.25c0-.22-.02-.43-.06-.63l-.018.003a9.75 9.75 0 01-2.103.882 1.5 1.5 0 01-1.258 0 8.25 8.25 0 00-1.32-.73l-.024-.18a.75.75 0 01.448-.665C13.86 6.75 14.828 6.5 16 6.5a1 1 0 000-1c-1.172 0-2.14.25-3.24.625a.75.75 0 01-.51-.125V5.25a.75.75 0 00-.75-.75h-.5a.75.75 0 00-.75.75v.75a.75.75 0 01-.51.125C8.14 6.75 7.172 7 6 7a1 1 0 100-2c1.172 0 2.14.25 3.24.625a.75.75 0 01.51.125V2.25a.75.75 0 00-.75-.75h-.5a.75.75 0 00-.75.75v.75a.75.75 0 01-.51-.125C6.14 2.25 5.172 2 4 2a1 1 0 100 2c1.172 0 2.14.25 3.24.625a.75.75 0 01.51.125V8c0 .22-.02.43-.06.63l-.018-.003a9.75 9.75 0 01-2.103-.882 1.5 1.5 0 01-1.258 0 8.25 8.25 0 00-1.32.73l-.024-.18a.75.75 0 01-.448.665C3.34 8.2 2.5 8.47 2.5 9.19v-.94z" clip-rule="evenodd" />
-                </svg> *@
                 Shopping
             </a>
         </div>
-        
+
+        <div class="province-scroller">
+            <span class="scroller-label">Province:</span>
+
+            @* Ссылка для сброса провинции (показывает "All") *@
+            <a href="@GetUrlForProvince("")"
+               class="province-chip @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
+                All
+            </a>
+
+            <a href="/location/guanacaste"
+               class="province-chip @(filters.Province == "guanacaste" ? "active" : "")">
+                Guanacaste
+            </a>
+
+            <a href="/location/san-jose"
+               class="province-chip @(filters.Province == "san-jose" ? "active" : "")">
+                San José
+            </a>
+
+            <a href="/location/limon"
+               class="province-chip @(filters.Province == "limon" ? "active" : "")">
+                Limón
+            </a>
+
+            @* ... и другие ваши провинции ... *@
+        </div>
+
         <div class="filter-header" @onclick="ToggleAdvancedFilter">
             <h3>Advanced Filters</h3>
             <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
@@ -60,160 +63,161 @@
             </span>
         </div>
 
-        <div class="advanced-filters @(isAdvancedFilterOpen ? "is-active" : "")">
-            <div class="form-group">
-                <label>Search (name, description):</label>
-                <input type="text"
-                       class="form-control"
-                       @bind="filters.Q"
-                       placeholder="Enter search query..." />
-            </div>
-
-            <div class="form-row">
+        <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
+            <div>
                 <div class="form-group">
-                    <label>Province/State:</label>
+                    <label>Search (name, description):</label>
                     <input type="text"
                            class="form-control"
-                           @bind="filters.Province"
-                           placeholder="e.g., Guanacaste Province" />
+                           @bind="filters.Q"
+                           placeholder="Enter search query..." />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Province/State:</label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="filters.Province"
+                               placeholder="e.g., Guanacaste Province" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>City:</label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="filters.City"
+                               placeholder="e.g., Playa del Coco" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="filters.Name"
+                               placeholder="Exact name..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL (slug):</label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="filters.Url"
+                               placeholder="e.g., angels_salon" />
+                    </div>
+
                 </div>
 
                 <div class="form-group">
-                    <label>City:</label>
-                    <input type="text"
-                           class="form-control"
-                           @bind="filters.City"
-                           placeholder="e.g., Playa del Coco" />
-                </div>
-
-                <div class="form-group">
-                    <label>Name:</label>
-                    <input type="text"
-                           class="form-control"
-                           @bind="filters.Name"
-                           placeholder="Exact name..." />
-                </div>
-
-                <div class="form-group">
-                    <label>URL (slug):</label>
-                    <input type="text"
-                           class="form-control"
-                           @bind="filters.Url"
-                           placeholder="e.g., angels_salon" />
-                </div>
-
-            </div>
-
-            <div class="form-group">
-                <label>Status:</label>
-                <select class="form-control" @bind="filters.Status">
-                    <option value="">All statuses</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="pending">Pending</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Tags (comma separated):</label>
-                <input type="text"
-                       class="form-control"
-                       @bind="tagsInput"
-                       placeholder="e.g., Bank, ATM, wifi" />
-                <small>Separate tags with commas</small>
-            </div>
-
-            <div class="form-group">
-                <label>Tags mode:</label>
-                <select class="form-control" @bind="filters.TagsMode">
-                    <option value="any">Any tag (OR)</option>
-                    <option value="all">All tags (AND)</option>
-                </select>
-            </div>
-
-            <div class="section-title">Geo Search (optional)</div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Latitude:</label>
-                    <input type="number"
-                           step="0.0001"
-                           class="form-control"
-                           @bind="latitudeInput"
-                           placeholder="50.4501" />
-                </div>
-
-                <div class="form-group">
-                    <label>Longitude:</label>
-                    <input type="number"
-                           step="0.0001"
-                           class="form-control"
-                           @bind="longitudeInput"
-                           placeholder="30.5234" />
-                </div>
-
-                <div class="form-group">
-                    <label>Radius (meters):</label>
-                    <input type="number"
-                           class="form-control"
-                           @bind="distanceInput"
-                           placeholder="5000" />
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Opening hours:</label>
-                <select class="form-control" @bind="isOpenInput">
-                    <option value="">All</option>
-                    <option value="true">Open only</option>
-                    <option value="false">Closed only</option>
-                </select>
-            </div>
-
-            <div class="section-title">Sorting</div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Sort by:</label>
-                    <select class="form-control" @bind="filters.SortField">
-                        <option value="name">Name</option>
-                        <option value="category">Category</option>
-                        <option value="status">Status</option>
-                        <option value="createdAt">Created date</option>
-                        <option value="distance">Distance (geo search)</option>
+                    <label>Status:</label>
+                    <select class="form-control" @bind="filters.Status">
+                        <option value="">All statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Order:</label>
-                    <select class="form-control" @bind="filters.SortOrder">
-                        <option value="ASC">Ascending (A-Z)</option>
-                        <option value="DESC">Descending (Z-A)</option>
-                    </select>
+                    <label>Tags (comma separated):</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="tagsInput"
+                           placeholder="e.g., Bank, ATM, wifi" />
+                    <small>Separate tags with commas</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Results per page:</label>
-                    <select class="form-control" @bind="filters.PerPage">
-                        <option value="4">4</option>
-                        <option value="8">8</option>
-                        <option value="12">12</option>
-                        <option value="16">16</option>
-                        <option value="20">20</option>
+                    <label>Tags mode:</label>
+                    <select class="form-control" @bind="filters.TagsMode">
+                        <option value="any">Any tag (OR)</option>
+                        <option value="all">All tags (AND)</option>
                     </select>
                 </div>
 
-            </div>
-            <div class="button-group">
-                <button class="btn btn-primary" @onclick="ApplyFilters">
-                    🔍 Apply Filters
-                </button>
-                <button class="btn btn-secondary" @onclick="ResetFilters">
-                    🔄 Reset
-                </button>
+                <div class="section-title">Geo Search (optional)</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Latitude:</label>
+                        <input type="number"
+                               step="0.0001"
+                               class="form-control"
+                               @bind="latitudeInput"
+                               placeholder="50.4501" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Longitude:</label>
+                        <input type="number"
+                               step="0.0001"
+                               class="form-control"
+                               @bind="longitudeInput"
+                               placeholder="30.5234" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Radius (meters):</label>
+                        <input type="number"
+                               class="form-control"
+                               @bind="distanceInput"
+                               placeholder="5000" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Opening hours:</label>
+                    <select class="form-control" @bind="isOpenInput">
+                        <option value="">All</option>
+                        <option value="true">Open only</option>
+                        <option value="false">Closed only</option>
+                    </select>
+                </div>
+
+                <div class="section-title">Sorting</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sort by:</label>
+                        <select class="form-control" @bind="filters.SortField">
+                            <option value="name">Name</option>
+                            <option value="category">Category</option>
+                            <option value="status">Status</option>
+                            <option value="createdAt">Created date</option>
+                            <option value="distance">Distance (geo search)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Order:</label>
+                        <select class="form-control" @bind="filters.SortOrder">
+                            <option value="ASC">Ascending (A-Z)</option>
+                            <option value="DESC">Descending (Z-A)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Results per page:</label>
+                        <select class="form-control" @bind="filters.PerPage">
+                            <option value="4">4</option>
+                            <option value="8">8</option>
+                            <option value="12">12</option>
+                            <option value="16">16</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" @onclick="ApplyFilters">
+                        🔍 Apply Filters
+                    </button>
+                    <button class="btn btn-secondary" @onclick="ResetFilters">
+                        🔄 Reset
+                    </button>
+                </div>
             </div>
         </div>
-
 
     </div>
 </div>
@@ -255,13 +259,6 @@
     {
         isAdvancedFilterOpen = !isAdvancedFilterOpen;
     }
-
-    // ❌ МЕТОД SetCategory() УДАЛЕН. Он больше не нужен.
-    // private async Task SetCategory(string category)
-    // {
-    //     filters.Category = category;
-    //     await ApplyFilters();
-    // }
 
     private async Task ApplyFilters()
     {
@@ -325,7 +322,6 @@
         await OnFilterChanged.InvokeAsync(filters);
     }
 
-    // --- ⬇️ НОВЫЙ МЕТОД ⬇️ ---
     // Генерирует URL для <a> ссылок категорий
     private string GetUrlForCategory(string category)
     {
@@ -344,8 +340,22 @@
         return GetQueryString(linkFilters);
     }
 
-    // --- ⬇️ НОВЫЙ МЕТОД (Скопирован из PlacesList.razor) ⬇️ ---
-    // Этот метод теперь нужен здесь для GetUrlForCategory
+    private string GetUrlForProvince(string province)
+    {
+        var linkFilters = new PlaceFilterParams
+        {
+            Q = filters.Q,
+            Page = 1,
+            Category = "",
+            Province = province,
+            City = "",
+            PerPage = 4
+        };
+
+        return GetQueryString(linkFilters);
+    }
+
+    // Этот метод  для GetUrlForCategory
     private string GetQueryString(PlaceFilterParams filters)
     {
         var queryParams = new Dictionary<string, object?>();
