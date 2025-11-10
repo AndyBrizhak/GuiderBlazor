@@ -11,7 +11,9 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://api.guider.pro/")
+    //BaseAddress = new Uri("https://api.guider.pro/")
+    BaseAddress = new Uri("https://localhost:8081/")
+
 });
 builder.Services.AddScoped<IPlacesService, PlacesService>();
 
