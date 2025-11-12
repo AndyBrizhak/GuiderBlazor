@@ -1,11 +1,14 @@
 ﻿@using GuiderBlazor.Shared.Models
+@using GuiderBlazor.Shared.Services
+@* @using Shared.Services *@
 @rendermode InteractiveServer
+@inject ICitiesService CitiesService
 
 <div class="filter-container">
     <div class="filter-card">
         <div class="category-scroller">
             <span class="scroller-label">Category:</span>
-            <a class="category-btn @(filters.Category == "" ? "active" : "")"
+            <a class="category-btn chip-all @(filters.Category == "" ? "active" : "")"
                href="@GetUrlForCategory("")">
                 All
             </a>
@@ -30,30 +33,51 @@
         <div class="province-scroller">
             <span class="scroller-label">Province:</span>
 
-            @* Ссылка для сброса провинции (показывает "All") *@
             <a href="@GetUrlForProvince("")"
-               class="province-chip @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
+               class="province-chip chip-all @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
                 All
             </a>
 
-            <a href="/location/guanacaste"
+            <a href="@GetUrlForProvince("guanacaste")"
                class="province-chip @(filters.Province == "guanacaste" ? "active" : "")">
                 Guanacaste
             </a>
 
-            <a href="/location/san-jose"
+            <a href="@GetUrlForProvince("san-jose")"
                class="province-chip @(filters.Province == "san-jose" ? "active" : "")">
                 San José
             </a>
 
-            <a href="/location/limon"
+            <a href="@GetUrlForProvince("limon")"
                class="province-chip @(filters.Province == "limon" ? "active" : "")">
                 Limón
             </a>
-
-            @* ... и другие ваши провинции ... *@
+            @* ... и другие ваши провинции (исправьте их так же) ... *@
         </div>
 
+        <div class="city-scroller">
+            <span class="scroller-label">City:</span>
+            <a href="@GetUrlForCity("")"
+               class="province-chip chip-all @(string.IsNullOrEmpty(filters.City) ? "active" : "")">
+                All
+            </a>
+
+            @if (isLoadingCities)
+            {
+                <span class="province-chip">Loading...</span>
+            }
+            else
+            {
+                @foreach (var city in activeCities)
+                {
+                    <a href="@GetUrlForCity(city)"
+                       class="province-chip @(filters.City == city ? "active" : "")">
+                        @city
+                    </a>
+                }
+            }
+        </div>
+  
         <div class="filter-header" @onclick="ToggleAdvancedFilter">
             <h3>Advanced Filters</h3>
             <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
@@ -75,14 +99,6 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>City:</label>
-                        <input type="text"
-                               class="form-control"
-                               @bind="filters.City"
-                               placeholder="e.g., Playa del Coco" />
-                    </div>
-
-                    <div class="form-group">
                         <label>Name:</label>
                         <input type="text"
                                class="form-control"
@@ -97,7 +113,6 @@
                                @bind="filters.Url"
                                placeholder="e.g., angels_salon" />
                     </div>
-
                 </div>
 
                 <div class="form-group">
@@ -200,7 +215,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -225,17 +239,33 @@
     // C# логика для сворачивания фильтров
     private bool isAdvancedFilterOpen = false; // По умолчанию фильтры скрыты
 
-    protected override void OnParametersSet()
+    private List<string> activeCities = new();
+    private bool isLoadingCities = true;
+
+    // protected override void OnParametersSet()
+    // {
+    //     filters = CurrentFilters;
+
+    //     // Также обновляем UI-поля, которые не привязаны к 'filters' напрямую
+    //     tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
+    //     latitudeInput = filters.Latitude?.ToString();
+    //     longitudeInput = filters.Longitude?.ToString();
+    //     distanceInput = filters.Distance?.ToString();
+    //     isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
+    // }
+    protected override async Task OnParametersSetAsync()
     {
         filters = CurrentFilters;
-
-        // Также обновляем UI-поля, которые не привязаны к 'filters' напрямую
         tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
         latitudeInput = filters.Latitude?.ToString();
         longitudeInput = filters.Longitude?.ToString();
         distanceInput = filters.Distance?.ToString();
         isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
+
+        // Загружаем города на основе текущих фильтров
+        await LoadActiveCities();
     }
+
 
     private void ToggleAdvancedFilter()
     {
@@ -304,6 +334,7 @@
 
         // Сообщаем родителю, что фильтры сброшены
         await OnFilterChanged.InvokeAsync(filters);
+        await LoadActiveCities();
     }
 
     // Генерирует URL для <a> ссылок категорий
@@ -314,7 +345,7 @@
         {
             Q = filters.Q,
             Province = filters.Province,
-            City = filters.City,
+            City = "",
             PerPage = filters.PerPage,
             // Сбрасываем страницу и устанавливаем категорию
             Page = 1,
@@ -332,16 +363,39 @@
         {
             Q = filters.Q,
             Page = 1,
-            Category = "",
+            Category = filters.Category,
             Province = province,
             City = "",
-            PerPage = 4,
+            PerPage = filters.PerPage,
             Status = "active"
         };
 
         return GetQueryString(linkFilters);
     }
 
+    private string GetUrlForCity(string city)
+    {
+        var linkFilters = new PlaceFilterParams
+        {
+            Q = filters.Q,
+            Page = 1,
+            Category = filters.Category, // Сохраняем
+            Province = filters.Province, // Сохраняем
+            City = city, // Устанавливаем город
+            PerPage = filters.PerPage, // Сохраняем
+            Status = "active"
+        };
+        return GetQueryString(linkFilters);
+    }
+
+    private async Task LoadActiveCities()
+    {
+        isLoadingCities = true;
+        // Вызываем инъектированный сервис
+        activeCities = await CitiesService.GetActiveCitiesAsync(filters.Category, filters.Province);
+        isLoadingCities = false;
+    }
+    
     // Этот метод  для GetUrlForCategory
     private string GetQueryString(PlaceFilterParams filters)
     {

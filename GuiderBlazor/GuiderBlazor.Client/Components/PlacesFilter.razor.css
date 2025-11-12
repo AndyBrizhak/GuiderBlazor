@@ -309,3 +309,61 @@
     margin-bottom: 0.75rem;
     font-size: 1rem;
 }
+
+/*
+=========================================
+    СТИЛИ ДЛЯ СКРОЛЛЕРА ГОРОДОВ
+=========================================
+*/
+.city-scroller {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+    .city-scroller {
+        margin: 0 -1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+.city-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+/* Обновляем селектор для меток */
+.province-scroller .scroller-label,
+.category-scroller .scroller-label,
+.city-scroller .scroller-label {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+
+/*
+=========================================
+    НОВЫЙ СТИЛЬ ДЛЯ АКТИВНОЙ КНОПКИ "All"
+=========================================
+*/
+.chip-all.active {
+    background-color: var(--bg-surface); /* Прозрачный фон */
+    color: #007bff; /* Цветной текст */
+    border-color: #007bff; /* Цветная рамка */
+}
+
+    .chip-all.active:hover {
+        background-color: var(--bg-surface-hover);
+    }

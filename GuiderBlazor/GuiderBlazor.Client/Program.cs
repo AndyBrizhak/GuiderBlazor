@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using GuiderBlazor.Shared.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+//using Shared.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -12,5 +13,6 @@ builder.Services.AddScoped(sp => new HttpClient
 
 // Регистрация сервиса
 builder.Services.AddScoped<IPlacesService, PlacesService>();
+builder.Services.AddScoped<ICitiesService, CitiesService>();
 
 await builder.Build().RunAsync();

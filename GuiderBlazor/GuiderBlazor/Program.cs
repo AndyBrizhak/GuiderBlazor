@@ -1,5 +1,6 @@
 using GuiderBlazor.Components;
 using GuiderBlazor.Shared.Services;
+//using Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,7 @@ builder.Services.AddScoped(sp => new HttpClient
 
 });
 builder.Services.AddScoped<IPlacesService, PlacesService>();
-
+builder.Services.AddScoped<ICitiesService, CitiesService>();
 
 
 var app = builder.Build();
