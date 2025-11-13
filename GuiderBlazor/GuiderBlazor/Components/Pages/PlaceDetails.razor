@@ -1,8 +1,8 @@
 ﻿@page "/place/{url}"
 @using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
-@using GuiderBlazor.Shared.Models.JsonLd 
-@using System.Text.Json                   
+@using GuiderBlazor.Shared.Models.JsonLd
+@using System.Text.Json
 @using System.Text.Json.Serialization
 @using System.Globalization
 @using System.Text.RegularExpressions
@@ -38,17 +38,17 @@
     </HeadContent>
 }
 
+@if (isLoading)
+{
+    <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading information...</p>
+    </div>
+}
+else if (place != null)
+{
+    <article class="place-details-container" itemscope itemtype="http://schema.org/@(GetBusinessType(place.Category))">
 
-<article class="place-details-container" itemscope itemtype="http://schema.org/@(place != null ? GetBusinessType(place.Category) : "LocalBusiness")">
-    @if (isLoading)
-    {
-        <div class="loading">
-            <div class="spinner"></div>
-            <p>Loading information...</p>
-        </div>
-    }
-    else if (place != null)
-    {
         <div class="details-header">
             <h1 itemprop="name">@place.Name</h1>
 
@@ -58,7 +58,6 @@
             }
         </div>
 
-        @* ✅ Улучшенные Breadcrumbs с Schema.org *@
         @if (!string.IsNullOrEmpty(place.Category) &&
             place.Address != null &&
             !string.IsNullOrEmpty(place.Address.Province))
@@ -68,7 +67,6 @@
                     itemscope
                     itemtype="https://schema.org/BreadcrumbList">
 
-                    @* 1. Home *@
                     <li itemprop="itemListElement"
                         itemscope
                         itemtype="https://schema.org/ListItem">
@@ -78,7 +76,6 @@
                         <meta itemprop="position" content="1" />
                     </li>
 
-                    @* 2. Category *@
                     <li itemprop="itemListElement"
                         itemscope
                         itemtype="https://schema.org/ListItem">
@@ -88,7 +85,6 @@
                         <meta itemprop="position" content="2" />
                     </li>
 
-                    @* 3. Province *@
                     <li itemprop="itemListElement"
                         itemscope
                         itemtype="https://schema.org/ListItem">
@@ -99,7 +95,6 @@
                         <meta itemprop="position" content="3" />
                     </li>
 
-                    @* 4. Current Place *@
                     <li itemprop="itemListElement"
                         itemscope
                         itemtype="https://schema.org/ListItem">
@@ -159,7 +154,6 @@
 
                 <div class="info-section">
 
-                    @* 1. Адрес (с семантикой PostalAddress) *@
                     @if (place.Address != null)
                     {
                         <div class="info-item" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
@@ -169,7 +163,6 @@
                                 <line x1="16" y1="6" x2="16" y2="22"></line>
                             </svg>
                             <div class="address-details">
-                                @* 1. Улица (Street) *@
                                 @if (!string.IsNullOrEmpty(place.Address.Street))
                                 {
                                     <span itemprop="streetAddress">@place.Address.Street</span>
@@ -180,14 +173,12 @@
                                     bool cityWasRendered = false;
                                 }
 
-                                @* 2. Город (City) *@
                                 @if (!string.IsNullOrEmpty(place.Address.City))
                                 {
                                     <span itemprop="addressLocality">@place.Address.City</span>
                                     cityWasRendered = true;
                                 }
 
-                                @* 3. Провинция (Province) *@
                                 @if (!string.IsNullOrEmpty(place.Address.Province))
                                 {
                                     if (cityWasRendered)
@@ -197,13 +188,11 @@
                                     <span itemprop="addressRegion">@place.Address.Province</span>
                                 }
 
-                                @* 4. Перенос строки (BR) *@
                                 @if (cityWasRendered || !string.IsNullOrEmpty(place.Address.Province))
                                 {
                                     <br />
                                 }
 
-                                @* 5. Страна (Country) *@
                                 @if (!string.IsNullOrEmpty(place.Address.Country))
                                 {
                                     <span itemprop="addressCountry">@place.Address.Country</span>
@@ -212,7 +201,6 @@
                         </div>
                     }
 
-                    @* 2. Google Maps *@
                     @if (place.Location != null && place.Location.Coordinates?.Count == 2)
                     {
                         <div class="info-item">
@@ -232,7 +220,6 @@
                         </div>
                     }
 
-                    @* 3. Телефоны *@
                     @if (place.Phone != null)
                     {
                         @if (!string.IsNullOrEmpty(place.Phone.Callable))
@@ -256,7 +243,6 @@
                         }
                     }
 
-                    @* 4. Соцсети *@
                     @if (place.SocialNetwork != null)
                     {
                         @if (!string.IsNullOrEmpty(place.SocialNetwork.Facebook))
@@ -276,7 +262,6 @@
                     }
                 </div>
 
-                @* 5. График работы *@
                 @if (place.Schedule?.Any() == true)
                 {
                     <div class="info-section">
@@ -284,11 +269,9 @@
                             @foreach (var entry in place.Schedule.Where(s => s.Days.Any() && s.Hours.Any()))
                             {
                                 var daysDisplay = string.Join(", ", entry.Days);
-
                                 <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
                                     <span class="day" itemprop="dayOfWeek">@daysDisplay</span>
 
-                                    @* Цикл на случай, если у дня несколько интервалов (например, сиеста) *@
                                     @foreach (var hour in entry.Hours)
                                     {
                                         <span class="time">
@@ -305,16 +288,18 @@
 
             </aside>
         </div>
-    }
-    else
-    {
-        <div class="error-message">
-            <h2>Place not found</h2>
-            <p>Unfortunately, information about this place is not available.</p>
-            <a href="/" class="btn-back">← Back to list</a>
-        </div>
-    }
-</article>
+
+    </article>
+}
+else
+{
+    <div class="error-message">
+        <h2>Place not found</h2>
+        <p>Unfortunately, information about this place is not available.</p>
+        <a href="/" class="btn-back">← Back to list</a>
+    </div>
+}
+
 
 @code {
     [Parameter]
@@ -333,12 +318,10 @@
     private string FormatProvinceName(string provinceSlug)
     {
         if (string.IsNullOrEmpty(provinceSlug)) return string.Empty;
-
         var parts = provinceSlug.Split('-');
         var formattedParts = parts.Select(part =>
             char.ToUpper(part[0]) + part.Substring(1)
         );
-
         var result = string.Join(" ", formattedParts);
 
         return result switch
@@ -352,7 +335,6 @@
     private string FormatCategoryName(string categorySlug)
     {
         if (string.IsNullOrEmpty(categorySlug)) return string.Empty;
-
         return categorySlug switch
         {
             "services" => "Services",
@@ -375,7 +357,7 @@
         isLoading = true;
         place = await PlacesService.GetPlaceByUrlAsync(Url);
         isLoading = false;
-                
+
         if (place != null)
         {
             BuildLocalBusinessJsonLd();
@@ -386,7 +368,7 @@
             jsonLdBusiness = string.Empty;
             jsonLdBreadcrumbs = string.Empty;
         }
-        
+
     }
 
     /// <summary>
@@ -395,13 +377,11 @@
     private void BuildLocalBusinessJsonLd()
     {
         if (place == null) return;
-
         var schema = new LocalBusinessLd
         {
             Type = GetBusinessType(place.Category),
             Name = place.Name
         };
-
         if (!string.IsNullOrEmpty(place.Description))
         {
             schema.Description = Regex.Replace(place.Description, "<.*?>", "").Replace("\"", "'");
@@ -442,7 +422,6 @@
             var validSchedule = place.Schedule
                 .Where(s => s.Days.Any() && s.Hours.Any())
                 .ToList();
-
             if (validSchedule.Any())
             {
                 schema.OpeningHoursSpecification = validSchedule.Select(entry => new OpeningHoursSpecificationLd
