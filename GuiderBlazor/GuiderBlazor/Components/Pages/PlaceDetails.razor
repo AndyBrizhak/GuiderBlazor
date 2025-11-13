@@ -1,6 +1,9 @@
 ﻿@page "/place/{url}"
 @using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
+@using GuiderBlazor.Shared.Models.JsonLd 
+@using System.Text.Json                   
+@using System.Text.Json.Serialization
 @attribute [StreamRendering]
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
