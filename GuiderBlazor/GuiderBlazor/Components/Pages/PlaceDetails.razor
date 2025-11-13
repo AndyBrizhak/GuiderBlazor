@@ -3,12 +3,49 @@
 @using GuiderBlazor.Shared.Services
 @attribute [StreamRendering]
 @inject IPlacesService PlacesService
+@inject NavigationManager Navigation
 
-<PageTitle>@(place?.Name ?? "Loading...")</PageTitle>
+<PageTitle>@(place?.Name ?? "Loading...") - Guider</PageTitle>
 
-@* Используем <article> с семантическими атрибутами schema.org
-  для улучшения локального SEO (LocalBusiness).
-*@
+@* ✅ JSON-LD для Breadcrumbs (Google предпочитает это) *@
+@if (place != null &&
+     !string.IsNullOrEmpty(place.Category) &&
+     place.Address != null &&
+     !string.IsNullOrEmpty(place.Address.Province))
+{
+    <script type="application/ld+json">
+        {
+          "@@context": "https://schema.org",
+          "@@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "@Navigation.BaseUri"
+            },
+            {
+              "@@type": "ListItem",
+              "position": 2,
+              "name": "@FormatCategoryName(place.Category)",
+              "item": "@($"{Navigation.BaseUri}?Category={place.Category}")"
+            },
+            {
+              "@@type": "ListItem",
+              "position": 3,
+              "name": "@FormatProvinceName(place.Address.Province)",
+              "item": "@($"{Navigation.BaseUri}?Category={place.Category}&Province={place.Address.Province}")"
+            },
+            {
+              "@@type": "ListItem",
+              "position": 4,
+              "name": "@place.Name"
+            }
+          ]
+        }
+    </script>
+}
+
 <article class="place-details-container" itemscope itemtype="http://schema.org/LocalBusiness">
     @if (isLoading)
     {
@@ -20,54 +57,76 @@
     else if (place != null)
     {
         <div class="details-header">
-            @* itemprop="name" указывает поисковику, 
-              что это название компании.
-            *@
             <h1 itemprop="name">@place.Name</h1>
 
             @if (place.Address != null && !string.IsNullOrEmpty(place.Address.City))
             {
-                @* itemprop="addressLocality" - это город *@
                 <span class="place-city" itemprop="addressLocality">@place.Address.City</span>
             }
         </div>
 
-        @if (place.Address != null && !string.IsNullOrEmpty(place.Address.Province))
+        @* ✅ Улучшенные Breadcrumbs с Schema.org *@
+        @if (!string.IsNullOrEmpty(place.Category) &&
+            place.Address != null &&
+            !string.IsNullOrEmpty(place.Address.Province))
         {
-            <nav class="breadcrumbs" aria-label="breadcrumb">
-                <ol>
-                    <li><a href="/">Home</a></li>
-                    <li>
-                        @* Ссылка использует slug (например, "guanacaste") *@
-                        <a href="/location/@place.Address.Province">
-                            @* Текст форматируется (например, "Guanacaste") *@
-                            @FormatProvinceName(place.Address.Province)
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumbs"
+                    itemscope
+                    itemtype="https://schema.org/BreadcrumbList">
+
+                    @* 1. Home *@
+                    <li itemprop="itemListElement"
+                        itemscope
+                        itemtype="https://schema.org/ListItem">
+                        <a href="/" itemprop="item">
+                            <span itemprop="name">Home</span>
                         </a>
+                        <meta itemprop="position" content="1" />
                     </li>
-                    <li><span aria-current="page">@place.Name</span></li>
+
+                    @* 2. Category *@
+                    <li itemprop="itemListElement"
+                        itemscope
+                        itemtype="https://schema.org/ListItem">
+                        <a href="/?Category=@place.Category" itemprop="item">
+                            <span itemprop="name">@FormatCategoryName(place.Category)</span>
+                        </a>
+                        <meta itemprop="position" content="2" />
+                    </li>
+
+                    @* 3. Province *@
+                    <li itemprop="itemListElement"
+                        itemscope
+                        itemtype="https://schema.org/ListItem">
+                        <a href="/?Category=@place.Category&Province=@place.Address.Province"
+                           itemprop="item">
+                            <span itemprop="name">@FormatProvinceName(place.Address.Province)</span>
+                        </a>
+                        <meta itemprop="position" content="3" />
+                    </li>
+
+                    @* 4. Current Place *@
+                    <li itemprop="itemListElement"
+                        itemscope
+                        itemtype="https://schema.org/ListItem">
+                        <span itemprop="name" aria-current="page">@place.Name</span>
+                        <meta itemprop="position" content="4" />
+                    </li>
                 </ol>
             </nav>
         }
 
         @if (place.ImgLink?.Any() == true)
         {
-            @* (A) Контейнер, который будет прокручиваться *@
             <div class="horizontal-scroll-container"
                  aria-label="Image Gallery"
                  role="region">
 
-                @* (B) "Трек", который содержит все элементы *@
                 <ul class="scroll-track">
                     @foreach (var img in place.ImgLink)
                     {
-                        @* (C) Каждый элемент списка - это ссылка-картинка *@
                         <li class="scroll-item">
-                            @*
-                               - href="@img" : Ссылка ведет на само изображение (отлично для SEO).
-                               - target="_blank" : Открывает в новой вкладке.
-                               - itemprop="image" : Сообщает Google, что это изображение
-                                                    принадлежит этому LocalBusiness.
-                            *@
                             <a href="@img"
                                target="_blank"
                                rel="noopener noreferrer"
@@ -83,23 +142,15 @@
         }
 
         <div class="details-content">
-            @* Используем <section> для основного контента 
-              и <aside> для боковой панели (контакты, часы).
-            *@
             <section class="main-info">
 
-                @* Заголовок "Description" удален *@
                 @if (!string.IsNullOrEmpty(place.Description))
                 {
                     <div class="info-section" itemprop="description">
-                        @* Используем (MarkupString) для корректного 
-                          отображения <br /> из описания.
-                        *@
                         <p>@((MarkupString)place.Description.Replace("\n", "<br />"))</p>
                     </div>
                 }
 
-                @* Заголовок "Tags" удален *@
                 @if (place.Tags?.Any() == true)
                 {
                     <div class="tags-container">
@@ -113,7 +164,6 @@
 
             <aside class="sidebar-info">
 
-                
                 <div class="info-section">
 
                     @* 1. Адрес (с семантикой PostalAddress) *@
@@ -125,17 +175,6 @@
                                 <line x1="8" y1="2" x2="8" y2="18"></line>
                                 <line x1="16" y1="6" x2="16" y2="22"></line>
                             </svg>
-                           @*  <span>
-                                @if (!string.IsNullOrEmpty(place.Address.Street))
-                                {
-                                    <span itemprop="streetAddress">@place.Address.Street</span>
-                        
-                                    <br />
-                                }
-                                <span itemprop="addressLocality">@place.Address.City</span>,
-                                <span itemprop="addressRegion">@place.Address.Province</span><br />
-                                <span itemprop="addressCountry">@place.Address.Country</span>
-                            </span> *@
                             <div class="address-details">
                                 @* 1. Улица (Street) *@
                                 @if (!string.IsNullOrEmpty(place.Address.Street))
@@ -145,8 +184,6 @@
                                 }
 
                                 @{
-                                    // Этот флаг нужен, чтобы решить, ставить ли запятую
-                                    // между городом и провинцией.
                                     bool cityWasRendered = false;
                                 }
 
@@ -160,7 +197,6 @@
                                 @* 3. Провинция (Province) *@
                                 @if (!string.IsNullOrEmpty(place.Address.Province))
                                 {
-                                    // Добавляем запятую, только если перед этим был город
                                     if (cityWasRendered)
                                     {
                                         @:,
@@ -169,7 +205,6 @@
                                 }
 
                                 @* 4. Перенос строки (BR) *@
-                                @* Добавляем <br>, только если был Город ИЛИ Провинция *@
                                 @if (cityWasRendered || !string.IsNullOrEmpty(place.Address.Province))
                                 {
                                     <br />
@@ -184,6 +219,7 @@
                         </div>
                     }
 
+                    @* 2. Google Maps *@
                     @if (place.Location != null && place.Location.Coordinates?.Count == 2)
                     {
                         <div class="info-item">
@@ -191,11 +227,8 @@
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
-                                                        
+
                             @{
-                                // Предполагаем, что Координаты [1] - это Широта (Latitude)
-                                // Координаты [0] - это Долгота (Longitude)
-                                // InvariantCulture гарантирует, что 10.5 не станет "10,5"
                                 var latitude = place.Location.Coordinates[1].ToString(System.Globalization.CultureInfo.InvariantCulture);
                                 var longitude = place.Location.Coordinates[0].ToString(System.Globalization.CultureInfo.InvariantCulture);
                                 var mapUrl = $"https://www.google.com/maps?q={latitude},{longitude}";
@@ -206,29 +239,23 @@
                         </div>
                     }
 
-                    @* --- 4. Блок Телефонов (ИСПРАВЛЕННЫЙ) --- *@
+                    @* 3. Телефоны *@
                     @if (place.Phone != null)
                     {
-                        @* --- 4a. Номер для звонка (Callable) --- *@
                         @if (!string.IsNullOrEmpty(place.Phone.Callable))
                         {
                             <div class="info-item">
-                                @* Иконка телефона *@
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
 
-                                @* Ссылка "tel:" для прямого звонка *@
                                 <a href="@($"tel:{place.Phone.Callable}")" itemprop="telephone">@place.Phone.Callable</a>
                             </div>
                         }
 
-                        @* --- 4b. Номер WhatsApp --- *@
                         @if (!string.IsNullOrEmpty(place.Phone.Whatsapp))
                         {
                             <div class="info-item">
-                                @* Иконка WhatsApp *@
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
 
-                                @* Ссылка "wa.me/" для чата *@
                                 <a href="@($"https://wa.me/{place.Phone.Whatsapp}")" target="_blank" rel="noopener noreferrer">
                                     Chat on WhatsApp (@place.Phone.Whatsapp)
                                 </a>
@@ -236,65 +263,47 @@
                         }
                     }
 
-                    
-                    @* 6. Ссылки на соцсети (ВКЛЮЧАЯ Telegram) *@
+                    @* 4. Соцсети *@
                     @if (place.SocialNetwork != null)
                     {
-                        if (!string.IsNullOrEmpty(place.SocialNetwork.Facebook))
+                        @if (!string.IsNullOrEmpty(place.SocialNetwork.Facebook))
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
                                 <a href="@place.SocialNetwork.Facebook" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Facebook</a>
                             </div>
                         }
-                        if (!string.IsNullOrEmpty(place.SocialNetwork.Instagram))
+                        @if (!string.IsNullOrEmpty(place.SocialNetwork.Instagram))
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                                 <a href="@place.SocialNetwork.Instagram" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Instagram</a>
                             </div>
                         }
-                        
                     }
                 </div>
 
-                @* 7. График работы (ИСПРАВЛЕНО) *@
+                @* 5. График работы *@
                 @if (place.Schedule?.Any() == true)
                 {
                     <div class="info-section">
-                        @* <h2>Opening Hours</h2> *@
                         <ul class="schedule-list">
-
-                            @* Цикл по List<ScheduleEntry>. 
-                                'entry' - это один ScheduleEntry.
-                            *@
                             @foreach (var entry in place.Schedule.Where(s => s.Days.Any() && s.Hours.Any()))
                             {
-                                // 1. Объединяем список дней (Days) в одну строку.
-                                //    Например: ["Monday", "Tuesday"] -> "Monday, Tuesday"
                                 var daysDisplay = string.Join(", ", entry.Days);
-
-                                // 2. Объединяем список часов (Hours) в одну строку.
-                                //    Используем Linq .Select() для преобразования каждого HoursEntry
-                                //    в строку "Start - End".
-                                //    Например: [{S:"09:00", E:"12:00"}, {S:"13:00", E:"17:00"}] -> "09:00 - 12:00, 13:00 - 17:00"
                                 var hoursDisplay = string.Join(", ",
                                 entry.Hours.Select(h => $"{h.Start} - {h.End}")
                                 );
 
                                 <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
-
-                                    @* Выводим объединенные дни *@
                                     <span class="day" itemprop="dayOfWeek">@daysDisplay</span>
-
-                                    @* Выводим объединенные часы *@
                                     <span class="time" itemprop="opens">@hoursDisplay</span>
                                 </li>
                             }
                         </ul>
                     </div>
                 }
-                
+
             </aside>
         </div>
     }
@@ -311,6 +320,7 @@
 @code {
     [Parameter]
     public string Url { get; set; } = string.Empty;
+
     private Place? place;
     private bool isLoading = true;
 
@@ -318,7 +328,6 @@
     {
         if (string.IsNullOrEmpty(provinceSlug)) return string.Empty;
 
-        // Превращает "san-jose" в "San José" или "guanacaste" в "Guanacaste"
         var parts = provinceSlug.Split('-');
         var formattedParts = parts.Select(part =>
             char.ToUpper(part[0]) + part.Substring(1)
@@ -326,17 +335,30 @@
 
         var result = string.Join(" ", formattedParts);
 
-        // Особые случаи для акцентов
-        if (result == "San Jose") return "San José";
-        if (result == "Limon") return "Limón";
-        if (result == "Cartago") return "Cartago";
+        return result switch
+        {
+            "San Jose" => "San José",
+            "Limon" => "Limón",
+            _ => result
+        };
+    }
 
-        return result;
+    private string FormatCategoryName(string categorySlug)
+    {
+        if (string.IsNullOrEmpty(categorySlug)) return string.Empty;
+
+        return categorySlug switch
+        {
+            "services" => "Services",
+            "to-eat" => "Food & Restaurants",
+            "adventures" => "Adventures",
+            "shops" => "Shopping",
+            _ => char.ToUpper(categorySlug[0]) + categorySlug.Substring(1)
+        };
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        
         if (string.IsNullOrEmpty(Url))
         {
             isLoading = false;
@@ -344,15 +366,8 @@
             return;
         }
 
-        // 1. Устанавливаем флаг, чтобы показать спиннер
         isLoading = true;
-
-        // 2. Выполняем загрузку данных ОДИН РАЗ
         place = await PlacesService.GetPlaceByUrlAsync(Url);
-
-        // 3. Снимаем флаг, чтобы показать контент
         isLoading = false;
     }
 }
-
-

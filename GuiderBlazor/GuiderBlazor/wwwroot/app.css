@@ -64,7 +64,63 @@ html, body {
     background: transparent;
 }
 
-/*
-    СТИЛИ ДЛЯ .hero-section БЫЛИ ОТСЮДА УДАЛЕНЫ
-    и ПЕРЕНЕСЕНЫ в Home.razor.css
-*/
+/* Breadcrumbs styling */
+.breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    margin: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+    .breadcrumbs li {
+        display: flex;
+        align-items: center;
+    }
+
+        .breadcrumbs li:not(:last-child)::after {
+            content: '›';
+            margin-left: 0.5rem;
+            color: #999;
+            font-weight: bold;
+        }
+
+    .breadcrumbs a {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .breadcrumbs a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+    .breadcrumbs [aria-current="page"] {
+        color: #333;
+        font-weight: 500;
+    }
+
+/* Dark theme support */
+.dark-theme .breadcrumbs {
+    color: #aaa;
+}
+
+    .dark-theme .breadcrumbs li:not(:last-child)::after {
+        color: #666;
+    }
+
+    .dark-theme .breadcrumbs a {
+        color: #60a5fa;
+    }
+
+        .dark-theme .breadcrumbs a:hover {
+            color: #93c5fd;
+        }
+
+    .dark-theme .breadcrumbs [aria-current="page"] {
+        color: #e5e5e5;
+    }
