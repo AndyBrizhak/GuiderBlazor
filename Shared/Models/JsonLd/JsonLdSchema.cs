@@ -26,7 +26,7 @@ namespace GuiderBlazor.Shared.Models.JsonLd
 
         [JsonPropertyName("image")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? Image { get; set; }
+        public List<string>? Image { get; set; } 
 
         [JsonPropertyName("address")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

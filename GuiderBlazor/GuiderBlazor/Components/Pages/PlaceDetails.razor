@@ -27,8 +27,19 @@
     </script>
 }
 
+@if (place != null && !string.IsNullOrEmpty(place.Description))
+{
+    <HeadContent>
+        @{
+            var cleanDesc = System.Text.RegularExpressions.Regex.Replace(place.Description, "<.*?>", "").Replace("\"", "'");
+            var shortDesc = cleanDesc.Length > 160 ? cleanDesc.Substring(0, 160) + "..." : cleanDesc;
+        }
+        <meta name="description" content="@shortDesc" />
+    </HeadContent>
+}
 
-<article class="place-details-container" itemscope itemtype="http://schema.org/LocalBusiness">
+
+<article class="place-details-container" itemscope itemtype="http://schema.org/@(place != null ? GetBusinessType(place.Category) : "LocalBusiness")">
     @if (isLoading)
     {
         <div class="loading">
@@ -273,13 +284,19 @@
                             @foreach (var entry in place.Schedule.Where(s => s.Days.Any() && s.Hours.Any()))
                             {
                                 var daysDisplay = string.Join(", ", entry.Days);
-                                var hoursDisplay = string.Join(", ",
-                                entry.Hours.Select(h => $"{h.Start} - {h.End}")
-                                );
 
                                 <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
                                     <span class="day" itemprop="dayOfWeek">@daysDisplay</span>
-                                    <span class="time" itemprop="opens">@hoursDisplay</span>
+
+                                    @* Цикл на случай, если у дня несколько интервалов (например, сиеста) *@
+                                    @foreach (var hour in entry.Hours)
+                                    {
+                                        <span class="time">
+                                            <meta itemprop="opens" content="@hour.Start" />
+                                            <meta itemprop="closes" content="@hour.End" />
+                                            @hour.Start - @hour.End
+                                        </span>
+                                    }
                                 </li>
                             }
                         </ul>
@@ -392,7 +409,7 @@
 
         if (place.ImgLink?.Any() == true)
         {
-            schema.Image = place.ImgLink.First();
+            schema.Image = place.ImgLink; // Передаем весь список
         }
 
         if (place.Address != null)
