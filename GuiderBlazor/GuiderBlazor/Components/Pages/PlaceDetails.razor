@@ -4,50 +4,29 @@
 @using GuiderBlazor.Shared.Models.JsonLd 
 @using System.Text.Json                   
 @using System.Text.Json.Serialization
+@using System.Globalization
+@using System.Text.RegularExpressions
+
 @attribute [StreamRendering]
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
 
 <PageTitle>@(place?.Name ?? "Loading...") - Guider</PageTitle>
 
-@* ✅ JSON-LD для Breadcrumbs (Google предпочитает это) *@
-@if (place != null &&
-     !string.IsNullOrEmpty(place.Category) &&
-     place.Address != null &&
-     !string.IsNullOrEmpty(place.Address.Province))
+@if (!string.IsNullOrEmpty(jsonLdBusiness))
 {
     <script type="application/ld+json">
-        {
-          "@@context": "https://schema.org",
-          "@@type": "BreadcrumbList",
-          "itemListElement": [
-            {
-              "@@type": "ListItem",
-              "position": 1,
-              "name": "Home",
-              "item": "@Navigation.BaseUri"
-            },
-            {
-              "@@type": "ListItem",
-              "position": 2,
-              "name": "@FormatCategoryName(place.Category)",
-              "item": "@($"{Navigation.BaseUri}?Category={place.Category}")"
-            },
-            {
-              "@@type": "ListItem",
-              "position": 3,
-              "name": "@FormatProvinceName(place.Address.Province)",
-              "item": "@($"{Navigation.BaseUri}?Category={place.Category}&Province={place.Address.Province}")"
-            },
-            {
-              "@@type": "ListItem",
-              "position": 4,
-              "name": "@place.Name"
-            }
-          ]
-        }
+        @((MarkupString)jsonLdBusiness)
     </script>
 }
+
+@if (!string.IsNullOrEmpty(jsonLdBreadcrumbs))
+{
+    <script type="application/ld+json">
+        @((MarkupString)jsonLdBreadcrumbs)
+    </script>
+}
+
 
 <article class="place-details-container" itemscope itemtype="http://schema.org/LocalBusiness">
     @if (isLoading)
@@ -326,6 +305,13 @@
 
     private Place? place;
     private bool isLoading = true;
+    private string jsonLdBusiness = string.Empty;
+    private string jsonLdBreadcrumbs = string.Empty;
+
+    private static readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     private string FormatProvinceName(string provinceSlug)
     {
@@ -372,5 +358,154 @@
         isLoading = true;
         place = await PlacesService.GetPlaceByUrlAsync(Url);
         isLoading = false;
+                
+        if (place != null)
+        {
+            BuildLocalBusinessJsonLd();
+            BuildBreadcrumbsJsonLd();
+        }
+        else
+        {
+            jsonLdBusiness = string.Empty;
+            jsonLdBreadcrumbs = string.Empty;
+        }
+        
+    }
+
+    /// <summary>
+    /// Строит JSON-LD для LocalBusiness на основе 'place'
+    /// </summary>
+    private void BuildLocalBusinessJsonLd()
+    {
+        if (place == null) return;
+
+        var schema = new LocalBusinessLd
+        {
+            Type = GetBusinessType(place.Category),
+            Name = place.Name
+        };
+
+        if (!string.IsNullOrEmpty(place.Description))
+        {
+            schema.Description = Regex.Replace(place.Description, "<.*?>", "").Replace("\"", "'");
+        }
+
+        if (place.ImgLink?.Any() == true)
+        {
+            schema.Image = place.ImgLink.First();
+        }
+
+        if (place.Address != null)
+        {
+            schema.Address = new PostalAddressLd
+            {
+                StreetAddress = (place.Address.Street != null && place.Address.Street != "-") ? place.Address.Street : null,
+                AddressLocality = string.IsNullOrEmpty(place.Address.City) ? null : place.Address.City,
+                AddressRegion = string.IsNullOrEmpty(place.Address.Province) ? null : place.Address.Province,
+                AddressCountry = string.IsNullOrEmpty(place.Address.Country) ? null : place.Address.Country
+            };
+        }
+
+        if (place.Location?.Coordinates?.Count == 2)
+        {
+            schema.Geo = new GeoCoordinatesLd
+            {
+                Latitude = place.Location.Coordinates[1].ToString(CultureInfo.InvariantCulture),
+                Longitude = place.Location.Coordinates[0].ToString(CultureInfo.InvariantCulture)
+            };
+        }
+
+        if (place.Phone != null && !string.IsNullOrEmpty(place.Phone.Callable))
+        {
+            schema.Telephone = place.Phone.Callable;
+        }
+
+        if (place.Schedule?.Any() == true)
+        {
+            var validSchedule = place.Schedule
+                .Where(s => s.Days.Any() && s.Hours.Any())
+                .ToList();
+
+            if (validSchedule.Any())
+            {
+                schema.OpeningHoursSpecification = validSchedule.Select(entry => new OpeningHoursSpecificationLd
+                {
+                    DayOfWeek = entry.Days,
+                    Opens = entry.Hours.First().Start,
+                    Closes = entry.Hours.First().End
+                }).ToList();
+            }
+        }
+
+        if (place.SocialNetwork != null)
+        {
+            var socialLinks = new List<string>();
+            if (!string.IsNullOrEmpty(place.SocialNetwork.Facebook)) socialLinks.Add(place.SocialNetwork.Facebook);
+            if (!string.IsNullOrEmpty(place.SocialNetwork.Instagram)) socialLinks.Add(place.SocialNetwork.Instagram);
+
+            if (socialLinks.Any())
+            {
+                schema.SameAs = socialLinks;
+            }
+        }
+
+        jsonLdBusiness = JsonSerializer.Serialize(schema, jsonOptions);
+    }
+
+    /// <summary>
+    /// Строит JSON-LD для Breadcrumbs на основе 'place'
+    /// </summary>
+    private void BuildBreadcrumbsJsonLd()
+    {
+        if (place == null || string.IsNullOrEmpty(place.Category) || place.Address == null || string.IsNullOrEmpty(place.Address.Province))
+        {
+            jsonLdBreadcrumbs = string.Empty;
+            return;
+        }
+
+        var schema = new BreadcrumbListLd
+        {
+            Type = "BreadcrumbList",
+            ItemListElement = new List<ListItemLd>
+            {
+                new ListItemLd
+                {
+                    Position = 1,
+                    Name = "Home",
+                    Item = Navigation.BaseUri
+                },
+                new ListItemLd
+                {
+                    Position = 2,
+                    Name = FormatCategoryName(place.Category),
+                    Item = $"{Navigation.BaseUri}?Category={place.Category}"
+                },
+                new ListItemLd
+                {
+                    Position = 3,
+                    Name = FormatProvinceName(place.Address.Province),
+                    Item = $"{Navigation.BaseUri}?Category={place.Category}&Province={place.Address.Province}"
+                },
+                new ListItemLd
+                {
+                    Position = 4,
+                    Name = place.Name
+                }
+            }
+        };
+
+        jsonLdBreadcrumbs = JsonSerializer.Serialize(schema, jsonOptions);
+    }
+
+    private string GetBusinessType(string category)
+    {
+        return category switch
+        {
+            "to-eat" => "Restaurant",
+            "services" => "LocalBusiness",
+            "adventures" => "TouristAttraction",
+            "shops" => "Store",
+            _ => "LocalBusiness"
+        };
     }
 }
