@@ -14,5 +14,6 @@ builder.Services.AddScoped(sp => new HttpClient
 // Регистрация сервиса
 builder.Services.AddScoped<IPlacesService, PlacesService>();
 builder.Services.AddScoped<ICitiesService, CitiesService>();
+builder.Services.AddScoped<ITagsService, TagsService>();
 
 await builder.Build().RunAsync();
