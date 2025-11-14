@@ -3,6 +3,7 @@
 @* @using Shared.Services *@
 @rendermode InteractiveServer
 @inject ICitiesService CitiesService
+@inject ITagsService TagsService
 
 <div class="filter-container">
     <div class="filter-card">
@@ -89,6 +90,58 @@
 
         <div class="tags-content @(isTagsFilterOpen ? "is-open" : "")">
             <div class="form-group">
+                <label class="scroller-label" style="margin-bottom: 8px;">Filter by Tags:</label>
+
+                @* Этот контейнер будет использовать CSS (который вам нужно будет добавить) 
+                    для переноса тегов на несколько строк.
+                *@
+                <div class="tag-cloud-container">
+
+                    @* 1. Кнопка "All" (сбрасывает теги) *@
+                    <button class="chip-tag chip-all @(filters.Tags == null || !filters.Tags.Any() ? "active" : "")"
+                            @onclick="ClearAllTags">
+                        All
+                    </button>
+
+                    @* 2. Выбранные теги (из filters.Tags) *@
+                    @if (filters.Tags != null && filters.Tags.Any())
+                    {
+                        @foreach (var selectedTag in filters.Tags)
+                        {
+                            <button class="chip-tag active" @onclick="() => ToggleTag(selectedTag)">
+                                @selectedTag
+                                <span class="chip-remove">×</span> @* Иконка для удаления *@
+                            </button>
+                        }
+                    }
+
+                    @* 3. Доступные теги (из activeTags) *@
+                    @if (isLoadingTags)
+                    {
+                        <span class="chip-tag disabled">Loading tags...</span>
+                    }
+                    else
+                    {
+                        @* Показываем только те теги, которые ЕЩЕ НЕ выбраны.
+                            'activeTags' - это теги, которые API вернул на основе текущих фильтров (включая уже выбранные)
+                        *@
+                        @foreach (var availableTag in activeTags.Where(at => !(filters.Tags?.Contains(at) ?? false)))
+                        {
+                            <button class="chip-tag" @onclick="() => ToggleTag(availableTag)">
+                                @availableTag
+                            </button>
+                        }
+                    }
+                </div>
+
+                @if (!isLoadingTags && activeTags.Count == 0 && (filters.Tags == null || !filters.Tags.Any()))
+                {
+                    <small>No tags found for the current filter.</small>
+                }
+            </div>
+
+            <div class="form-group">
+                <label>Or add manually:</label>
                 <input type="text"
                        class="form-control form-control-compact"
                        @bind="tagsInput"
@@ -103,10 +156,7 @@
 
     </div> 
 
-   
-
     <div class="filter-header" @onclick="ToggleAdvancedFilter">
-        <h3>Advanced Filters</h3>
         <div class="filter-header" @onclick="ToggleAdvancedFilter">
             <h3>Advanced Filters</h3>
             <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
@@ -253,6 +303,8 @@
     private bool isTagsFilterOpen = false;
     private List<string> activeCities = new();
     private bool isLoadingCities = true;
+    private List<string> activeTags = new();
+    private bool isLoadingTags = true;
 
     // protected override void OnParametersSet()
     // {
@@ -276,6 +328,7 @@
 
         // Загружаем города на основе текущих фильтров
         await LoadActiveCities();
+        await LoadActiveTags();
     }
 
     private void ToggleAdvancedFilter()
@@ -293,14 +346,22 @@
         // Parse tags from string
         if (!string.IsNullOrWhiteSpace(tagsInput))
         {
-            filters.Tags = tagsInput
+            // Добавляем теги из input к уже выбранным из облака ---
+            var tagsFromInput = tagsInput
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(t => t.Trim())
                 .ToList();
+
+            var existingTags = filters.Tags ?? new List<string>();
+
+            // Обьединяем, избегая дубликатов
+            filters.Tags = existingTags.Union(tagsFromInput).ToList();
+            if (!filters.Tags.Any()) filters.Tags = null;
         }
         else
         {
-            filters.Tags = null;
+            // Не сбрасываем, если input пуст, но теги выбраны из облака
+            // filters.Tags = null;
         }
 
         // Parse geospatial parameters
@@ -351,6 +412,66 @@
         // Сообщаем родителю, что фильтры сброшены
         await OnFilterChanged.InvokeAsync(filters);
         await LoadActiveCities();
+        await LoadActiveTags();
+    }
+
+    /// <summary>
+    /// Загружает список доступных тегов из API на основе текущих фильтров
+    /// (категории, провинции, города и УЖЕ ВЫБРАННЫХ тегов).
+    /// </summary>
+    private async Task LoadActiveTags()
+    {
+        isLoadingTags = true;
+        activeTags = await TagsService.GetActiveTagsAsync(
+            filters.Category,
+            filters.Province,
+            filters.City,
+            filters.Tags // Передаем уже выбранные теги для drill-down
+        );
+        isLoadingTags = false;
+    }
+
+    /// <summary>
+    /// Обработчик клика по тегу (выбрать/снять выбор).
+    /// </summary>
+    private async Task ToggleTag(string tagToToggle)
+    {
+        if (filters.Tags == null)
+        {
+            filters.Tags = new List<string>();
+        }
+
+        if (filters.Tags.Contains(tagToToggle))
+        {
+            filters.Tags.Remove(tagToToggle);
+            if (!filters.Tags.Any())
+            {
+                filters.Tags = null; // Сбрасываем в null, если список пуст
+            }
+        }
+        else
+        {
+            filters.Tags.Add(tagToToggle);
+        }
+
+        filters.Page = 1; // Сбрасываем на 1-ю страницу при любом изменении
+
+        // Cообщаем родителю (PlacesList) об изменении фильтров.
+        // Он, в свою очередь, обновит данные и передаст их нам,
+        // что вызовет OnParametersSetAsync и перезагрузит список тегов.
+        await OnFilterChanged.InvokeAsync(filters);
+    }
+
+    /// <summary>
+    /// Сбрасывает только фильтр по тегам (кнопка "All").
+    /// </summary>
+    private async Task ClearAllTags()
+    {
+        if (filters.Tags == null || !filters.Tags.Any()) return; // Изменений нет
+
+        filters.Tags = null;
+        filters.Page = 1; // Сбрасываем на 1-ю страницу
+        await OnFilterChanged.InvokeAsync(filters);
     }
 
     // Генерирует URL для <a> ссылок категорий
@@ -430,11 +551,28 @@
         if (filters.PerPage != 4)
             queryParams["PerPage"] = filters.PerPage;
 
-        var queryString = string.Join("&", queryParams
+        // 'Tags' должны сериализоваться как несколько параметров &Tags=tag1&Tags=tag2
+        var queryParts = new List<string>();
+        // Добавляем обычные параметры
+        queryParts.AddRange(queryParams
             .Where(kvp => kvp.Value != null)
-            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
+            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}")); 
+        // Добавляем теги
+        if (filters.Tags != null && filters.Tags.Any())
+        {
+            foreach (var tag in filters.Tags)
+            {
+                queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
+            }
+        }
 
-        return string.IsNullOrEmpty(queryString) ? "/" : $"?{queryString}";
+        return queryParts.Count == 0?"/" : $"?{string.Join("&", queryParts)}"; 
+
+        // var queryString = string.Join("&", queryParams
+        //     .Where(kvp => kvp.Value != null)
+        //     .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
+
+        // return string.IsNullOrEmpty(queryString) ? "/" : $"?{queryString}";
     }
 }
 
