@@ -7,7 +7,9 @@
 @using System.Globalization
 @using System.Text.RegularExpressions
 
-@attribute [StreamRendering]
+@* Отлючено для SEO *@
+@* @attribute [StreamRendering] *@
+
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
 
@@ -38,6 +40,11 @@
     </HeadContent>
 }
 
+
+@* Эта логика @if (isLoading) выполняtся ИСКЛЮЧИТЕЛЬНО на сервере.
+  Клиент (и бот) НИКОГДА не увидит <div class="loading">.
+  Он получит сразу либо <article>, либо <div class="error-message">.
+*@
 @if (isLoading)
 {
     <div class="loading">
