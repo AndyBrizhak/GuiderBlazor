@@ -139,34 +139,19 @@
                     <small>No tags found for the current filter.</small>
                 }
             </div>
-
-            <div class="form-group">
-                <label>Or add manually:</label>
-                <input type="text"
-                       class="form-control form-control-compact"
-                       @bind="tagsInput"
-                       placeholder="e.g., Bank, ATM, wifi" />
-                <small>Separate tags with commas</small>
-                <select class="form-control form-control-compact" @bind="filters.TagsMode">
-                    <option value="any">Any tag (OR)</option>
-                    <option value="all">All tags (AND)</option>
-                </select>
-            </div>
         </div>
-
     </div> 
 
     <div class="filter-header" @onclick="ToggleAdvancedFilter">
-        <div class="filter-header" @onclick="ToggleAdvancedFilter">
-            <h3>Advanced Filters</h3>
+        <h3>Advanced Filters</h3>
             <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
             </span>
-        </div>
+    </div>
 
-        <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
+    <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
             <div>
                 <div class="form-group">
                     <label>Search (name, description):</label>
@@ -277,7 +262,6 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
 
 @code {
@@ -487,8 +471,8 @@
             // Сбрасываем страницу и устанавливаем категорию
             Page = 1,
             Category = category,
-            Status = "active"
-
+            Status = "active",
+            Tags = filters.Tags
         };
 
         return GetQueryString(linkFilters);
@@ -504,7 +488,8 @@
             Province = province,
             City = "",
             PerPage = filters.PerPage,
-            Status = "active"
+            Status = "active",
+            Tags = filters.Tags
         };
 
         return GetQueryString(linkFilters);
@@ -520,7 +505,8 @@
             Province = filters.Province, // Сохраняем
             City = city, // Устанавливаем город
             PerPage = filters.PerPage, // Сохраняем
-            Status = "active"
+            Status = "active",
+            Tags = filters.Tags
         };
         return GetQueryString(linkFilters);
     }

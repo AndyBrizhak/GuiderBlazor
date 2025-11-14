@@ -84,6 +84,10 @@
     [SupplyParameterFromQuery]
     public int PerPage { get; set; } = 4;
 
+    // Blazor может привязать ?Tags=a&Tags=b к string[], но не к List<string>
+    [SupplyParameterFromQuery(Name = "Tags")]
+    public string[]? Tags { get; set; }
+
     private PlacesResponse? placesResponse;
     private PlaceFilterParams currentFilters = new();
     private bool isLoading = true;
@@ -99,7 +103,9 @@
             City = this.City,
             Page = this.Page,
             PerPage = this.PerPage,
-            Status = "active"
+            Status = "active",
+            // Конвертируем массив из URL в список для сервиса
+            Tags = this.Tags?.ToList()
         };
 
         if (currentFilters.Page <= 0) currentFilters.Page = 1;
@@ -114,8 +120,7 @@
     {
         Navigation.NavigateTo(GetQueryString(newFilters));
     }
-
-    // --- ⬇️ НОВЫЙ ВСПОМОГАТЕЛЬНЫЙ МЕТОД ⬇️ ---
+        
     // Генерирует URL для <a> ссылок пагинации
     private string GetUrlForPage(int newPage)
     {
@@ -134,7 +139,8 @@
             Province = currentFilters.Province,
             City = currentFilters.City,
             PerPage = currentFilters.PerPage,
-            Page = newPage // Устанавливаем НОВУЮ страницу
+            Page = newPage, // Устанавливаем НОВУЮ страницу
+            Tags = currentFilters.Tags
         };
 
         return GetQueryString(linkFilters);
@@ -158,10 +164,26 @@
         if (filters.PerPage != 4)
             queryParams["PerPage"] = filters.PerPage;
 
-        var queryString = string.Join("&", queryParams
+        // 'Tags' должны сериализоваться как несколько параметров &Tags=tag1&Tags=tag2
+        var queryParts = new List<string>();
+
+        // Добавляем обычные параметры
+        queryParts.AddRange(queryParams
             .Where(kvp => kvp.Value != null)
             .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
 
-        return string.IsNullOrEmpty(queryString) ? "/" : $"?{queryString}";
+        // Добавляем теги
+        if (filters.Tags != null && filters.Tags.Any())
+        {
+            foreach (var tag in filters.Tags)
+            {
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
+                }
+            }
+        }
+
+        return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
 }

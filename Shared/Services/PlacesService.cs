@@ -139,11 +139,14 @@ public class PlacesService : IPlacesService
         {
             var tagsString = string.Join(",", filters.Tags);
             queryParams.Add($"tags={Uri.EscapeDataString(tagsString)}");
+            // Всегда принудительно используем "all" (AND) логику,
+            // если выбраны хоть какие-то теги.
+            queryParams.Add($"tagsMode=all");
         }
 
-        // TagsMode - отправляем только если есть теги, или если значение не "any"
-        if (filters.Tags?.Any() == true || filters.TagsMode != "any")
-            queryParams.Add($"tagsMode={filters.TagsMode}");
+        
+        //if (filters.Tags?.Any() == true || filters.TagsMode != "any")
+        //    queryParams.Add($"tagsMode={filters.TagsMode}");
 
         // Геопространственный поиск
         if (filters.Latitude.HasValue)
