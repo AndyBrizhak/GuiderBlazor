@@ -342,7 +342,8 @@
 /* Обновляем селектор для меток */
 .province-scroller .scroller-label,
 .category-scroller .scroller-label,
-.city-scroller .scroller-label {
+.city-scroller .scroller-label,
+.tags-toggle .scroller-label {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
@@ -366,4 +367,89 @@
 
     .chip-all.active:hover {
         background-color: var(--bg-surface-hover);
+    }
+
+/*
+=========================================
+    КОМПАКТНЫЙ FORM CONTROL ДЛЯ ТЕГОВ
+=========================================
+*/
+.form-control-compact {
+    padding-top: 6px; /* Тот же отступ, что у .province-chip */
+    padding-bottom: 6px; /* Тот же отступ, что у .province-chip */
+    font-size: 0.9rem; /* Тот же размер шрифта, что у .province-chip */
+    /* Остальные стили (ширина, рамка и т.д.) 
+       возьмутся из .form-control */
+}
+
+/*
+=========================================
+    НОВЫЕ СТИЛИ ДЛЯ TAGS ВНУТРИ FILTER-CARD
+=========================================
+*/
+
+/* 1. Заголовок "Tags", стилизованный как скроллер */
+.tags-toggle {
+    /* Layout из .filter-header */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    /* Отступы и рамка из .city-scroller */
+    margin: 0 -1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+}
+
+@media (min-width: 768px) {
+    .tags-toggle {
+        margin: 0 -1.5rem;
+        padding: 0.5rem 1.5rem;
+    }
+}
+
+.tags-toggle:hover {
+    background-color: var(--bg-surface-hover);
+}
+
+/* 2. Контент "Tags", стилизованный как скроллер */
+.tags-content {
+    /* Отступы и рамка из .city-scroller */
+    margin: 0 -1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    /* Логика скрытия/показа (вместо grid) */
+    display: none;
+    overflow: hidden;
+    background-color: var(--bg-surface-hover); /* Легкий фон */
+}
+
+@media (min-width: 768px) {
+    .tags-content {
+        margin: 0 -1.5rem;
+        padding: 0.5rem 1.5rem;
+    }
+}
+
+.tags-content.is-open {
+    display: block;
+}
+
+/* Используем flex для полей */
+.tags-content .form-group {
+    display: flex;
+    flex-wrap: wrap; /* Для мобильных */
+    gap: 8px;
+    margin-bottom: 0; /* Убираем лишний отступ */
+}
+
+    .tags-content .form-group .form-control-compact {
+        flex-grow: 1; /* Поля делят место */
+        min-width: 150px; /* Мин. ширина для полей */
+    }
+
+    /* Скрываем подсказку, для нее нет места */
+    .tags-content .form-group small {
+        display: none;
     }
