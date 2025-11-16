@@ -712,3 +712,46 @@
         color: var(--text-secondary);
         padding: 4px 0;
     }
+
+/*
+=========================================
+    ДОПОЛНЕНИЯ ДЛЯ ГЕО-КНОПКИ
+=========================================
+*/
+
+/* Стилизуем иконку и спиннер */
+.hero-geo-btn .geo-icon {
+    width: 16px;
+    height: 16px;
+    /* Убедимся, что цвет иконки соответствует тексту */
+    stroke: currentColor;
+}
+
+/* Состояние ошибки */
+.hero-geo-btn.is-error {
+    background-color: #dc3545; /* Красный цвет */
+    border-color: #dc3545;
+}
+
+    .hero-geo-btn.is-error:hover {
+        background-color: #c82333;
+        border-color: #c82333;
+    }
+
+
+/* Маленький спиннер для кнопки */
+.spinner-sm {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

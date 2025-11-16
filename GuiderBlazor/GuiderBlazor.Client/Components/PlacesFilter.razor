@@ -3,17 +3,15 @@
 @rendermode InteractiveServer
 @inject ICitiesService CitiesService
 @inject ITagsService TagsService
-
 @inject IJSRuntime JSRuntime
-@implements IDisposable
-
+@implements IAsyncDisposable
 
 <div class="filter-container">
     <div class="filter-card">
-
+        
         <div class="category-scroller">
             <span class="scroller-label">Category:</span>
-            <a class="category-btn chip-all @(filters.Category == "" ? "active" : "")"
+            <a class="category-btn chip-all @(string.IsNullOrEmpty(filters.Category) ? "active" : "")"
                href="@GetUrlForCategory("")">
                 All
             </a>
@@ -65,12 +63,29 @@
                         </span>
                     </button>
                 </div>
+                
                 <div class="geo-filter-block">
-                    <button type="button"
-                            class="hero-geo-btn @(isLocating ? "is-loading" : "")"
-                            @onclick="RequestGeoLocation"
+                    <button type="button" 
+                            class="hero-geo-btn @(isLocating ? "is-loading" : "") @(!string.IsNullOrEmpty(geoErrorMessage) ? "is-error" : "")" 
+                            @onclick="RequestGeoLocation" 
                             disabled="@isLocating">
-                        @((MarkupString)geoLocationMessage)
+                        
+                        @if (isLocating)
+                        {
+                            <span class="spinner-sm"></span> <span>Locating...</span>
+                        }
+                        else if (!string.IsNullOrEmpty(geoErrorMessage))
+                        {
+                            <span>@geoErrorMessage</span>
+                        }
+                        else
+                        {
+                            <svg class="geo-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>Find Near Me</span>
+                        }
                     </button>
                 </div>
             </div>
@@ -102,6 +117,7 @@
                 </div>
             </div>
         </div>
+
         <div class="tags-toggle" @onclick="ToggleTagsFilter">
             <span class="scroller-label">Tags</span>
             <span class="filter-toggle-icon @(isTagsFilterOpen ? "is-open" : "")">
@@ -111,7 +127,7 @@
             </span>
         </div>
         <div class="tags-content @(isTagsFilterOpen ? "is-open" : "")">
-            <div class="form-group">
+             <div class="form-group">
                 <label class="scroller-label" style="margin-bottom: 8px;">Filter by Tags:</label>
                 <div class="tag-cloud-container">
                     <button class="chip-tag chip-all @(filters.Tags == null || !filters.Tags.Any() ? "active" : "")"
@@ -148,10 +164,10 @@
                 }
             </div>
         </div>
-    </div>
+    </div> 
 
     <div class="filter-header" @onclick="ToggleAdvancedFilter">
-        <h3>Advanced Filters</h3>
+         <h3>Advanced Filters</h3>
         <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -159,7 +175,7 @@
         </span>
     </div>
     <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
-        <div>
+         <div>
             <div class="form-group">
                 <label>Search (name, description):</label>
                 <input type="text"
@@ -270,151 +286,199 @@
 
     [Parameter]
     public EventCallback<PlaceFilterParams> OnFilterChanged { get; set; }
-
+        
     private PlaceFilterParams filters = new();
-    private string tagsInput = string.Empty; 
+    private string tagsInput = string.Empty;
     private string? latitudeInput;
     private string? longitudeInput;
     private string? distanceInput;
     private string isOpenInput = string.Empty;
-        
-    private bool isCityCollapsed = true;
-    private DotNetObjectReference<PlacesFilter>? objRef;
-    private bool isLocating = false;
-    private string geoLocationMessage = "📍 Find Near Me";
-        
-    private bool isAdvancedFilterOpen = false; 
+    private bool isAdvancedFilterOpen = false;
     private bool isTagsFilterOpen = false;
     private List<string> activeCities = new();
     private bool isLoadingCities = true;
     private List<string> activeTags = new();
     private bool isLoadingTags = true;
-
+    private bool isCityCollapsed = true;
+    
+    // Геолокация
+    private DotNetObjectReference<PlacesFilter>? objRef;
+    private bool isLocating = false;
+    private string? geoErrorMessage = null;
+    private bool _isInitialized = false;
+    
     protected override async Task OnParametersSetAsync()
     {
         filters = CurrentFilters;
-        tagsInput = string.Join(", ", filters.Tags ?? new List<string>()); 
+        tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
         latitudeInput = filters.Latitude?.ToString();
         longitudeInput = filters.Longitude?.ToString();
         distanceInput = filters.Distance?.ToString();
-        isOpenInput = filters.IsOpen?.ToString() ?? string.Empty; 
+        isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
 
-        await LoadActiveCities(); 
-        await LoadActiveTags(); 
+        await LoadActiveCities();
+        await LoadActiveTags();
     }
 
-    // МЕТОДЫ ДЛЯ ГЕОЛОКАЦИИ
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInitialized = true;
+        }
+    }
 
     /// <summary>
-    /// Вызывается кнопкой "Find Near Me". Запускает JS Interop.
+    /// Запрос геолокации через JavaScript
     /// </summary>
     private async Task RequestGeoLocation()
     {
-        if (isLocating) return;
+        // Console.WriteLine($"🔵 RequestGeoLocation called. isLocating={isLocating}, _isInitialized={_isInitialized}");
+        
+        if (isLocating)
+        {
+            // Console.WriteLine("⚠️ Already locating, skipping");
+            return;
+        }
+        
+        if (!_isInitialized)
+        {
+            // Console.WriteLine("⚠️ Not initialized yet, skipping");
+            return;
+        }
 
         isLocating = true;
-        geoLocationMessage = "...Locating...";
+        geoErrorMessage = null;
+        // Console.WriteLine("🔵 Setting isLocating=true, calling StateHasChanged");
         StateHasChanged();
+
+        await Task.Delay(100);
 
         try
         {
-            objRef = DotNetObjectReference.Create(this);
-            // Вызываем JS-функцию из location.js
+            if (objRef == null)
+            {
+                // Console.WriteLine("🔵 Creating DotNetObjectReference");
+                objRef = DotNetObjectReference.Create(this);
+            }
+            else
+            {
+                // Console.WriteLine("🔵 Reusing existing DotNetObjectReference");
+            }
+            
+            // Console.WriteLine("🔵 Calling JSRuntime.InvokeVoidAsync('getBrowserLocation')");
             await JSRuntime.InvokeVoidAsync("getBrowserLocation", objRef);
+            // Console.WriteLine("✅ JSRuntime.InvokeVoidAsync completed");
         }
         catch (Exception ex)
         {
-            // Ошибка вызова JS
-            await LocationError(-2, ex.Message);
+            // Console.WriteLine($"❌ Exception in RequestGeoLocation: {ex.GetType().Name}");
+            // Console.WriteLine($"❌ Message: {ex.Message}");
+            // Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+            await LocationError(-2, $"JS Error: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Вызывается из JS при УСПЕШНОМ получении координат.
+    /// Callback при успешном получении координат (вызывается из JS)
     /// </summary>
     [JSInvokable]
     public async Task SetLocation(double latitude, double longitude)
     {
-        isLocating = false;
-        geoLocationMessage = "📍 Find Near Me";
+        // Console.WriteLine($"🔵 SetLocation called: lat={latitude}, lon={longitude}");
+        
+        await InvokeAsync(async () =>
+        {
+            try
+            {
+                // Console.WriteLine("🔵 Inside InvokeAsync");
+                
+                isLocating = false;
+                geoErrorMessage = null;
 
-        // Применяем гео-фильтры
-        filters.Latitude = latitude;
-        filters.Longitude = longitude;
-        filters.SortField = "distance"; // Сортируем по дистанции
-        filters.Distance = null; // Используем 10км по умолчанию из API
+                // Console.WriteLine($"🔵 Before setting filters: Lat={filters.Latitude}, Lon={filters.Longitude}, City={filters.City}, Province={filters.Province}");
 
-        // Сбрасываем город и провинцию, т.к. гео-поиск их отменяет
-        filters.City = null;
-        filters.Province = null;
-        filters.Page = 1; // Всегда сбрасываем на 1-ю страницу
+                // Устанавливаем геопараметры
+                filters.Latitude = latitude;
+                filters.Longitude = longitude;
+                filters.SortField = "distance";
+                filters.Distance = 900000000; // <<<< ЗДЕСЬ МЕНЯЕТСЯ ДИСТАНЦИЯ: 10 км = 10000 метров
 
-        // Сообщаем родителю (PlacesList) об изменении
-        await OnFilterChanged.InvokeAsync(filters);
+                // Сбрасываем город и провинцию при гео-поиске
+                filters.City = null;
+                filters.Province = null;
+                filters.Page = 1;
+
+                // Console.WriteLine($"🔵 After setting filters: Lat={filters.Latitude}, Lon={filters.Longitude}, City={filters.City}, Province={filters.Province}, SortField={filters.SortField}");
+
+                // Уведомляем родителя об изменениях
+                // Console.WriteLine("🔵 Calling OnFilterChanged.InvokeAsync");
+                await OnFilterChanged.InvokeAsync(filters);
+                // Console.WriteLine("✅ OnFilterChanged.InvokeAsync completed");
+                
+                StateHasChanged();
+                // Console.WriteLine("✅ SetLocation completed successfully");
+            }
+            catch (Exception ex)
+            {
+                // Console.WriteLine($"❌ Error in SetLocation: {ex.GetType().Name}");
+                // Console.WriteLine($"❌ Message: {ex.Message}");
+                // Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                geoErrorMessage = "⚠️ Error applying location";
+                StateHasChanged();
+            }
+        });
     }
 
     /// <summary>
-    /// Вызывается из JS при ОШИБКЕ получения координат.
+    /// Callback при ошибке получения координат (вызывается из JS)
     /// </summary>
     [JSInvokable]
     public async Task LocationError(int errorCode, string message)
     {
-        isLocating = false;
-
-        // Обновляем сообщение на кнопке
-        switch (errorCode)
+        // Console.WriteLine($"LocationError called: code={errorCode}, message={message}");
+        
+        await InvokeAsync(async () =>
         {
-            case 1: // PERMISSION_DENIED
-                geoLocationMessage = "🚫 Access Denied";
-                break;
-            case 2: // POSITION_UNAVAILABLE
-                geoLocationMessage = "❓ Location unavailable";
-                break;
-            case 3: // TIMEOUT
-                geoLocationMessage = "⏱️ Request timed out";
-                break;
-            default: // -1 (not supported) or -2 (JS error)
-                geoLocationMessage = "⚠️ Not available";
-                break;
-        }
-        StateHasChanged();
+            isLocating = false;
 
-        // Сбрасываем текст кнопки обратно через 3 секунды
-        await Task.Delay(3000);
-        if (!isLocating) // Убедимся, что пользователь не нажал кнопку снова
-        {
-            geoLocationMessage = "📍 Find Near Me";
+            geoErrorMessage = errorCode switch
+            {
+                1 => "🚫 Access Denied",
+                2 => "❓ Unavailable",
+                3 => "⏱️ Timeout",
+                _ => "⚠️ Not Available"
+            };
+            
             StateHasChanged();
-        }
+
+            await Task.Delay(4000);
+            
+            if (!isLocating)
+            {
+                geoErrorMessage = null;
+                StateHasChanged();
+            }
+        });
     }
 
-    /// <summary>
-    /// Очищаем ссылку на .NET объект
-    /// </summary>
-    public void Dispose()
-    {
-        objRef?.Dispose();
-    }
-
-    // МЕТОД ДЛЯ СВОРАЧИВАНИЯ ГОРОДОВ
     private void ToggleCityCollapse()
     {
         isCityCollapsed = !isCityCollapsed;
     }
-        
+    
     private void ToggleAdvancedFilter()
     {
-        isAdvancedFilterOpen = !isAdvancedFilterOpen; 
+        isAdvancedFilterOpen = !isAdvancedFilterOpen;
     }
 
     private void ToggleTagsFilter()
     {
-        isTagsFilterOpen = !isTagsFilterOpen; 
+        isTagsFilterOpen = !isTagsFilterOpen;
     }
 
     private async Task ApplyFilters()
     {
-        
         if (!string.IsNullOrWhiteSpace(tagsInput))
         {
             var tagsFromInput = tagsInput
@@ -453,7 +517,6 @@
 
     private async Task ResetFilters()
     {
-        
         filters = new PlaceFilterParams
         {
             Page = 1,
@@ -465,6 +528,10 @@
         longitudeInput = null;
         distanceInput = null;
         isOpenInput = string.Empty;
+        
+        geoErrorMessage = null;
+        isLocating = false;
+        
         await OnFilterChanged.InvokeAsync(filters);
         await LoadActiveCities();
         await LoadActiveTags();
@@ -472,7 +539,6 @@
 
     private async Task LoadActiveTags()
     {
-        
         isLoadingTags = true;
         activeTags = await TagsService.GetActiveTagsAsync(
             filters.Category,
@@ -485,7 +551,6 @@
 
     private async Task ToggleTag(string tagToToggle)
     {
-        
         if (filters.Tags == null)
         {
             filters.Tags = new List<string>();
@@ -510,8 +575,7 @@
 
     private async Task ClearAllTags()
     {
-        
-        if (filters.Tags == null || !filters.Tags.Any()) return;
+        if (filters.Tags == null || !filters.Tags.Any()) return; 
 
         filters.Tags = null;
         filters.Page = 1;
@@ -520,7 +584,6 @@
 
     private string GetUrlForCategory(string category)
     {
-        
         var linkFilters = new PlaceFilterParams
         {
             Q = filters.Q,
@@ -537,7 +600,6 @@
 
     private string GetUrlForProvince(string province)
     {
-        
         var linkFilters = new PlaceFilterParams
         {
             Q = filters.Q,
@@ -554,15 +616,14 @@
 
     private string GetUrlForCity(string city)
     {
-        
         var linkFilters = new PlaceFilterParams
         {
             Q = filters.Q,
             Page = 1,
-            Category = filters.Category,
-            Province = filters.Province,
-            City = city,
-            PerPage = filters.PerPage,
+            Category = filters.Category, 
+            Province = filters.Province, 
+            City = city, 
+            PerPage = filters.PerPage, 
             Status = "active",
             Tags = filters.Tags
         };
@@ -571,15 +632,13 @@
 
     private async Task LoadActiveCities()
     {
-        
         isLoadingCities = true;
         activeCities = await CitiesService.GetActiveCitiesAsync(filters.Category, filters.Province);
         isLoadingCities = false;
     }
-
+    
     private string GetQueryString(PlaceFilterParams filters)
     {
-        
         var queryParams = new Dictionary<string, object?>();
         if (!string.IsNullOrEmpty(filters.Q))
             queryParams["Q"] = filters.Q;
@@ -608,5 +667,10 @@
 
         return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
-}
 
+    public async ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+        objRef = null;
+    }
+}

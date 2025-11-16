@@ -25,11 +25,9 @@
             }
         </div>
 
-        @* --- ⬇️ ИЗМЕНЕНИЯ ДЛЯ SEO (button -> a) ⬇️ --- *@
         <div class="pagination">
             <div class="pagination-controls">
 
-                @* Вместо <button disabled> используем <a class="disabled"> *@
                 <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
                    href="@GetUrlForPage(1)"
                    aria-label="First Page">
@@ -59,7 +57,6 @@
                 </a>
             </div>
         </div>
-        @* --- ⬆️ КОНЕЦ ИЗМЕНЕНИЙ ⬆️ --- *@
     }
     else
     {
@@ -84,7 +81,18 @@
     [SupplyParameterFromQuery]
     public int PerPage { get; set; } = 4;
 
-    // Blazor может привязать ?Tags=a&Tags=b к string[], но не к List<string>
+    // Геолокационные параметры
+    [SupplyParameterFromQuery]
+    public double? Latitude { get; set; }
+    [SupplyParameterFromQuery]
+    public double? Longitude { get; set; }
+    [SupplyParameterFromQuery]
+    public double? Distance { get; set; }
+    [SupplyParameterFromQuery]
+    public string? SortField { get; set; }
+    [SupplyParameterFromQuery]
+    public string? SortOrder { get; set; }
+
     [SupplyParameterFromQuery(Name = "Tags")]
     public string[]? Tags { get; set; }
 
@@ -94,6 +102,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        Console.WriteLine($"🟢 OnParametersSetAsync: Lat={Latitude}, Lon={Longitude}, Distance={Distance}");
+
         isLoading = true;
         currentFilters = new PlaceFilterParams
         {
@@ -104,34 +114,40 @@
             Page = this.Page,
             PerPage = this.PerPage,
             Status = "active",
-            // Конвертируем массив из URL в список для сервиса
-            Tags = this.Tags?.ToList()
+            Tags = this.Tags?.ToList(),
+            // Добавляем геопараметры
+            Latitude = this.Latitude,
+            Longitude = this.Longitude,
+            Distance = this.Distance,
+            SortField = this.SortField,
+            SortOrder = this.SortOrder
         };
 
         if (currentFilters.Page <= 0) currentFilters.Page = 1;
         if (currentFilters.PerPage <= 0) currentFilters.PerPage = 4;
 
+        Console.WriteLine($"🟢 Calling PlacesService.GetPlacesAsync with Lat={currentFilters.Latitude}, Lon={currentFilters.Longitude}");
         placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
+        Console.WriteLine($"🟢 Received {placesResponse?.Places?.Count ?? 0} places");
+
         isLoading = false;
     }
 
-    // Этот метод вызывается фильтром
     private void HandleFilterChanged(PlaceFilterParams newFilters)
     {
+        Console.WriteLine($"🟢 HandleFilterChanged: Lat={newFilters.Latitude}, Lon={newFilters.Longitude}, Distance={newFilters.Distance}");
+        Console.WriteLine($"🟢 Navigating to: {GetQueryString(newFilters)}");
         Navigation.NavigateTo(GetQueryString(newFilters));
     }
-        
-    // Генерирует URL для <a> ссылок пагинации
+
     private string GetUrlForPage(int newPage)
     {
-        // Проверка границ
         if (newPage < 1) newPage = 1;
         if (placesResponse != null && newPage > placesResponse.TotalPages)
         {
             newPage = placesResponse.TotalPages;
         }
 
-        // Создаем копию текущих фильтров
         var linkFilters = new PlaceFilterParams
         {
             Q = currentFilters.Q,
@@ -139,14 +155,19 @@
             Province = currentFilters.Province,
             City = currentFilters.City,
             PerPage = currentFilters.PerPage,
-            Page = newPage, // Устанавливаем НОВУЮ страницу
-            Tags = currentFilters.Tags
+            Page = newPage,
+            Tags = currentFilters.Tags,
+            // Сохраняем геопараметры при пагинации
+            Latitude = currentFilters.Latitude,
+            Longitude = currentFilters.Longitude,
+            Distance = currentFilters.Distance,
+            SortField = currentFilters.SortField,
+            SortOrder = currentFilters.SortOrder
         };
 
         return GetQueryString(linkFilters);
     }
 
-    // Этот метод используется и фильтром, и GetUrlForPage
     private string GetQueryString(PlaceFilterParams filters)
     {
         var queryParams = new Dictionary<string, object?>();
@@ -164,15 +185,24 @@
         if (filters.PerPage != 4)
             queryParams["PerPage"] = filters.PerPage;
 
-        // 'Tags' должны сериализоваться как несколько параметров &Tags=tag1&Tags=tag2
+        // КРИТИЧНО: Добавляем геопараметры в URL
+        if (filters.Latitude.HasValue)
+            queryParams["Latitude"] = filters.Latitude.Value;
+        if (filters.Longitude.HasValue)
+            queryParams["Longitude"] = filters.Longitude.Value;
+        if (filters.Distance.HasValue)
+            queryParams["Distance"] = filters.Distance.Value;
+        if (!string.IsNullOrEmpty(filters.SortField))
+            queryParams["SortField"] = filters.SortField;
+        if (!string.IsNullOrEmpty(filters.SortOrder))
+            queryParams["SortOrder"] = filters.SortOrder;
+
         var queryParts = new List<string>();
 
-        // Добавляем обычные параметры
         queryParts.AddRange(queryParams
             .Where(kvp => kvp.Value != null)
             .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
 
-        // Добавляем теги
         if (filters.Tags != null && filters.Tags.Any())
         {
             foreach (var tag in filters.Tags)
