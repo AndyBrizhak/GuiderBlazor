@@ -1,76 +1,43 @@
 ﻿// wwwroot/js/location.js
 
-// Проверка загрузки скрипта
-/*console.log('✅ location.js loaded successfully');*/
-
 window.getBrowserLocation = (dotNetHelper) => {
-   /* console.log('🔍 getBrowserLocation called', dotNetHelper);*/
-
     if (!dotNetHelper) {
-      /*  console.error('❌ dotNetHelper is null or undefined');*/
-        return;
+        return; // Ошибка (helper не передан)
     }
 
     if (!navigator.geolocation) {
-        /*console.error('❌ Geolocation not supported');*/
+        // Браузер не поддерживает геолокацию
         dotNetHelper.invokeMethodAsync('LocationError', -1, 'Geolocation is not supported by this browser.');
         return;
     }
 
-    /*console.log('📍 Requesting geolocation...');*/
-
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            /*console.log('✅ Position received:', position.coords.latitude, position.coords.longitude);*/
-
+            // УСПЕХ: Передаем lat, lon И accuracy
             try {
                 dotNetHelper.invokeMethodAsync('SetLocation',
                     position.coords.latitude,
-                    position.coords.longitude)
-                    .then(() => {
-                        /*console.log('✅ SetLocation called successfully');*/
-                    })
-                    .catch((error) => {
-                        /*console.error('❌ Error calling SetLocation:', error);*/
-                    });
+                    position.coords.longitude,
+                    position.coords.accuracy); // ⬅️ Передаем точность
             } catch (error) {
-                /*console.error('❌ Exception in success callback:', error);*/
+                // Игнорируем ошибки, если .NET-компонент уже удален
             }
         },
         (error) => {
-            /*console.error('❌ Geolocation error:', error.code, error.message);*/
-
+            // ОШИБКА
             try {
                 dotNetHelper.invokeMethodAsync('LocationError',
                     error.code,
-                    error.message)
-                    .then(() => {
-                        /*console.log('✅ LocationError called successfully');*/
-                    })
-                    .catch((err) => {
-                        /*console.error('❌ Error calling LocationError:', err);*/
-                    });
+                    error.message);
             } catch (err) {
-                /*console.error('❌ Exception in error callback:', err);*/
+                // Игнорируем ошибки
             }
         },
         {
+            // ⬇️ ВАЖНО: Запрашиваем максимально точные данные (GPS)
             enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            timeout: 10000, // 10 секунд на поиск
+            maximumAge: 0     // Не использовать старые (кэшированные) данные
         }
     );
 };
-
-// Тестовая функция для проверки из консоли браузера
-//window.testGeolocation = () => {
-//    console.log('🧪 Testing geolocation...');
-//    if (navigator.geolocation) {
-//        navigator.geolocation.getCurrentPosition(
-//            (pos) => console.log('✅ Test success:', pos.coords),
-//            (err) => console.error('❌ Test error:', err)
-//        );
-//    } else {
-//        console.error('❌ Geolocation not supported');
-//    }
-//};

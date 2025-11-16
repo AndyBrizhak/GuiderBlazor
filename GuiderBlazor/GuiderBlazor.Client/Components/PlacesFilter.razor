@@ -380,54 +380,60 @@
     }
 
     /// <summary>
-    /// Callback при успешном получении координат (вызывается из JS)
+    /// Вызывается из JS при УСПЕШНОМ получении координат.
     /// </summary>
     [JSInvokable]
-    public async Task SetLocation(double latitude, double longitude)
+    public async Task SetLocation(double latitude, double longitude, double accuracy)
     {
-        // Console.WriteLine($"🔵 SetLocation called: lat={latitude}, lon={longitude}");
-        
-        await InvokeAsync(async () =>
+        //  Порог 150 метров ⬇️
+        // Это отсечет Wi-Fi (200м+) и IP (5000м+),
+        // но пропустит хороший GPS-сигнал (10-100м).
+        const double MAX_ACCURACY_METERS = 150;
+
+        if (accuracy > MAX_ACCURACY_METERS)
         {
-            try
+            // --- ТОЧНОСТЬ СЛИШКОМ НИЗКАЯ ---
+            await InvokeAsync(async () =>
             {
-                // Console.WriteLine("🔵 Inside InvokeAsync");
+                isLocating = false;
                 
+                // Сообщаем, что точность (в метрах) недостаточная
+                geoErrorMessage = $"📍 Accuracy > {MAX_ACCURACY_METERS}m";
+                StateHasChanged();
+
+                await Task.Delay(4000); 
+
+                if (!isLocating)
+                {
+                    geoErrorMessage = null;
+                    StateHasChanged();
+                }
+            });
+        }
+        else
+        {
+            // --- ТОЧНОСТЬ ХОРОШАЯ (GPS) ---
+            await InvokeAsync(async () =>
+            {
                 isLocating = false;
                 geoErrorMessage = null;
 
-                // Console.WriteLine($"🔵 Before setting filters: Lat={filters.Latitude}, Lon={filters.Longitude}, City={filters.City}, Province={filters.Province}");
-
-                // Устанавливаем геопараметры
+                // Применяем гео-фильтры
                 filters.Latitude = latitude;
                 filters.Longitude = longitude;
-                filters.SortField = "distance";
-                filters.Distance = 900000000; // <<<< ЗДЕСЬ МЕНЯЕТСЯ ДИСТАНЦИЯ: 10 км = 10000 метров
+                filters.SortField = "distance"; 
+                filters.Distance = null; 
 
-                // Сбрасываем город и провинцию при гео-поиске
-                filters.City = null;
+                // Сбрасываем город и провинцию
+                filters.City = null; 
                 filters.Province = null;
                 filters.Page = 1;
 
-                // Console.WriteLine($"🔵 After setting filters: Lat={filters.Latitude}, Lon={filters.Longitude}, City={filters.City}, Province={filters.Province}, SortField={filters.SortField}");
-
-                // Уведомляем родителя об изменениях
-                // Console.WriteLine("🔵 Calling OnFilterChanged.InvokeAsync");
+                // Обновляем список мест
                 await OnFilterChanged.InvokeAsync(filters);
-                // Console.WriteLine("✅ OnFilterChanged.InvokeAsync completed");
-                
                 StateHasChanged();
-                // Console.WriteLine("✅ SetLocation completed successfully");
-            }
-            catch (Exception ex)
-            {
-                // Console.WriteLine($"❌ Error in SetLocation: {ex.GetType().Name}");
-                // Console.WriteLine($"❌ Message: {ex.Message}");
-                // Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                geoErrorMessage = "⚠️ Error applying location";
-                StateHasChanged();
-            }
-        });
+            });
+        }
     }
 
     /// <summary>
