@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="GuiderBlazor.styles.css" />
     <HeadOutlet />
 
-    <!-- КРИТИЧЕСКИ ВАЖНО: Применяем тему ДО загрузки Blazor -->
+    <!-- Применяем тему ДО загрузки Blazor -->
     <script>
         (function() {
             // Проверяем cookie (серверная тема)
@@ -36,9 +36,10 @@
 <body>
     <Routes />
 
-    <!-- Загружаем скрипты в правильном порядке -->
+    
     <script src="_framework/blazor.web.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/location.js"></script>
 </body>
 
 </html>

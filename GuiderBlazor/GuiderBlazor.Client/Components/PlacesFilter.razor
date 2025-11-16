@@ -1,12 +1,16 @@
 ﻿@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
-@* @using Shared.Services *@
 @rendermode InteractiveServer
 @inject ICitiesService CitiesService
 @inject ITagsService TagsService
 
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+
 <div class="filter-container">
     <div class="filter-card">
+
         <div class="category-scroller">
             <span class="scroller-label">Category:</span>
             <a class="category-btn chip-all @(filters.Category == "" ? "active" : "")"
@@ -33,52 +37,71 @@
 
         <div class="province-scroller">
             <span class="scroller-label">Province:</span>
-
             <a href="@GetUrlForProvince("")"
                class="province-chip chip-all @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
                 All
             </a>
-
             <a href="@GetUrlForProvince("guanacaste")"
                class="province-chip @(filters.Province == "guanacaste" ? "active" : "")">
                 Guanacaste
             </a>
-
             <a href="@GetUrlForProvince("san-jose")"
                class="province-chip @(filters.Province == "san-jose" ? "active" : "")">
                 San José
             </a>
-
             <a href="@GetUrlForProvince("limon")"
                class="province-chip @(filters.Province == "limon" ? "active" : "")">
                 Limón
             </a>
-            @* ... и другие ваши провинции (исправьте их так же) ... *@
         </div>
 
-        <div class="city-scroller">
-            <span class="scroller-label">City:</span>
-            <a href="@GetUrlForCity("")"
-               class="province-chip chip-all @(string.IsNullOrEmpty(filters.City) ? "active" : "")">
-                All
-            </a>
+        <div class="location-controls-wrapper">
+            <div class="location-controls">
+                <div class="city-filter-block">
+                    <button type="button" class="filter-toggle-btn @(!isCityCollapsed ? "is-active" : "")" @onclick="ToggleCityCollapse">
+                        City
+                        <span class="filter-toggle-icon @(!isCityCollapsed ? "is-open" : "")">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                        </span>
+                    </button>
+                </div>
+                <div class="geo-filter-block">
+                    <button type="button"
+                            class="hero-geo-btn @(isLocating ? "is-loading" : "")"
+                            @onclick="RequestGeoLocation"
+                            disabled="@isLocating">
+                        @((MarkupString)geoLocationMessage)
+                    </button>
+                </div>
+            </div>
 
-            @if (isLoadingCities)
-            {
-                <span class="province-chip">Loading...</span>
-            }
-            else
-            {
-                @foreach (var city in activeCities)
-                {
-                    <a href="@GetUrlForCity(city)"
-                       class="province-chip @(filters.City == city ? "active" : "")">
-                        @city
-                    </a>
-                }
-            }
+            <div class="city-cloud-wrapper @(isCityCollapsed ? "" : "is-open")">
+                <div class="city-cloud-content">
+                    @if (isLoadingCities)
+                    {
+                        <span class="chip-tag disabled">Loading...</span>
+                    }
+                    else if (activeCities.Any())
+                    {
+                        <a class="chip-tag chip-all @(string.IsNullOrEmpty(filters.City) ? "active" : "")"
+                           href="@GetUrlForCity("")">
+                            All Cities
+                        </a>
+                        @foreach (var city in activeCities)
+                        {
+                            <a class="chip-tag @(filters.City == city ? "active" : "")"
+                               href="@GetUrlForCity(city)">
+                                @city
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <span class="no-data">No cities for this filter.</span>
+                    }
+                </div>
+            </div>
         </div>
-
         <div class="tags-toggle" @onclick="ToggleTagsFilter">
             <span class="scroller-label">Tags</span>
             <span class="filter-toggle-icon @(isTagsFilterOpen ? "is-open" : "")">
@@ -87,44 +110,30 @@
                 </svg>
             </span>
         </div>
-
         <div class="tags-content @(isTagsFilterOpen ? "is-open" : "")">
             <div class="form-group">
                 <label class="scroller-label" style="margin-bottom: 8px;">Filter by Tags:</label>
-
-                @* Этот контейнер будет использовать CSS (который вам нужно будет добавить) 
-                    для переноса тегов на несколько строк.
-                *@
                 <div class="tag-cloud-container">
-
-                    @* 1. Кнопка "All" (сбрасывает теги) *@
                     <button class="chip-tag chip-all @(filters.Tags == null || !filters.Tags.Any() ? "active" : "")"
                             @onclick="ClearAllTags">
                         All
                     </button>
-
-                    @* 2. Выбранные теги (из filters.Tags) *@
                     @if (filters.Tags != null && filters.Tags.Any())
                     {
                         @foreach (var selectedTag in filters.Tags)
                         {
                             <button class="chip-tag active" @onclick="() => ToggleTag(selectedTag)">
                                 @selectedTag
-                                <span class="chip-remove">×</span> @* Иконка для удаления *@
+                                <span class="chip-remove">×</span>
                             </button>
                         }
                     }
-
-                    @* 3. Доступные теги (из activeTags) *@
                     @if (isLoadingTags)
                     {
                         <span class="chip-tag disabled">Loading tags...</span>
                     }
                     else
                     {
-                        @* Показываем только те теги, которые ЕЩЕ НЕ выбраны.
-                            'activeTags' - это теги, которые API вернул на основе текущих фильтров (включая уже выбранные)
-                        *@
                         @foreach (var availableTag in activeTags.Where(at => !(filters.Tags?.Contains(at) ?? false)))
                         {
                             <button class="chip-tag" @onclick="() => ToggleTag(availableTag)">
@@ -133,254 +142,318 @@
                         }
                     }
                 </div>
-
                 @if (!isLoadingTags && activeTags.Count == 0 && (filters.Tags == null || !filters.Tags.Any()))
                 {
                     <small>No tags found for the current filter.</small>
                 }
             </div>
         </div>
-    </div> 
+    </div>
 
     <div class="filter-header" @onclick="ToggleAdvancedFilter">
         <h3>Advanced Filters</h3>
-            <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-            </span>
+        <span class="filter-toggle-icon @(isAdvancedFilterOpen ? "is-open" : "")">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+            </svg>
+        </span>
     </div>
-
     <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
-            <div>
+        <div>
+            <div class="form-group">
+                <label>Search (name, description):</label>
+                <input type="text"
+                       class="form-control"
+                       @bind="filters.Q"
+                       placeholder="Enter search query..." />
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
-                    <label>Search (name, description):</label>
+                    <label>Name:</label>
                     <input type="text"
                            class="form-control"
-                           @bind="filters.Q"
-                           placeholder="Enter search query..." />
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Name:</label>
-                        <input type="text"
-                               class="form-control"
-                               @bind="filters.Name"
-                               placeholder="Exact name..." />
-                    </div>
-
-                    <div class="form-group">
-                        <label>URL (slug):</label>
-                        <input type="text"
-                               class="form-control"
-                               @bind="filters.Url"
-                               placeholder="e.g., angels_salon" />
-                    </div>
-                </div>
-                                
-                <div class="section-title">Geo Search (optional)</div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Latitude:</label>
-                        <input type="number"
-                               step="0.0001"
-                               class="form-control"
-                               @bind="latitudeInput"
-                               placeholder="50.4501" />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Longitude:</label>
-                        <input type="number"
-                               step="0.0001"
-                               class="form-control"
-                               @bind="longitudeInput"
-                               placeholder="30.5234" />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Radius (meters):</label>
-                        <input type="number"
-                               class="form-control"
-                               @bind="distanceInput"
-                               placeholder="5000" />
-                    </div>
+                           @bind="filters.Name"
+                           placeholder="Exact name..." />
                 </div>
 
                 <div class="form-group">
-                    <label>Opening hours:</label>
-                    <select class="form-control" @bind="isOpenInput">
-                        <option value="">All</option>
-                        <option value="true">Open only</option>
-                        <option value="false">Closed only</option>
-                    </select>
-                </div>
-
-                <div class="section-title">Sorting</div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Sort by:</label>
-                        <select class="form-control" @bind="filters.SortField">
-                            <option value="name">Name</option>
-                            <option value="category">Category</option>
-                            <option value="status">Status</option>
-                            <option value="createdAt">Created date</option>
-                            <option value="distance">Distance (geo search)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Order:</label>
-                        <select class="form-control" @bind="filters.SortOrder">
-                            <option value="ASC">Ascending (A-Z)</option>
-                            <option value="DESC">Descending (Z-A)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Results per page:</label>
-                        <select class="form-control" @bind="filters.PerPage">
-                            <option value="4">4</option>
-                            <option value="8">8</option>
-                            <option value="12">12</option>
-                            <option value="16">16</option>
-                            <option value="20">20</option>
-                        </select>
-                    </div>
-
-                </div>
-                <div class="button-group">
-                    <button class="btn btn-primary" @onclick="ApplyFilters">
-                        🔍 Apply Filters
-                    </button>
-                    <button class="btn btn-secondary" @onclick="ResetFilters">
-                        🔄 Reset
-                    </button>
+                    <label>URL (slug):</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="filters.Url"
+                           placeholder="e.g., angels_salon" />
                 </div>
             </div>
+
+            <div class="section-title">Geo Search (optional)</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Latitude:</label>
+                    <input type="number"
+                           step="0.0001"
+                           class="form-control"
+                           @bind="latitudeInput"
+                           placeholder="10.5501" />
+                </div>
+                <div class="form-group">
+                    <label>Longitude:</label>
+                    <input type="number"
+                           step="0.0001"
+                           class="form-control"
+                           @bind="longitudeInput"
+                           placeholder="-85.6972" />
+                </div>
+                <div class="form-group">
+                    <label>Radius (meters):</label>
+                    <input type="number"
+                           class="form-control"
+                           @bind="distanceInput"
+                           placeholder="5000" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Opening hours:</label>
+                <select class="form-control" @bind="isOpenInput">
+                    <option value="">All</option>
+                    <option value="true">Open only</option>
+                    <option value="false">Closed only</option>
+                </select>
+            </div>
+
+            <div class="section-title">Sorting</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Sort by:</label>
+                    <select class="form-control" @bind="filters.SortField">
+                        <option value="name">Name</option>
+                        <option value="category">Category</option>
+                        <option value="status">Status</option>
+                        <option value="createdAt">Created date</option>
+                        <option value="distance">Distance (geo search)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Order:</label>
+                    <select class="form-control" @bind="filters.SortOrder">
+                        <option value="ASC">Ascending (A-Z)</option>
+                        <option value="DESC">Descending (Z-A)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Results per page:</label>
+                    <select class="form-control" @bind="filters.PerPage">
+                        <option value="4">4</option>
+                        <option value="8">8</option>
+                        <option value="12">12</option>
+                        <option value="16">16</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" @onclick="ApplyFilters">
+                    🔍 Apply Filters
+                </button>
+                <button class="btn btn-secondary" @onclick="ResetFilters">
+                    🔄 Reset
+                </button>
+            </div>
         </div>
+    </div>
 </div>
 
 @code {
-
     [Parameter]
     public PlaceFilterParams CurrentFilters { get; set; } = new();
 
     [Parameter]
     public EventCallback<PlaceFilterParams> OnFilterChanged { get; set; }
 
-    // 'filters' - это ВНУТРЕННЕЕ состояние компонента
     private PlaceFilterParams filters = new();
-
-    // Внутреннее состояние для полей, требующих парсинга
-    private string tagsInput = string.Empty;
+    private string tagsInput = string.Empty; 
     private string? latitudeInput;
     private string? longitudeInput;
     private string? distanceInput;
     private string isOpenInput = string.Empty;
-
-    // C# логика для сворачивания фильтров
-    private bool isAdvancedFilterOpen = false; // По умолчанию фильтры скрыты
+        
+    private bool isCityCollapsed = true;
+    private DotNetObjectReference<PlacesFilter>? objRef;
+    private bool isLocating = false;
+    private string geoLocationMessage = "📍 Find Near Me";
+        
+    private bool isAdvancedFilterOpen = false; 
     private bool isTagsFilterOpen = false;
     private List<string> activeCities = new();
     private bool isLoadingCities = true;
     private List<string> activeTags = new();
     private bool isLoadingTags = true;
 
-    // protected override void OnParametersSet()
-    // {
-    //     filters = CurrentFilters;
-
-    //     // Также обновляем UI-поля, которые не привязаны к 'filters' напрямую
-    //     tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
-    //     latitudeInput = filters.Latitude?.ToString();
-    //     longitudeInput = filters.Longitude?.ToString();
-    //     distanceInput = filters.Distance?.ToString();
-    //     isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
-    // }
     protected override async Task OnParametersSetAsync()
     {
         filters = CurrentFilters;
-        tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
+        tagsInput = string.Join(", ", filters.Tags ?? new List<string>()); 
         latitudeInput = filters.Latitude?.ToString();
         longitudeInput = filters.Longitude?.ToString();
         distanceInput = filters.Distance?.ToString();
-        isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
+        isOpenInput = filters.IsOpen?.ToString() ?? string.Empty; 
 
-        // Загружаем города на основе текущих фильтров
-        await LoadActiveCities();
-        await LoadActiveTags();
+        await LoadActiveCities(); 
+        await LoadActiveTags(); 
     }
 
+    // МЕТОДЫ ДЛЯ ГЕОЛОКАЦИИ
+
+    /// <summary>
+    /// Вызывается кнопкой "Find Near Me". Запускает JS Interop.
+    /// </summary>
+    private async Task RequestGeoLocation()
+    {
+        if (isLocating) return;
+
+        isLocating = true;
+        geoLocationMessage = "...Locating...";
+        StateHasChanged();
+
+        try
+        {
+            objRef = DotNetObjectReference.Create(this);
+            // Вызываем JS-функцию из location.js
+            await JSRuntime.InvokeVoidAsync("getBrowserLocation", objRef);
+        }
+        catch (Exception ex)
+        {
+            // Ошибка вызова JS
+            await LocationError(-2, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Вызывается из JS при УСПЕШНОМ получении координат.
+    /// </summary>
+    [JSInvokable]
+    public async Task SetLocation(double latitude, double longitude)
+    {
+        isLocating = false;
+        geoLocationMessage = "📍 Find Near Me";
+
+        // Применяем гео-фильтры
+        filters.Latitude = latitude;
+        filters.Longitude = longitude;
+        filters.SortField = "distance"; // Сортируем по дистанции
+        filters.Distance = null; // Используем 10км по умолчанию из API
+
+        // Сбрасываем город и провинцию, т.к. гео-поиск их отменяет
+        filters.City = null;
+        filters.Province = null;
+        filters.Page = 1; // Всегда сбрасываем на 1-ю страницу
+
+        // Сообщаем родителю (PlacesList) об изменении
+        await OnFilterChanged.InvokeAsync(filters);
+    }
+
+    /// <summary>
+    /// Вызывается из JS при ОШИБКЕ получения координат.
+    /// </summary>
+    [JSInvokable]
+    public async Task LocationError(int errorCode, string message)
+    {
+        isLocating = false;
+
+        // Обновляем сообщение на кнопке
+        switch (errorCode)
+        {
+            case 1: // PERMISSION_DENIED
+                geoLocationMessage = "🚫 Access Denied";
+                break;
+            case 2: // POSITION_UNAVAILABLE
+                geoLocationMessage = "❓ Location unavailable";
+                break;
+            case 3: // TIMEOUT
+                geoLocationMessage = "⏱️ Request timed out";
+                break;
+            default: // -1 (not supported) or -2 (JS error)
+                geoLocationMessage = "⚠️ Not available";
+                break;
+        }
+        StateHasChanged();
+
+        // Сбрасываем текст кнопки обратно через 3 секунды
+        await Task.Delay(3000);
+        if (!isLocating) // Убедимся, что пользователь не нажал кнопку снова
+        {
+            geoLocationMessage = "📍 Find Near Me";
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Очищаем ссылку на .NET объект
+    /// </summary>
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+
+    // МЕТОД ДЛЯ СВОРАЧИВАНИЯ ГОРОДОВ
+    private void ToggleCityCollapse()
+    {
+        isCityCollapsed = !isCityCollapsed;
+    }
+        
     private void ToggleAdvancedFilter()
     {
-        isAdvancedFilterOpen = !isAdvancedFilterOpen;
+        isAdvancedFilterOpen = !isAdvancedFilterOpen; 
     }
 
     private void ToggleTagsFilter()
     {
-        isTagsFilterOpen = !isTagsFilterOpen;
+        isTagsFilterOpen = !isTagsFilterOpen; 
     }
 
     private async Task ApplyFilters()
     {
-        // Parse tags from string
+        
         if (!string.IsNullOrWhiteSpace(tagsInput))
         {
-            // Добавляем теги из input к уже выбранным из облака ---
             var tagsFromInput = tagsInput
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(t => t.Trim())
                 .ToList();
-
             var existingTags = filters.Tags ?? new List<string>();
-
-            // Обьединяем, избегая дубликатов
             filters.Tags = existingTags.Union(tagsFromInput).ToList();
             if (!filters.Tags.Any()) filters.Tags = null;
         }
-        else
-        {
-            // Не сбрасываем, если input пуст, но теги выбраны из облака
-            // filters.Tags = null;
-        }
 
-        // Parse geospatial parameters
         if (double.TryParse(latitudeInput, out double lat))
             filters.Latitude = lat;
         else
             filters.Latitude = null;
-
         if (double.TryParse(longitudeInput, out double lon))
             filters.Longitude = lon;
         else
             filters.Longitude = null;
-
         if (double.TryParse(distanceInput, out double dist))
             filters.Distance = dist;
         else
             filters.Distance = null;
-
-        // Parse isOpen filter
         if (bool.TryParse(isOpenInput, out bool isOpen))
             filters.IsOpen = isOpen;
         else
             filters.IsOpen = null;
 
-        filters.Page = 1; // Reset to first page on filter
+        filters.Page = 1;
         filters.Status = "active";
         if (filters.PerPage <= 0)
-            filters.PerPage = 4; // Устанавливаем по умолчанию, если не задано
+            filters.PerPage = 4;
 
         await OnFilterChanged.InvokeAsync(filters);
     }
 
     private async Task ResetFilters()
     {
-        // Сбрасываем внутреннее состояние
+        
         filters = new PlaceFilterParams
         {
             Page = 1,
@@ -392,34 +465,27 @@
         longitudeInput = null;
         distanceInput = null;
         isOpenInput = string.Empty;
-
-        // Сообщаем родителю, что фильтры сброшены
         await OnFilterChanged.InvokeAsync(filters);
         await LoadActiveCities();
         await LoadActiveTags();
     }
 
-    /// <summary>
-    /// Загружает список доступных тегов из API на основе текущих фильтров
-    /// (категории, провинции, города и УЖЕ ВЫБРАННЫХ тегов).
-    /// </summary>
     private async Task LoadActiveTags()
     {
+        
         isLoadingTags = true;
         activeTags = await TagsService.GetActiveTagsAsync(
             filters.Category,
             filters.Province,
             filters.City,
-            filters.Tags // Передаем уже выбранные теги для drill-down
+            filters.Tags
         );
         isLoadingTags = false;
     }
 
-    /// <summary>
-    /// Обработчик клика по тегу (выбрать/снять выбор).
-    /// </summary>
     private async Task ToggleTag(string tagToToggle)
     {
+        
         if (filters.Tags == null)
         {
             filters.Tags = new List<string>();
@@ -430,7 +496,7 @@
             filters.Tags.Remove(tagToToggle);
             if (!filters.Tags.Any())
             {
-                filters.Tags = null; // Сбрасываем в null, если список пуст
+                filters.Tags = null;
             }
         }
         else
@@ -438,48 +504,40 @@
             filters.Tags.Add(tagToToggle);
         }
 
-        filters.Page = 1; // Сбрасываем на 1-ю страницу при любом изменении
-
-        // Cообщаем родителю (PlacesList) об изменении фильтров.
-        // Он, в свою очередь, обновит данные и передаст их нам,
-        // что вызовет OnParametersSetAsync и перезагрузит список тегов.
+        filters.Page = 1;
         await OnFilterChanged.InvokeAsync(filters);
     }
 
-    /// <summary>
-    /// Сбрасывает только фильтр по тегам (кнопка "All").
-    /// </summary>
     private async Task ClearAllTags()
     {
-        if (filters.Tags == null || !filters.Tags.Any()) return; // Изменений нет
+        
+        if (filters.Tags == null || !filters.Tags.Any()) return;
 
         filters.Tags = null;
-        filters.Page = 1; // Сбрасываем на 1-ю страницу
+        filters.Page = 1;
         await OnFilterChanged.InvokeAsync(filters);
     }
 
-    // Генерирует URL для <a> ссылок категорий
     private string GetUrlForCategory(string category)
     {
-        // Создаем копию текущих фильтров
+        
         var linkFilters = new PlaceFilterParams
         {
             Q = filters.Q,
             Province = filters.Province,
             City = "",
             PerPage = filters.PerPage,
-            // Сбрасываем страницу и устанавливаем категорию
             Page = 1,
             Category = category,
             Status = "active",
             Tags = filters.Tags
         };
-
         return GetQueryString(linkFilters);
     }
 
     private string GetUrlForProvince(string province)
     {
+        
         var linkFilters = new PlaceFilterParams
         {
             Q = filters.Q,
@@ -491,20 +549,20 @@
             Status = "active",
             Tags = filters.Tags
         };
-
         return GetQueryString(linkFilters);
     }
 
     private string GetUrlForCity(string city)
     {
+        
         var linkFilters = new PlaceFilterParams
         {
             Q = filters.Q,
             Page = 1,
-            Category = filters.Category, // Сохраняем
-            Province = filters.Province, // Сохраняем
-            City = city, // Устанавливаем город
-            PerPage = filters.PerPage, // Сохраняем
+            Category = filters.Category,
+            Province = filters.Province,
+            City = city,
+            PerPage = filters.PerPage,
             Status = "active",
             Tags = filters.Tags
         };
@@ -513,17 +571,16 @@
 
     private async Task LoadActiveCities()
     {
+        
         isLoadingCities = true;
-        // Вызываем инъектированный сервис
         activeCities = await CitiesService.GetActiveCitiesAsync(filters.Category, filters.Province);
         isLoadingCities = false;
     }
-    
-    // Этот метод  для GetUrlForCategory
+
     private string GetQueryString(PlaceFilterParams filters)
     {
+        
         var queryParams = new Dictionary<string, object?>();
-
         if (!string.IsNullOrEmpty(filters.Q))
             queryParams["Q"] = filters.Q;
         if (!string.IsNullOrEmpty(filters.Category))
@@ -537,13 +594,10 @@
         if (filters.PerPage != 4)
             queryParams["PerPage"] = filters.PerPage;
 
-        // 'Tags' должны сериализоваться как несколько параметров &Tags=tag1&Tags=tag2
         var queryParts = new List<string>();
-        // Добавляем обычные параметры
         queryParts.AddRange(queryParams
             .Where(kvp => kvp.Value != null)
-            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}")); 
-        // Добавляем теги
+            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
         if (filters.Tags != null && filters.Tags.Any())
         {
             foreach (var tag in filters.Tags)
@@ -552,13 +606,7 @@
             }
         }
 
-        return queryParts.Count == 0?"/" : $"?{string.Join("&", queryParts)}"; 
-
-        // var queryString = string.Join("&", queryParams
-        //     .Where(kvp => kvp.Value != null)
-        //     .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
-
-        // return string.IsNullOrEmpty(queryString) ? "/" : $"?{queryString}";
+        return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
 }
 

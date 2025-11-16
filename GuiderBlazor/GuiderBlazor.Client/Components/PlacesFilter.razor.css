@@ -519,3 +519,196 @@
         opacity: 0.6;
         cursor: not-allowed;
     }
+
+/*
+=========================================
+    НОВЫЕ СТИЛИ ДЛЯ "ВКЛАДОК" City / Geo
+=========================================
+*/
+
+/* Этот wrapper нужен, чтобы рамка .city-cloud-wrapper 
+  (которая имеет отрицательные отступы) 
+  не вылезала за пределы .filter-card 
+*/
+.location-controls-wrapper {
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+    .location-controls-wrapper {
+        margin: 0 -1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+/* 1. Контейнер для двух кнопок */
+.location-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: stretch; /* Делаем кнопки одинаковой высоты */
+}
+
+/* 2. Блок кнопки "City" (растягивается) */
+.city-filter-block {
+    flex-grow: 1;
+}
+
+/* 3. Блок кнопки "Geo" (фиксированный) */
+.geo-filter-block {
+    flex-shrink: 0;
+}
+
+/* 4. Кнопка "City" - выглядит как .tags-toggle */
+.filter-toggle-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    text-align: left;
+}
+
+    .filter-toggle-btn:hover {
+        background: var(--bg-surface-hover);
+        border-color: var(--text-secondary);
+    }
+
+    .filter-toggle-btn.is-active {
+        border-color: #007bff;
+        box-shadow: 0 0 0 1px #007bff;
+    }
+
+    .filter-toggle-btn .filter-toggle-icon {
+        color: var(--text-secondary);
+        transition: transform 0.3s ease;
+    }
+
+        .filter-toggle-btn .filter-toggle-icon.is-open svg {
+            transform: rotate(180deg);
+        }
+
+/* 5. "Геройская" кнопка Geo */
+.hero-geo-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 100%;
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: 1px solid #007bff;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap; /* Не переносить текст */
+}
+
+    .hero-geo-btn:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .hero-geo-btn:disabled,
+    .hero-geo-btn.is-loading {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+
+/* =========================================
+    НОВЫЕ СТИЛИ ДЛЯ ОБЛАКА ГОРОДОВ
+=========================================
+*/
+
+/* 1. Сворачиваемый контейнер */
+.city-cloud-wrapper {
+    /* Логика из .tags-content */
+    display: none;
+    overflow: hidden;
+    /* Убираем отступы, чтобы он был "под" кнопками */
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+}
+
+    .city-cloud-wrapper.is-open {
+        display: block;
+        /* Добавляем отступ сверху, когда открыто */
+        padding-top: 1rem;
+    }
+
+/* 2. Контейнер с "чипами" (облако) */
+.city-cloud-content {
+    /* Логика из .tag-cloud-container */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0;
+}
+
+    /* Заставляем <a> (ссылки городов) выглядеть 
+  как <button> (теги) для единообразия 
+*/
+    .city-cloud-content .chip-tag {
+        /* Стилизация под "чип" или "тег" */
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.5;
+        background-color: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+        .city-cloud-content .chip-tag:hover {
+            background-color: var(--bg-surface-hover);
+            border-color: var(--text-secondary);
+        }
+
+        .city-cloud-content .chip-tag.active {
+            background-color: #007bff;
+            color: #ffffff;
+            border-color: #007bff;
+        }
+
+        /* Стиль для "All Cities" (активный) */
+        .city-cloud-content .chip-tag.chip-all.active {
+            background-color: var(--bg-surface);
+            color: #007bff;
+            border-color: #007bff;
+        }
+
+        .city-cloud-content .chip-tag.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: var(--bg-surface-hover);
+        }
+
+    .city-cloud-content .no-data {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        padding: 4px 0;
+    }
