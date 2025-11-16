@@ -5,7 +5,6 @@
     <div class="card-image">
         @if (Place.ImgLink?.Any() == true)
         {
-            @* ⬇️ ИЗМЕНЕНИЕ: Добавлено @Place.Name в alt-тег для SEO *@
             <img src="@Place.ImgLink.First()" alt="@Place.Name" />
         }
         else
@@ -17,11 +16,18 @@
     </div>
 
     <div class="card-content">
-        <h3 class="card-title">@Place.Name</h3>
 
-        @* ⬇️ ИЗМЕНЕНИЕ: Я заменил .card-address на .card-location из вашего CSS
-           (CSS для .card-address отсутствовал)
-        *@
+        <div class="card-title-row">
+
+            <h3 class="card-title">@Place.Name</h3>
+
+            @if (Place.Distance.HasValue)
+            {
+                <span class="card-distance">
+                    @Place.Distance.Value.ToString("F1") km
+                </span>
+            }
+        </div>
         <div class="card-location">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -48,7 +54,7 @@
             {
                 @if (!string.IsNullOrEmpty(tag))
                 {
-                    <span class="tag">@tag</span>
+                    <span class="card-tag">@tag</span>
                 }
             }
         </div>
@@ -56,7 +62,6 @@
 </a>
 
 @code {
-    [Parameter, EditorRequired]
-    public Place Place { get; set; } = null!;
+    [Parameter]
+    public Place Place { get; set; } = new();
 }
-

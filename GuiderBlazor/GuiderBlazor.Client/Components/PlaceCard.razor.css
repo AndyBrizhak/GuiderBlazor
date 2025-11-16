@@ -62,7 +62,7 @@
 }
 
 .card-title {
-    margin: 0 0 0.75rem 0;
+    margin: 0; 
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -71,6 +71,7 @@
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    flex-grow: 1; /*  Позволяет заголовку занимать место */
 }
 
 .card-category {
@@ -118,3 +119,28 @@
     .card-location svg {
         flex-shrink: 0;
     }
+
+/*
+=========================================
+    СТИЛИ ДЛЯ ЗАГОЛОВКА И ДИСТАНЦИИ
+=========================================
+*/
+
+.card-title-row {
+    display: flex;
+    justify-content: space-between; /* Прижимает элементы по краям */
+    align-items: flex-start; /* Выравнивание по верху */
+    gap: 8px; /* Отступ между ними */
+    
+    margin: 0 0 0.75rem 0;
+}
+
+.card-distance {
+    flex-shrink: 0; /* Не сжимать текст */
+    font-size: 0.875rem; /* Чуть меньше заголовка */
+    font-weight: 500;
+    color: var(--text-secondary); /* "Серый" цвет, как у локации */
+    white-space: nowrap; /* "1.5 km" не будет переноситься */
+
+    padding-top: 1px;
+}

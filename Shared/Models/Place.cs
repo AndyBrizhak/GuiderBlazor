@@ -34,21 +34,18 @@ public class Place
 
     [JsonPropertyName("social_network")]
     public SocialNetwork? SocialNetwork { get; set; } = new();
-
-    //[JsonPropertyName("url")]
-    //public string? Url { get; set; } = string.Empty;
-
-    // 1. "Теневое" свойство для "url" из JSON
+    
+    // "Теневое" свойство для "url" из JSON
     // Оно будет принимать значение, только если API пришлет "url"
     [JsonPropertyName("url")]
     public string? UrlProperty { get; set; }
 
-    // 2. "Теневое" свойство для "web" из JSON
+    //  "Теневое" свойство для "web" из JSON
     // Оно будет принимать значение, только если API пришлет "web"
     [JsonPropertyName("web")]
     public string? WebProperty { get; set; }
 
-    // 3. Ваше "настоящее" свойство Url, которое использует приложение
+    //  Ваше "настоящее" свойство Url, которое использует приложение
     // Оно невидимо для JSON, но содержит правильную логику.
     [JsonIgnore]
     public string? Url
@@ -87,6 +84,9 @@ public class Place
 
     [JsonPropertyName("location")]
     public Location? Location { get; set; }
+       
+    [JsonPropertyName("distance")]
+    public double? Distance { get; set; }
 }
 
 public class Address
