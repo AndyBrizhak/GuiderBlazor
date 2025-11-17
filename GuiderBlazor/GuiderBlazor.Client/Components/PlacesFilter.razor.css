@@ -127,27 +127,6 @@
         transform: rotate(180deg);
     }
 
-/* =========================================
-    СТИЛИ ДЛЯ ADVANCED FILTERS (FORM)
-=========================================
-*/
-.advanced-filters {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
-    overflow: hidden;
-}
-
-    .advanced-filters > * {
-        overflow: hidden;
-    }
-
-    .advanced-filters.is-open {
-        grid-template-rows: 1fr;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-color);
-        margin-top: 0.5rem;
-    }
 
 .form-row {
     display: grid;
