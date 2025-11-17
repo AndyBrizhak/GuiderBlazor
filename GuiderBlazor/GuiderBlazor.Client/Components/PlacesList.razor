@@ -18,6 +18,27 @@
     }
     else if (placesResponse?.Places?.Any() == true)
     {
+        <div class="sort-controls">
+            <div class="form-group">
+                <label>Sort by:</label>
+                <select class="form-control" @onchange="HandleSortFieldChange">
+                    <option value="name" selected="@(currentFilters.SortField == "name" || string.IsNullOrEmpty(currentFilters.SortField))">Name</option>
+                    <option value="category" selected="@(currentFilters.SortField == "category")">Category</option>
+                    @if (currentFilters.Latitude.HasValue)
+                    {
+                        <option value="distance" selected="@(currentFilters.SortField == "distance")">Distance</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Order:</label>
+                <select class="form-control" @onchange="HandleSortOrderChange">
+                    <option value="ASC" selected="@(currentFilters.SortOrder == "ASC" || string.IsNullOrEmpty(currentFilters.SortOrder))">Ascending (A-Z)</option>
+                    <option value="DESC" selected="@(currentFilters.SortOrder == "DESC")">Descending (Z-A)</option>
+                </select>
+            </div>
+        </div>
+
         <div class="places-grid">
             @foreach (var place in placesResponse.Places)
             {
@@ -219,4 +240,59 @@
 
         return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
+
+    /// <summary>
+    /// Вызывается при изменении поля сортировки
+    /// </summary>
+    private void HandleSortFieldChange(ChangeEventArgs e)
+    {
+        var newSortField = e.Value?.ToString() ?? "name";
+
+        // Клонируем текущие фильтры, меняем поле и сбрасываем на 1 страницу
+        var newFilters = new PlaceFilterParams
+        {
+            Q = currentFilters.Q,
+            Category = currentFilters.Category,
+            Province = currentFilters.Province,
+            City = currentFilters.City,
+            PerPage = currentFilters.PerPage,
+            Page = 1, // Сброс на 1 страницу
+            Tags = currentFilters.Tags,
+            Latitude = currentFilters.Latitude,
+            Longitude = currentFilters.Longitude,
+            Distance = currentFilters.Distance,
+            IsOpen = currentFilters.IsOpen,
+            SortField = newSortField, // <-- Новое значение
+            SortOrder = currentFilters.SortOrder
+        };
+        Navigation.NavigateTo(GetQueryString(newFilters));
+    }
+
+    /// <summary>
+    /// Вызывается при изменении порядка сортировки
+    /// </summary>
+    private void HandleSortOrderChange(ChangeEventArgs e)
+    {
+        var newSortOrder = e.Value?.ToString() ?? "ASC";
+
+        // Клонируем текущие фильтры, меняем порядок и сбрасываем на 1 страницу
+        var newFilters = new PlaceFilterParams
+        {
+            Q = currentFilters.Q,
+            Category = currentFilters.Category,
+            Province = currentFilters.Province,
+            City = currentFilters.City,
+            PerPage = currentFilters.PerPage,
+            Page = 1, // Сброс на 1 страницу
+            Tags = currentFilters.Tags,
+            Latitude = currentFilters.Latitude,
+            Longitude = currentFilters.Longitude,
+            Distance = currentFilters.Distance,
+            IsOpen = currentFilters.IsOpen,
+            SortField = currentFilters.SortField,
+            SortOrder = newSortOrder // <-- Новое значение
+        };
+        Navigation.NavigateTo(GetQueryString(newFilters));
+    }
+
 }

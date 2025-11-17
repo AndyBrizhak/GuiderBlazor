@@ -213,23 +213,6 @@
             <div class="section-title">Sorting</div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Sort by:</label>
-                    <select class="form-control" @bind="filters.SortField">
-                        <option value="name">Name</option>
-                        <option value="category">Category</option>
-                        <option value="status">Status</option>
-                        <option value="createdAt">Created date</option>
-                        <option value="distance">Distance (geo search)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Order:</label>
-                    <select class="form-control" @bind="filters.SortOrder">
-                        <option value="ASC">Ascending (A-Z)</option>
-                        <option value="DESC">Descending (Z-A)</option>
-                    </select>
-                </div>
-                <div class="form-group">
                     <label>Results per page:</label>
                     <select class="form-control" @bind="filters.PerPage">
                         <option value="4">4</option>

@@ -96,9 +96,46 @@
         color: #007bff;
     }
 
-    /* --- ⬇️ НОВЫЙ СТИЛЬ ДЛЯ <a> ССЫЛОК ⬇️ --- */
+    /*  СТИЛЬ ДЛЯ <a> ССЫЛОК ⬇️ --- */
     .btn-page.disabled {
         opacity: 0.4;
         cursor: not-allowed;
         pointer-events: none; /* ⬆️ Запрещает клики */
+    }
+
+/* =========================================
+    СТИЛИ ДЛЯ СОРТИРОВКИ
+=========================================
+*/
+.sort-controls {
+    display: flex;
+    flex-wrap: wrap; /* Для мобильных */
+    gap: 1rem;
+    margin-bottom: 0.5rem; /* Отступ от сетки */
+}
+
+    /* Адаптируем .form-group из PlacesFilter.css */
+    .sort-controls .form-group {
+        flex-grow: 1; /* Растягиваем на 50% */
+        flex-basis: 150px; /* Мин. ширина */
+        margin-bottom: 0;
+    }
+
+    .sort-controls label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    /* Адаптируем .form-control из PlacesFilter.css */
+    .sort-controls .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
     }
