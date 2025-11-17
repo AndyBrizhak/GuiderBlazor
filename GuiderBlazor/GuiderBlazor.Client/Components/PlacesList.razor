@@ -61,6 +61,17 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
                 </a>
 
+                <div class="pagination-per-page">
+                    <label>Per Page:</label>
+                    <select class="form-control" @onchange="HandlePerPageChange">
+                        <option value="4" selected="@(currentFilters.PerPage == 4)">4</option>
+                        <option value="8" selected="@(currentFilters.PerPage == 8)">8</option>
+                        <option value="12" selected="@(currentFilters.PerPage == 12)">12</option>
+                        <option value="16" selected="@(currentFilters.PerPage == 16)">16</option>
+                        <option value="20" selected="@(currentFilters.PerPage == 20)">20</option>
+                    </select>
+                </div>
+
                 <div class="pagination-info">
                     @placesResponse.Page / @placesResponse.TotalPages
                 </div>
@@ -293,6 +304,34 @@
             SortOrder = newSortOrder // <-- Новое значение
         };
         Navigation.NavigateTo(GetQueryString(newFilters));
+    }
+
+    /// <summary>
+    /// Вызывается при изменении кол-ва элементов на странице
+    /// </summary>
+    private void HandlePerPageChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newPerPage))
+        {
+            // Клонируем текущие фильтры, меняем PerPage и сбрасываем на 1 страницу
+            var newFilters = new PlaceFilterParams
+            {
+                Q = currentFilters.Q,
+                Category = currentFilters.Category,
+                Province = currentFilters.Province,
+                City = currentFilters.City,
+                PerPage = newPerPage, // <-- Новое значение
+                Page = 1, // Сброс на 1 страницу
+                Tags = currentFilters.Tags,
+                Latitude = currentFilters.Latitude,
+                Longitude = currentFilters.Longitude,
+                Distance = currentFilters.Distance,
+                IsOpen = currentFilters.IsOpen,
+                SortField = currentFilters.SortField,
+                SortOrder = currentFilters.SortOrder
+            };
+            Navigation.NavigateTo(GetQueryString(newFilters));
+        }
     }
 
 }

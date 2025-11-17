@@ -207,25 +207,7 @@
             </svg>
         </span>
     </div>
-    <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
-         <div>
-            
-            <div class="section-title">Sorting</div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Results per page:</label>
-                    <select class="form-control" @bind="filters.PerPage">
-                        <option value="4">4</option>
-                        <option value="8">8</option>
-                        <option value="12">12</option>
-                        <option value="16">16</option>
-                        <option value="20">20</option>
-                    </select>
-                </div>
-            </div>
-         
-        </div>
-    </div>
+   
 </div>
 
 @code {

@@ -139,3 +139,51 @@
         border: 1px solid var(--border-color);
         border-radius: 4px;
     }
+
+/* =========================================
+     СТИЛИ ДЛЯ "RESULTS PER PAGE"
+=========================================
+*/
+
+/* * Контейнер для селектора.
+ * Он будет "вклиниваться" между кнопками и 
+ * информацией о страницах.
+*/
+.pagination-per-page {
+    display: none; /* Скрыто на мобильных */
+}
+
+/* Показываем на десктопах (планшетах) */
+@media (min-width: 576px) {
+    .pagination-per-page {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        /* Отступ, чтобы отделить от кнопок */
+        padding: 0 0.5rem;
+    }
+
+        .pagination-per-page label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* Стилизуем select под окружение */
+        .pagination-per-page .form-control {
+            width: auto;
+            padding: 0.3rem 1.5rem 0.3rem 0.5rem; /* Отступ для стрелки */
+            font-size: 0.875rem;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1em 1em;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        }
+}
