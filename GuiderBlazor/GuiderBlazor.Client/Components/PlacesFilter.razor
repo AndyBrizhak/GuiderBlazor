@@ -284,6 +284,8 @@
     [Parameter]
     public PlaceFilterParams CurrentFilters { get; set; } = new();
 
+    private const double DEFAULT_SEARCH_DISTANCE_METERS = 10000; // 10 км
+
     [Parameter]
     public EventCallback<PlaceFilterParams> OnFilterChanged { get; set; }
         
@@ -422,7 +424,8 @@
                 filters.Latitude = latitude;
                 filters.Longitude = longitude;
                 filters.SortField = "distance"; 
-                filters.Distance = null; 
+                // filters.Distance = null; 
+                filters.Distance = DEFAULT_SEARCH_DISTANCE_METERS;
 
                 // Сбрасываем город и провинцию
                 filters.City = null; 
