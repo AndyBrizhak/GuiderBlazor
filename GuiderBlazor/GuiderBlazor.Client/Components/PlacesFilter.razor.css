@@ -27,11 +27,9 @@
     overflow-x: auto;
     flex-wrap: nowrap;
     gap: 8px;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ и добавляем рамку */
-    margin: -1rem -1rem 0 -1rem; /* Убираем нижний отступ */
+    margin: 0 -1rem 0 -1rem; 
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color); /* Добавляем разделитель */
-
+    border-bottom: 1px solid var(--border-color); 
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
@@ -755,3 +753,51 @@
         transform: rotate(360deg);
     }
 }
+
+/* =========================================
+     БЛОК ПОИСКА 
+=========================================
+*/
+.search-bar-wrapper {
+    /* Прижимаем к краям, как category-scroller */
+    margin: -1rem -1rem 0 -1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    /* Легкий фон, чтобы выделить блок */
+    background: var(--bg-surface-hover);
+}
+
+/* На десктопе отступы больше */
+@media (min-width: 768px) {
+    .search-bar-wrapper {
+        margin: -1.5rem -1.5rem 0 -1.5rem;
+        padding: 1.5rem;
+    }
+}
+
+/* Делаем само поле ввода крупнее */
+.search-bar-wrapper .form-control {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+/* Уменьшаем отступ между полем и кнопками */
+.search-bar-wrapper .button-group {
+    margin-top: 0.75rem;
+    gap: 0.75rem;
+}
+
+    /*
+ * Заставляем кнопки (только внутри .search-bar-wrapper)
+ * занимать по 50% ширины и выравниваем иконки.
+ */
+    .search-bar-wrapper .button-group .btn {
+        flex-grow: 1; /* Каждая кнопка "растет" одинаково */
+        flex-basis: 0; /* Начинаем с 0, чтобы flex-grow работал */
+        /* Новые стили для выравнивания иконки и текста */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem; /* Отступ между иконкой и текстом */
+        border-radius: 16px; 
+    }

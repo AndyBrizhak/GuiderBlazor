@@ -9,6 +9,28 @@
 <div class="filter-container">
     <div class="filter-card">
         
+        <div class="search-bar-wrapper">
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="text"
+                       class="form-control"
+                       @bind="filters.Q"
+                       placeholder="Search places, services..."
+                       @onkeyup="HandleSearchKeyUp" />
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" @onclick="ApplyFilters">
+                    <span>🔍</span>
+                    <span>Search</span>
+                </button>
+                <button class="btn btn-secondary" @onclick="ResetFilters">
+                    <span>🔄</span>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
         <div class="category-scroller">
             <span class="scroller-label">Category:</span>
             <a class="category-btn chip-all @(string.IsNullOrEmpty(filters.Category) ? "active" : "")"
@@ -176,14 +198,7 @@
     </div>
     <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
          <div>
-            <div class="form-group">
-                <label>Search (name, description):</label>
-                <input type="text"
-                       class="form-control"
-                       @bind="filters.Q"
-                       placeholder="Enter search query..." />
-            </div>
-
+          
             <div class="form-row">
                 <div class="form-group">
                     <label>Name:</label>
@@ -268,14 +283,7 @@
                     </select>
                 </div>
             </div>
-            <div class="button-group">
-                <button class="btn btn-primary" @onclick="ApplyFilters">
-                    🔍 Apply Filters
-                </button>
-                <button class="btn btn-secondary" @onclick="ResetFilters">
-                    🔄 Reset
-                </button>
-            </div>
+         
         </div>
     </div>
 </div>
@@ -484,6 +492,14 @@
     private void ToggleTagsFilter()
     {
         isTagsFilterOpen = !isTagsFilterOpen;
+    }
+
+    private async Task HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ApplyFilters();
+        }
     }
 
     private async Task ApplyFilters()
