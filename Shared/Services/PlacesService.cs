@@ -19,17 +19,17 @@ public class PlacesService : IPlacesService
             var queryString = BuildQueryString(filters);
             var url = string.IsNullOrEmpty(queryString) ? "places/filters" : $"places/filters?{queryString}";
 
-            Console.WriteLine($"Request URL: {url}");
+            //Console.WriteLine($"Request URL: {url}");
 
             // Отправляем запрос
             var response = await _httpClient.GetAsync(url);
 
-            Console.WriteLine($"Response Status: {response.StatusCode}");
+            //Console.WriteLine($"Response Status: {response.StatusCode}");
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error Response: {errorContent}");
+                //Console.WriteLine($"Error Response: {errorContent}");
                 return null;
             }
 
@@ -45,11 +45,11 @@ public class PlacesService : IPlacesService
 
             if (places == null)
             {
-                Console.WriteLine("Failed to deserialize places");
+                //Console.WriteLine("Failed to deserialize places");
                 return null;
             }
 
-            Console.WriteLine($"Successfully loaded {places.Count} places, Total: {totalCount}");
+            //Console.WriteLine($"Successfully loaded {places.Count} places, Total: {totalCount}");
 
             // Используем perPage из фильтра, или 20 по умолчанию если не задан
             int perPageValue = filters.PerPage > 0 ? filters.PerPage : 20;
@@ -69,8 +69,8 @@ public class PlacesService : IPlacesService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching places: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            //Console.WriteLine($"Error fetching places: {ex.Message}");
+            //Console.WriteLine($"Stack trace: {ex.StackTrace}");
             return null;
         }
     }
@@ -84,7 +84,7 @@ public class PlacesService : IPlacesService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching place: {ex.Message}");
+            //Console.WriteLine($"Error fetching place: {ex.Message}");
             return null;
         }
     }
@@ -99,7 +99,7 @@ public class PlacesService : IPlacesService
         catch (Exception ex)
         {
             // Логгируем ошибку, если место по URL не найдено или API вернул ошибку
-            Console.WriteLine($"Error fetching place by URL ({url}): {ex.Message}");
+            //Console.WriteLine($"Error fetching place by URL ({url}): {ex.Message}");
             return null; // Возвращаем null, чтобы страница PlaceDetails могла показать "не найдено"
         }
     }
