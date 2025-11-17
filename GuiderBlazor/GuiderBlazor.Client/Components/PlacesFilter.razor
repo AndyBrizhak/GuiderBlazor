@@ -110,6 +110,17 @@
                         }
                     </button>
                 </div>
+
+                <div class="open-now-filter-block">
+                <label class="toggle-switch">
+                    <input type="checkbox" 
+                            @bind="IsOpenToggle"
+                           @bind:after="ApplyFilters" />
+                    <span class="slider"></span>
+                </label>
+                <label class="toggle-label" @onclick="() => IsOpenToggle = !IsOpenToggle">Open</label>
+            </div>
+
             </div>
 
             <div class="city-cloud-wrapper @(isCityCollapsed ? "" : "is-open")">
@@ -198,16 +209,7 @@
     </div>
     <div class="advanced-filters @(isAdvancedFilterOpen ? "is-open" : "")">
          <div>
-           
-            <div class="form-group">
-                <label>Opening hours:</label>
-                <select class="form-control" @bind="isOpenInput">
-                    <option value="">All</option>
-                    <option value="true">Open only</option>
-                    <option value="false">Closed only</option>
-                </select>
-            </div>
-
+            
             <div class="section-title">Sorting</div>
             <div class="form-row">
                 <div class="form-group">
@@ -257,7 +259,8 @@
     private string? latitudeInput;
     private string? longitudeInput;
     private string? distanceInput;
-    private string isOpenInput = string.Empty;
+    // private string isOpenInput = string.Empty;
+    private bool IsOpenToggle { get; set; }
     private bool isAdvancedFilterOpen = false;
     private bool isTagsFilterOpen = false;
     private List<string> activeCities = new();
@@ -279,7 +282,7 @@
         latitudeInput = filters.Latitude?.ToString();
         longitudeInput = filters.Longitude?.ToString();
         distanceInput = filters.Distance?.ToString();
-        isOpenInput = filters.IsOpen?.ToString() ?? string.Empty;
+        IsOpenToggle = filters.IsOpen == true;
 
         await LoadActiveCities();
         await LoadActiveTags();
@@ -482,10 +485,7 @@
             filters.Distance = dist;
         else
             filters.Distance = null;
-        if (bool.TryParse(isOpenInput, out bool isOpen))
-            filters.IsOpen = isOpen;
-        else
-            filters.IsOpen = null;
+        filters.IsOpen = IsOpenToggle ? true : (bool?)null;
 
         filters.Page = 1;
         filters.Status = "active";
@@ -507,7 +507,7 @@
         latitudeInput = null;
         longitudeInput = null;
         distanceInput = null;
-        isOpenInput = string.Empty;
+        IsOpenToggle = false;
         
         geoErrorMessage = null;
         isLocating = false;

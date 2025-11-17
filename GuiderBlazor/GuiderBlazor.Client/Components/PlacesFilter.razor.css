@@ -801,3 +801,77 @@
         gap: 0.5rem; /* Отступ между иконкой и текстом */
         border-radius: 16px; 
     }
+
+/* =========================================
+    СТИЛИ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ "OPEN NOW"
+=========================================
+*/
+.open-now-filter-block {
+    flex-shrink: 0; /* Не сжиматься */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Небольшой отступ от кнопки "Find Near Me" */
+    padding-left: 0.5rem;
+}
+
+    .open-now-filter-block .toggle-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        cursor: pointer;
+        user-select: none;
+    }
+
+/* Сам переключатель */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px; /* Уменьшенная ширина */
+    height: 24px; /* Уменьшенная высота */
+}
+
+    /* Прячем стандартный checkbox */
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+/* "Ползунок" */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px; /* Уменьшено */
+        width: 18px; /* Уменьшено */
+        left: 3px; /* Уменьшено */
+        bottom: 3px; /* Уменьшено */
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+input:checked + .slider {
+    background-color: #007bff;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #007bff;
+}
+
+input:checked + .slider:before {
+    /* (44 - 18 - 3 - 3) = 20 */
+    transform: translateX(20px);
+}

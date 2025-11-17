@@ -192,6 +192,9 @@
             queryParams["Longitude"] = filters.Longitude.Value;
         if (filters.Distance.HasValue)
             queryParams["Distance"] = filters.Distance.Value;
+        if (filters.IsOpen.HasValue)
+            queryParams["IsOpen"] = filters.IsOpen.Value;
+
         if (!string.IsNullOrEmpty(filters.SortField))
             queryParams["SortField"] = filters.SortField;
         if (!string.IsNullOrEmpty(filters.SortOrder))
