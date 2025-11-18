@@ -551,7 +551,8 @@
             Page = 1,
             Category = category,
             Status = "active",
-            Tags = filters.Tags
+            Tags = filters.Tags,
+            IsOpen = filters.IsOpen
         };
         return GetQueryString(linkFilters);
     }
@@ -567,7 +568,8 @@
             City = "",
             PerPage = filters.PerPage,
             Status = "active",
-            Tags = filters.Tags
+            Tags = filters.Tags,
+            IsOpen = filters.IsOpen
         };
         return GetQueryString(linkFilters);
     }
@@ -583,7 +585,8 @@
             City = city, 
             PerPage = filters.PerPage, 
             Status = "active",
-            Tags = filters.Tags
+            Tags = filters.Tags,
+            IsOpen = filters.IsOpen
         };
         return GetQueryString(linkFilters);
     }
@@ -610,6 +613,8 @@
             queryParams["Page"] = filters.Page;
         if (filters.PerPage != 4)
             queryParams["PerPage"] = filters.PerPage;
+        if (filters.IsOpen == true)
+            queryParams["IsOpen"] = "true";
 
         var queryParts = new List<string>();
         queryParts.AddRange(queryParams
