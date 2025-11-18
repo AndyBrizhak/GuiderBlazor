@@ -88,9 +88,9 @@
                 
                 <div class="geo-filter-block">
                     <button type="button" 
-                            class="hero-geo-btn @(isLocating ? "is-loading" : "") @(!string.IsNullOrEmpty(geoErrorMessage) ? "is-error" : "")" 
-                            @onclick="RequestGeoLocation" 
-                            disabled="@isLocating">
+                        class="hero-geo-btn @(filters.Latitude.HasValue ? "active" : "") @(isLocating ? "is-loading" : "") @(!string.IsNullOrEmpty(geoErrorMessage) ? "is-error" : "")" 
+                        @onclick="RequestGeoLocation" 
+                        disabled="@isLocating">
                         
                         @if (isLocating)
                         {
