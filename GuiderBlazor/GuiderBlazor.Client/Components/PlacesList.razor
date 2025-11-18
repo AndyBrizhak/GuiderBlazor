@@ -133,7 +133,9 @@
     public string? SortField { get; set; }
     [SupplyParameterFromQuery]
     public string? SortOrder { get; set; }
-
+    
+    [SupplyParameterFromQuery]
+    public bool? IsOpen { get; set; }
     [SupplyParameterFromQuery(Name = "Tags")]
     public string[]? Tags { get; set; }
 
@@ -143,7 +145,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        Console.WriteLine($"🟢 OnParametersSetAsync: Lat={Latitude}, Lon={Longitude}, Distance={Distance}");
+        Console.WriteLine($"🟢 OnParametersSetAsync: Lat={Latitude}, Lon={Longitude}, Distance={Distance}, IsOpen={IsOpen}");
 
         isLoading = true;
         currentFilters = new PlaceFilterParams
@@ -156,20 +158,21 @@
             PerPage = this.PerPage,
             Status = "active",
             Tags = this.Tags?.ToList(),
-            // Добавляем геопараметры
+            
             Latitude = this.Latitude,
             Longitude = this.Longitude,
             Distance = this.Distance,
             SortField = this.SortField,
-            SortOrder = this.SortOrder
+            SortOrder = this.SortOrder,
+            IsOpen = this.IsOpen  
         };
 
         if (currentFilters.Page <= 0) currentFilters.Page = 1;
         if (currentFilters.PerPage <= 0) currentFilters.PerPage = 4;
 
-        Console.WriteLine($"🟢 Calling PlacesService.GetPlacesAsync with Lat={currentFilters.Latitude}, Lon={currentFilters.Longitude}");
+        // Console.WriteLine($"🟢 Calling PlacesService.GetPlacesAsync with IsOpen={currentFilters.IsOpen}");
         placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
-        Console.WriteLine($"🟢 Received {placesResponse?.Places?.Count ?? 0} places");
+        // Console.WriteLine($"🟢 Received {placesResponse?.Places?.Count ?? 0} places");
 
         isLoading = false;
     }

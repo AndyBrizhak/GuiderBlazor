@@ -112,13 +112,16 @@
                 </div>
 
                 <div class="open-now-filter-block">
-                <label class="toggle-switch">
+            
+                 <label class="toggle-switch">
                     <input type="checkbox" 
-                            @bind="IsOpenToggle"
-                           @bind:after="ApplyFilters" />
-                    <span class="slider"></span>
+                            checked="@IsOpenToggle"
+                            @onchange="ToggleOpenFilter" />
+                 
+                     <span class="slider"></span>
                 </label>
-                <label class="toggle-label" @onclick="() => IsOpenToggle = !IsOpenToggle">Open</label>
+                <label class="toggle-label" @onclick="ToggleOpenFilter"  >Open</label>
+                
             </div>
 
             </div>
@@ -228,17 +231,28 @@
     private bool _isInitialized = false;
     
     protected override async Task OnParametersSetAsync()
-    {
-        filters = CurrentFilters;
-        tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
-        latitudeInput = filters.Latitude?.ToString();
-        longitudeInput = filters.Longitude?.ToString();
-        distanceInput = filters.Distance?.ToString();
-        IsOpenToggle = filters.IsOpen == true;
+{
+    // Сохраняем текущее состояние переключателя
+    bool currentToggleState = IsOpenToggle;
+    
+    filters = CurrentFilters;
+    tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
+    latitudeInput = filters.Latitude?.ToString();
+    longitudeInput = filters.Longitude?.ToString();
+    distanceInput = filters.Distance?.ToString();
+    
+    // Восстанавливаем состояние переключателя, если оно было изменено пользователем
+    // но еще не синхронизировалось с CurrentFilters
+    if (filters.IsOpen == true)
+        IsOpenToggle = true;
+    else if (filters.IsOpen == null)
+        IsOpenToggle = false;
+    else
+        IsOpenToggle = currentToggleState; // Оставляем как было
 
-        await LoadActiveCities();
-        await LoadActiveTags();
-    }
+    await LoadActiveCities();
+    await LoadActiveTags();
+}
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -407,7 +421,7 @@
         }
     }
 
-    private async Task ApplyFilters()
+       private async Task ApplyFilters()
     {
         if (!string.IsNullOrWhiteSpace(tagsInput))
         {
@@ -432,7 +446,8 @@
             filters.Distance = dist;
         else
             filters.Distance = null;
-        filters.IsOpen = IsOpenToggle ? true : (bool?)null;
+    
+        // IsOpen уже установлен в ToggleOpenFilter(), не трогаем его здесь
 
         filters.Page = 1;
         filters.Status = "active";
@@ -508,6 +523,22 @@
         filters.Page = 1;
         await OnFilterChanged.InvokeAsync(filters);
     }
+
+    private async Task ToggleOpenFilter()
+{
+    IsOpenToggle = !IsOpenToggle;
+    filters.IsOpen = IsOpenToggle ? true : (bool?)null;
+    filters.Page = 1;
+    
+    // Сначала обновляем UI
+    StateHasChanged();
+    
+    // Небольшая задержка для гарантии отрисовки
+    await Task.Yield();
+    
+    // Потом уведомляем родителя
+    await OnFilterChanged.InvokeAsync(filters);
+}
 
     private string GetUrlForCategory(string category)
     {
