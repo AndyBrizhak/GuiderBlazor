@@ -465,18 +465,20 @@
         border-color: var(--text-secondary); /*  (как у .province-chip:hover) */
     }
 
-    .chip-tag.active {
-        /* Стиль для ВЫБРАННОГО тега */
-        background-color: var(--primary-color); /* Используйте ваш основной цвет */
-        color: white;
-        border-color: var(--primary-color);
+    .chip-tag.active:not(.chip-all) {
+        /* Стиль для ВЫБРАННОГО тега (но НЕ для "All") */
+        /* Копируем стили из .province-chip.active */
+        background-color: #007bff; 
+        color: #ffffff; 
+        border-color: #007bff; 
     }
 
     .chip-tag.chip-all.active {
-        /* Стиль для кнопки "All", когда она активна */
-        background-color: #555;
-        color: white;
-        border-color: #555;
+        /*  Стиль для кнопки "All", когда она активна */
+        /* Копируем стили из .chip-all.active (строка 290) */
+        background-color: var(--bg-surface); 
+        color: #007bff; 
+        border-color: #007bff; 
     }
 
     .chip-tag .chip-remove {
@@ -487,10 +489,17 @@
         line-height: 1;
     }
 
-    .chip-tag.active:hover {
-        background-color: var(--primary-color-dark); /* Цвет при наведении на активный тег */
-        border-color: var(--primary-color-dark);
+    .chip-tag.active:not(.chip-all):hover {
+        /*  Стиль :hover для ВЫБРАННОГО тега */
+        background-color: #0056b3; /*  (темно-синий) */
+        border-color: #0056b3; 
     }
+
+    
+
+    
+
+    
 
     .chip-tag.disabled {
         opacity: 0.6;

@@ -161,7 +161,6 @@
         </div>
         <div class="tags-content @(isTagsFilterOpen ? "is-open" : "")">
              <div class="form-group">
-                <label class="scroller-label" style="margin-bottom: 8px;">Filter by Tags:</label>
                 <div class="tag-cloud-container">
                     <button class="chip-tag chip-all @(filters.Tags == null || !filters.Tags.Any() ? "active" : "")"
                             @onclick="ClearAllTags">
