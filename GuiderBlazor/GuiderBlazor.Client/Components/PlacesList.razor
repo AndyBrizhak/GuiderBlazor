@@ -30,13 +30,22 @@
                     }
                 </select>
             </div>
-            <div class="form-group">
-                <label>Order:</label>
-                <select class="form-control" @onchange="HandleSortOrderChange">
-                    <option value="ASC" selected="@(currentFilters.SortOrder == "ASC" || string.IsNullOrEmpty(currentFilters.SortOrder))">Ascending (A-Z)</option>
-                    <option value="DESC" selected="@(currentFilters.SortOrder == "DESC")">Descending (Z-A)</option>
-                </select>
-            </div>
+
+            <button class="btn-sort-order" @onclick="ToggleSortOrder"
+                    title="Change Sort Order (@(IsSortAscending() ? "Ascending (A-Z)" : "Descending (Z-A)"))">
+                @if (IsSortAscending())
+                {
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 19V5m-6 6l6-6l6 6" />
+                    </svg>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 5v14m-6-6l6 6l6-6" />
+                    </svg>
+                }
+            </button>
         </div>
 
         <div class="places-grid">
@@ -280,11 +289,23 @@
     }
 
     /// <summary>
-    /// Вызывается при изменении порядка сортировки
+    /// Вспомогательный метод для проверки текущего порядка сортировки.
+    /// "ASC" - это по умолчанию, поэтому null или "ASC" - это true
     /// </summary>
-    private void HandleSortOrderChange(ChangeEventArgs e)
+    private bool IsSortAscending()
     {
-        var newSortOrder = e.Value?.ToString() ?? "ASC";
+        return string.IsNullOrEmpty(currentFilters.SortOrder) ||
+               currentFilters.SortOrder.Equals("ASC", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Вызывается при НАЖАТИИ на новую кнопку-иконку.
+    /// Он "переворачивает" текущий порядок.
+    /// </summary>
+    private void ToggleSortOrder()
+    {
+        // "Переворачиваем" значение
+        var newSortOrder = IsSortAscending() ? "DESC" : "ASC";
 
         // Клонируем текущие фильтры, меняем порядок и сбрасываем на 1 страницу
         var newFilters = new PlaceFilterParams

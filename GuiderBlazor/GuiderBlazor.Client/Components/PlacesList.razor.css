@@ -187,3 +187,61 @@
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
         }
 }
+
+/* =========================================
+    КОМПАКТНАЯ СОРТИРОВКА
+=========================================
+*/
+
+.sort-controls {
+    
+    gap: 0.5rem; /* Уменьшаем отступ */
+    align-items: flex-end; /* Выравниваем селект и кнопку по низу */
+}
+
+    .sort-controls .form-group {
+        /* * Заставляем селект занять всё место, 
+     * оставив место для кнопки 
+     */
+        flex-grow: 1; /* Растягиваем */
+        flex-basis: 0; /* Начинаем с 0 */
+        min-width: 150px; /* Мин. ширина для селекта */
+    }
+
+/* кнопка-переключатель */
+.btn-sort-order {
+    /* * Копируем стили из .sort-controls .form-control 
+     * для 100% совпадения
+     */
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    /* Устанавливаем размер */
+    flex-shrink: 0; /* Не сжиматься */
+    height: 38px; /* Подбираем высоту под <select> */
+    width: 42px; /* Чуть шире высоты */
+    /* Центрируем иконку */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .btn-sort-order:hover {
+        border-color: #007bff;
+        background: var(--bg-surface-hover);
+    }
+
+    .btn-sort-order svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
