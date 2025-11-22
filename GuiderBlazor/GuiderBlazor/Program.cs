@@ -19,7 +19,7 @@ builder.Services.AddScoped(sp => new HttpClient
 builder.Services.AddScoped<IPlacesService, PlacesService>();
 builder.Services.AddScoped<ICitiesService, CitiesService>();
 builder.Services.AddScoped<ITagsService, TagsService>();
-
+builder.Services.AddScoped<IProvincesService, ProvincesService>();
 
 var app = builder.Build();
 

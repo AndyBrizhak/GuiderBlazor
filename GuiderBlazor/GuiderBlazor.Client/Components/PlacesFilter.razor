@@ -1,6 +1,8 @@
 ﻿@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
 @rendermode InteractiveServer
+
+@inject IProvincesService ProvincesService
 @inject ICitiesService CitiesService
 @inject ITagsService TagsService
 @inject IJSRuntime JSRuntime
@@ -57,22 +59,27 @@
 
         <div class="province-scroller">
             <span class="scroller-label">Province:</span>
+            
+            @* Кнопка ALL *@
             <a href="@GetUrlForProvince("")"
                class="province-chip chip-all @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
                 All
             </a>
-            <a href="@GetUrlForProvince("guanacaste")"
-               class="province-chip @(filters.Province == "guanacaste" ? "active" : "")">
-                Guanacaste
-            </a>
-            <a href="@GetUrlForProvince("san-jose")"
-               class="province-chip @(filters.Province == "san-jose" ? "active" : "")">
-                San José
-            </a>
-            <a href="@GetUrlForProvince("limon")"
-               class="province-chip @(filters.Province == "limon" ? "active" : "")">
-                Limón
-            </a>
+
+            @if (isLoadingProvinces)
+            {
+                <span class="province-chip disabled">Loading...</span>
+            }
+            else
+            {
+                @foreach (var province in activeProvinces)
+                {
+                    <a href="@GetUrlForProvince(province.Slug)"
+                       class="province-chip @(IsProvinceActive(province.Slug) ? "active" : "")">
+                        @province.Name
+                    </a>
+                }
+            }
         </div>
 
         <div class="location-controls-wrapper">
@@ -223,6 +230,9 @@
     private List<string> activeTags = new();
     private bool isLoadingTags = true;
     private bool isCityCollapsed = true;
+
+    private List<ProvinceDto> activeProvinces = new();
+    private bool isLoadingProvinces = true;
     
     // Геолокация
     private DotNetObjectReference<PlacesFilter>? objRef;
@@ -252,6 +262,14 @@
 
     await LoadActiveCities();
     await LoadActiveTags();
+    await LoadActiveProvinces();
+
+    // 🔍 ПРОВЕРОЧНЫЙ КОД - добавить здесь
+    // Console.WriteLine($"🔍 filters.Province = '{filters.Province}'");
+    // Console.WriteLine($"🔍 activeProvinces count = {activeProvinces.Count}");
+    // foreach(var p in activeProvinces) {
+    //     Console.WriteLine($"   - Name: '{p.Name}', Slug: '{p.Slug}', IsActive: {IsProvinceActive(p.Slug)}");
+    // }
 }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -591,11 +609,25 @@
         return GetQueryString(linkFilters);
     }
 
+    private bool IsProvinceActive(string provinceSlug)
+    {
+        if (string.IsNullOrEmpty(filters.Province)) return false;
+        return filters.Province.Equals(provinceSlug, StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task LoadActiveCities()
     {
         isLoadingCities = true;
         activeCities = await CitiesService.GetActiveCitiesAsync(filters.Category, filters.Province);
         isLoadingCities = false;
+    }
+
+    private async Task LoadActiveProvinces()
+    {
+        isLoadingProvinces = true;
+        // Используем новый сервис для получения списка объектов (Name + Slug)
+        activeProvinces = await ProvincesService.GetActiveProvincesAsync(filters.Category);
+        isLoadingProvinces = false;
     }
     
     private string GetQueryString(PlaceFilterParams filters)
