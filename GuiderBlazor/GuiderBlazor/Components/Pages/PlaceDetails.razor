@@ -492,7 +492,8 @@ else
                 new ListItemLd
                 {
                     Position = 4,
-                    Name = place.Name
+                    Name = place.Name,
+                    Item = Navigation.Uri // Или полный URL страницы: $"{Navigation.BaseUri}place/{place.Url}"
                 }
             }
         };
