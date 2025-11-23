@@ -9,18 +9,17 @@
 @implements IAsyncDisposable
 
 <div class="filter-container">
-    <div class="filter-card">
+    <aside class="filter-card">
         
-        <div class="search-bar-wrapper">
-
+        <search class="search-bar-wrapper" role="search"  >
             <div class="form-group" style="margin-bottom: 0;">
                 <input type="text"
                        class="form-control"
                        @bind="filters.Q"
+                       aria-label="Search places"
                        placeholder="Search places, services..."
                        @onkeyup="HandleSearchKeyUp" />
             </div>
-
             <div class="button-group">
                 <button class="btn btn-primary" @onclick="ApplyFilters">
                     <span>🔍</span>
@@ -31,9 +30,9 @@
                     <span>Reset</span>
                 </button>
             </div>
-        </div>
+        </search>
 
-        <div class="category-scroller">
+        <nav class="category-scroller"  aria-label="Categories" >
             <span class="scroller-label">Category:</span>
             <a class="category-btn chip-all @(string.IsNullOrEmpty(filters.Category) ? "active" : "")"
                href="@GetUrlForCategory("")">
@@ -55,12 +54,11 @@
                href="@GetUrlForCategory("shops")">
                 Shopping
             </a>
-        </div>
+        </nav>
 
-        <div class="province-scroller">
+        <nav class="province-scroller" aria-label="Provinces" >
             <span class="scroller-label">Province:</span>
-            
-            @* Кнопка ALL *@
+             
             <a href="@GetUrlForProvince("")"
                class="province-chip chip-all @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
                 All
@@ -80,7 +78,7 @@
                     </a>
                 }
             }
-        </div>
+        </nav>
 
         <div class="location-controls-wrapper">
             <div class="location-controls">
@@ -206,7 +204,7 @@
                 }
             </div>
         </div>
-    </div> 
+    </aside> 
  </div>
 
 @code {
