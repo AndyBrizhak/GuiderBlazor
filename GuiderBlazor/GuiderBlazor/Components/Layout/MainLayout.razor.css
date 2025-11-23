@@ -71,12 +71,14 @@ main {
 }
 
     .footer-links a {
-        color: #f8f9fa;
+        color: #adb5bd; /* Цвет изменен на серый (как у текста копирайта) */
+        font-size: 0.875rem; /* Размер шрифта тоже приводим к общему виду */
         text-decoration: none;
-        transition: text-decoration 0.2s;
+        transition: color 0.2s, text-decoration 0.2s;
     }
 
         .footer-links a:hover {
+            color: #f8f9fa; /* При наведении делаем светлее, чтобы было понятно, что это ссылка */
             text-decoration: underline;
         }
 
