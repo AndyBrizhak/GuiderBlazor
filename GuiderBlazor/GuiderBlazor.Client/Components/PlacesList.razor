@@ -18,86 +18,93 @@
     }
     else if (placesResponse?.Places?.Any() == true)
     {
-        <div class="sort-controls">
-            <div class="form-group">
-                <label>Sort by:</label>
-                <select class="form-control" @onchange="HandleSortFieldChange">
-                    <option value="name" selected="@(currentFilters.SortField == "name" || string.IsNullOrEmpty(currentFilters.SortField))">Name</option>
-                    <option value="category" selected="@(currentFilters.SortField == "category")">Category</option>
-                    @if (currentFilters.Latitude.HasValue)
+        @* 1. Оборачиваем результаты в section для семантики *@
+        <section aria-label="Search Results">
+
+            @* 2. Добавляем невидимый H2, чтобы связать H1 страницы и H3 карточек *@
+            <h2 class="visually-hidden">Found Places in Costa Rica</h2>
+                <div class="sort-controls">
+                    <div class="form-group">
+                        <label>Sort by:</label>
+                        <select class="form-control" @onchange="HandleSortFieldChange">
+                            <option value="name" selected="@(currentFilters.SortField == "name" || string.IsNullOrEmpty(currentFilters.SortField))">Name</option>
+                            <option value="category" selected="@(currentFilters.SortField == "category")">Category</option>
+                            @if (currentFilters.Latitude.HasValue)
+                            {
+                                <option value="distance" selected="@(currentFilters.SortField == "distance")">Distance</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button class="btn-sort-order" @onclick="ToggleSortOrder"
+                            title="Change Sort Order (@(IsSortAscending() ? "Ascending (A-Z)" : "Descending (Z-A)"))">
+                        @if (IsSortAscending())
+                        {
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 19V5m-6 6l6-6l6 6" />
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 5v14m-6-6l6 6l6-6" />
+                            </svg>
+                        }
+                    </button>
+                </div>
+
+                <div class="places-grid">
+                    @foreach (var place in placesResponse.Places)
                     {
-                        <option value="distance" selected="@(currentFilters.SortField == "distance")">Distance</option>
+                        <PlaceCard Place="place" />
                     }
-                </select>
-            </div>
-
-            <button class="btn-sort-order" @onclick="ToggleSortOrder"
-                    title="Change Sort Order (@(IsSortAscending() ? "Ascending (A-Z)" : "Descending (Z-A)"))">
-                @if (IsSortAscending())
-                {
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 19V5m-6 6l6-6l6 6" />
-                    </svg>
-                }
-                else
-                {
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 5v14m-6-6l6 6l6-6" />
-                    </svg>
-                }
-            </button>
-        </div>
-
-        <div class="places-grid">
-            @foreach (var place in placesResponse.Places)
-            {
-                <PlaceCard Place="place" />
-            }
-        </div>
-
-        <div class="pagination">
-            <div class="pagination-controls">
-
-                <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
-                   href="@GetUrlForPage(1)"
-                   aria-label="First Page">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5m7-5-5 5 5 5" /></svg>
-                </a>
-
-                <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
-                   href="@GetUrlForPage(currentFilters.Page - 1)"
-                   aria-label="Previous Page">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-                </a>
-
-                <div class="pagination-per-page">
-                    <label>Per Page:</label>
-                    <select class="form-control" @onchange="HandlePerPageChange">
-                        <option value="4" selected="@(currentFilters.PerPage == 4)">4</option>
-                        <option value="8" selected="@(currentFilters.PerPage == 8)">8</option>
-                        <option value="12" selected="@(currentFilters.PerPage == 12)">12</option>
-                        <option value="16" selected="@(currentFilters.PerPage == 16)">16</option>
-                        <option value="20" selected="@(currentFilters.PerPage == 20)">20</option>
-                    </select>
                 </div>
 
-                <div class="pagination-info">
-                    @placesResponse.Page / @placesResponse.TotalPages
+                <div class="pagination">
+                    <div class="pagination-controls">
+
+                        <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
+                           href="@GetUrlForPage(1)"
+                           aria-label="First Page">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5m7-5-5 5 5 5" /></svg>
+                        </a>
+
+                        <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
+                           href="@GetUrlForPage(currentFilters.Page - 1)"
+                           aria-label="Previous Page">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                        </a>
+
+                        <div class="pagination-per-page">
+                            <label>Per Page:</label>
+                            <select class="form-control" @onchange="HandlePerPageChange">
+                                <option value="4" selected="@(currentFilters.PerPage == 4)">4</option>
+                                <option value="8" selected="@(currentFilters.PerPage == 8)">8</option>
+                                <option value="12" selected="@(currentFilters.PerPage == 12)">12</option>
+                                <option value="16" selected="@(currentFilters.PerPage == 16)">16</option>
+                                <option value="20" selected="@(currentFilters.PerPage == 20)">20</option>
+                            </select>
+                        </div>
+
+                        <div class="pagination-info">
+                            @placesResponse.Page / @placesResponse.TotalPages
+                        </div>
+
+                        <a class="btn-page @(currentFilters.Page >= placesResponse.TotalPages ? "disabled" : "")"
+                           href="@GetUrlForPage(currentFilters.Page + 1)"
+                           aria-label="Next Page">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                        </a>
+
+                        <a class="btn-page @(currentFilters.Page >= placesResponse.TotalPages ? "disabled" : "")"
+                           href="@GetUrlForPage(placesResponse.TotalPages)"
+                           aria-label="Last Page">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 5-5-5-5m7 10 5-5-5-5" /></svg>
+                        </a>
+                    </div>
                 </div>
 
-                <a class="btn-page @(currentFilters.Page >= placesResponse.TotalPages ? "disabled" : "")"
-                   href="@GetUrlForPage(currentFilters.Page + 1)"
-                   aria-label="Next Page">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                </a>
-
-                <a class="btn-page @(currentFilters.Page >= placesResponse.TotalPages ? "disabled" : "")"
-                   href="@GetUrlForPage(placesResponse.TotalPages)"
-                   aria-label="Last Page">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 5-5-5-5m7 10 5-5-5-5" /></svg>
-                </a>
-            </div>
-        </div>
+        </section>
     }
     else
     {
