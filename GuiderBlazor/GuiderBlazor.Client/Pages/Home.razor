@@ -2,13 +2,19 @@
 @using GuiderBlazor.Client.Components
 @attribute [StreamRendering]
 
-@* <PageTitle>Guider - Business Catalog</PageTitle> *@
-<div class="home-container">
-    <div class="hero-section">
-      @*   <h1>Guider</h1> *@
-        <p>Local Business & Services Catalog</p>
-    </div>
-     <PlacesList @rendermode="InteractiveServer" />
-</div>
+@* SEO: Заголовок вкладки браузера *@
+<PageTitle>Guider - Costa Rica Business & Services Directory</PageTitle>
 
+<div class="home-container">
+    @* Семантическая секция для заголовка *@
+    <section class="hero-section" aria-labelledby="hero-title">
+        @* H1 важен для Google, но мы стилизуем его компактно через CSS *@
+        <h1 id="hero-title">
+            Local Business & Services in Costa Rica
+        </h1>
+    </section>
+
+    @* Список мест *@
+    <PlacesList @rendermode="InteractiveServer" />
+</div>
 
