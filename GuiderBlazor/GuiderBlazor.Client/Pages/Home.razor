@@ -1,6 +1,6 @@
 ﻿@page "/"
 @using GuiderBlazor.Client.Components
-@attribute [StreamRendering]
+@* @attribute [StreamRendering] *@
 
 @* SEO: Заголовок вкладки браузера *@
 <PageTitle>Guider - Costa Rica Business & Services Directory</PageTitle>
@@ -13,8 +13,8 @@
             Local Business & Services in Costa Rica
         </h1>
     </section>
-
+        
     @* Список мест *@
-    <PlacesList @rendermode="InteractiveServer" />
+    <PlacesList />
 </div>
 
