@@ -1,104 +1,52 @@
-﻿@rendermode InteractiveServer
-@inject IJSRuntime JSRuntime
+﻿@inject NavigationManager Navigation
 
 <nav class="main-nav">
     <a href="/" class="nav-brand">
         <img src="/images/logo.svg" alt="Guider.pro Logo" class="nav-logo" />
     </a>
 
-    <div class="nav-links @(isNavMenuOpen ? "is-active" : "")">
+    <div id="nav-links" class="nav-links">
         <a href="/">Home</a>
     </div>
 
     <div class="nav-actions">
-
-        <button class="theme-toggle" @onclick="ToggleTheme">
-            @if (isDarkMode)
-            {
-                <span class="icon">☀️</span>
-            }
-            else
-            {
-                <span class="icon">🌙</span>
-            }
+        <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleThemeJs()">
+            <span class="icon" id="theme-icon">@(IsDarkModeInitial ? "☀️" : "🌙")</span>
         </button>
 
-        <button class="hamburger-button" @onclick="ToggleNavMenu">
+        <button class="hamburger-button" onclick="toggleMenuJs()">
             <span></span>
             <span></span>
             <span></span>
         </button>
-
     </div>
 </nav>
 
-@code {
-    private bool isNavMenuOpen = false;
-    private void ToggleNavMenu()
-    {
-        isNavMenuOpen = !isNavMenuOpen;
+<script>
+    function toggleMenuJs() {
+        const navLinks = document.getElementById('nav-links');
+        navLinks.classList.toggle('is-active');
     }
 
-    private bool isDarkMode;
+    function toggleThemeJs() {
+        // ВАЖНО: Согласно вашему app.css, класс должен быть на теге <html>
+        // document.documentElement - это и есть тег <html>
+        const htmlElement = document.documentElement;
 
+        // Переключаем класс
+        const isDark = htmlElement.classList.toggle('dark-theme');
+
+        // Меняем иконку
+        const icon = document.getElementById('theme-icon');
+        icon.innerText = isDark ? '☀️' : '🌙';
+
+        // Сохраняем состояние для будущих запросов (Cookie для сервера, LocalStorage для клиента)
+        document.cookie = "theme=" + (isDark ? "dark-theme" : "light-theme") + "; path=/; max-age=31536000";
+        localStorage.setItem('theme', isDark ? 'dark-theme' : 'light-theme');
+    }
+</script>
+
+@code {
     [Parameter]
     public bool IsDarkModeInitial { get; set; }
-
-    protected override void OnInitialized()
-    {
-        isDarkMode = IsDarkModeInitial;
-        // Console.WriteLine($"[NavBar] OnInitialized: isDarkMode={isDarkMode}, IsDarkModeInitial={IsDarkModeInitial}");
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        try
-        {
-            // Console.WriteLine($"[NavBar] OnAfterRenderAsync START: firstRender={firstRender}, isDarkMode={isDarkMode}");
-
-            var currentTheme = await JSRuntime.InvokeAsync<bool>("loadTheme");
-            // Console.WriteLine($"[NavBar] loadTheme returned: {currentTheme}");
-
-            if (isDarkMode != currentTheme)
-            {
-                // Console.WriteLine($"[NavBar] MISMATCH! Updating: {isDarkMode} -> {currentTheme}");
-                isDarkMode = currentTheme;
-                StateHasChanged();
-            }
-            else
-            {
-                // Console.WriteLine($"[NavBar] Theme is in sync: {isDarkMode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[NavBar] ERROR: {ex.Message}");
-        }
-    }
-
-    protected override void OnParametersSet()
-    {
-        // Console.WriteLine($"[NavBar] OnParametersSet: isDarkMode={isDarkMode}, IsDarkModeInitial={IsDarkModeInitial}");
-        isDarkMode = IsDarkModeInitial;
-    }
-
-    private async Task ToggleTheme()
-    {
-        try
-        {
-            // Console.WriteLine($"[NavBar] ToggleTheme BEFORE: isDarkMode={isDarkMode}");
-
-            isDarkMode = !isDarkMode;
-            var theme = isDarkMode ? "dark-theme" : "light-theme";
-
-            // Console.WriteLine($"[NavBar] ToggleTheme AFTER: isDarkMode={isDarkMode}, theme={theme}");
-
-            await JSRuntime.InvokeVoidAsync("applyTheme", theme);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[NavBar] ToggleTheme ERROR: {ex.Message}");
-            isDarkMode = !isDarkMode;
-        }
-    }
 }

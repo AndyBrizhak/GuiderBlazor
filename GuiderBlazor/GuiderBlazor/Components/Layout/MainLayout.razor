@@ -13,27 +13,17 @@
         <div class="footer-content">
             <p>&copy; @DateTime.Now.Year Guider.pro. All rights reserved.</p>
             <div class="footer-links">
-                @* <a href="/about">About Us</a> *@
-                @* <a href="/privacy-policy">Privacy Policy</a> *@
                 <a href="/sitemap.xml">Sitemap</a>
             </div>
         </div>
     </footer>
-
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
 </div>
 
 @code {
-    private bool isDarkMode = false; // 3. Локальная переменная
+    private bool isDarkMode = false;
 
     protected override void OnInitialized()
     {
-        // 4. Читаем cookie на сервере ДО рендеринга
         var themeCookie = HttpContextAccessor.HttpContext?.Request.Cookies["theme"];
         isDarkMode = (themeCookie == "dark-theme");
     }

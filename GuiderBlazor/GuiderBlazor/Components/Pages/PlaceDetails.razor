@@ -6,9 +6,12 @@
 @using System.Text.Json.Serialization
 @using System.Globalization
 @using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.OutputCaching
 
-@* Отлючено для SEO *@
-@* @attribute [StreamRendering] *@
+@* Атрибут кэширования *@
+@* Duration = 60: Кэшировать на 60 секунд (для теста). В продакшене поставьте 3600 (час) *@
+@* VaryByRouteValueNames: Создавать отдельный кэш для каждого уникального {url} *@
+@attribute [OutputCache(Duration = 60, VaryByRouteValueNames = new[] { "url" })]
 
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
@@ -306,6 +309,12 @@ else
         <a href="/" class="btn-back">← Back to list</a>
     </div>
 }
+
+
+@* ВРЕМЕННО: Добавьте это в любое место (например, в самый низ перед @code), чтобы визуально проверить кэш *@
+@* <div style="background: #ffeb3b; color: black; padding: 10px; text-align: center; font-weight: bold;">
+    Server Render Time: @DateTime.Now.ToString("HH:mm:ss.fff")
+</div> *@
 
 
 @code {

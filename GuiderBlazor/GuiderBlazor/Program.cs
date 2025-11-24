@@ -8,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+// Регистрация сервисов кэширования
+builder.Services.AddOutputCache();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped(sp => new HttpClient
@@ -39,6 +43,10 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+// Включение middleware кэширования
+// Важно: Это должно быть ПЕРЕД MapRazorComponents
+app.UseOutputCache();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
