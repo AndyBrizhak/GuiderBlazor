@@ -7,11 +7,11 @@
 @using System.Globalization
 @using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.OutputCaching
+@inject IHttpContextAccessor HttpContextAccessor
 
 @* Атрибут кэширования *@
-@* Duration = 60: Кэшировать на 60 секунд (для теста). В продакшене поставьте 3600 (час) *@
-@* VaryByRouteValueNames: Создавать отдельный кэш для каждого уникального {url} *@
-@attribute [OutputCache(Duration = 60, VaryByRouteValueNames = new[] { "url" })]
+@* Ссылаемся на политику "PlaceDetails" из Program.cs *@
+@attribute [OutputCache(PolicyName = "PlaceDetails")]
 
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
@@ -378,6 +378,19 @@ else
         {
             BuildLocalBusinessJsonLd();
             BuildBreadcrumbsJsonLd();
+
+            // ---  тег для текущей страницы ---
+            var httpContext = HttpContextAccessor.HttpContext;
+            if (httpContext != null)
+            {
+                var cacheFeature = httpContext.Features.Get<IOutputCacheFeature>();
+                if (cacheFeature != null)
+                {
+                    // Тег в формате "place:url-страницы"
+                    cacheFeature.Context.Tags.Add($"place:{Url}");
+                }
+            }
+            // -------------------------------------------------------
         }
         else
         {

@@ -9,10 +9,36 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// Регистрация сервисов кэширования
-builder.Services.AddOutputCache();
 
 builder.Services.AddHttpContextAccessor();
+
+// 1. Считываем настройки из appsettings.json (которые вы добавили ранее)
+var cacheSettings = builder.Configuration.GetSection("CacheSettings");
+var duration = cacheSettings.GetValue<int>("PlaceDetailsDuration", 60); // Если нет в конфиге, будет 60 сек
+var sizeLimit = cacheSettings.GetValue<long>("SizeLimitBytes", 500 * 1024 * 1024); // Лимит кэша 500 МБ
+var maxBodySize = cacheSettings.GetValue<long>("MaximumBodySizeBytes", 64 * 1024); // Лимит страницы 64 КБ
+
+// 2. Регистрируем OutputCache с настройками и политикой
+builder.Services.AddOutputCache(options =>
+{
+    // Глобальные лимиты памяти
+    options.SizeLimit = sizeLimit;
+    options.MaximumBodySize = maxBodySize;
+
+    // 3. Создаем политику "PlaceDetails"
+    options.AddPolicy("PlaceDetails", builder =>
+    {
+        builder.Expire(TimeSpan.FromSeconds(duration));
+
+        // Кэшируем разные версии для разных URL
+        builder.SetVaryByRouteValue("url");
+
+        // Общий тег, чтобы можно было сбросить ВЕСЬ кэш мест разом
+        builder.Tag("all-places");
+    });
+});
+
+
 
 builder.Services.AddScoped(sp => new HttpClient
 {
