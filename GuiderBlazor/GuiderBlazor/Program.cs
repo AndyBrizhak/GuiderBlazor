@@ -1,6 +1,7 @@
 using GuiderBlazor.Components;
 using GuiderBlazor.Shared.Services;
 using GuiderBlazor.Shared.Utils;
+using Microsoft.AspNetCore.OutputCaching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -110,5 +111,35 @@ app.MapGet("/sitemap.xml", async () =>
     // 4. Отдаем XML
     return Results.Text(xmlContent, "application/xml");
 });
+
+// ---  Эндпоинт для инвалидации кеша ---
+app.MapPost("/cache/invalidate", async (HttpContext context, IOutputCacheStore store, IConfiguration config) =>
+{
+    // 1. Проверяем секретный ключ (защита от хакеров)
+    var secretKey = config["CacheSettings:CacheInvalidationKey"];
+    var incomingKey = context.Request.Query["key"].ToString();
+
+    if (string.IsNullOrEmpty(secretKey) || incomingKey != secretKey)
+    {
+        return Results.Unauthorized();
+    }
+
+    // 2. Смотрим, что нужно очистить
+    var tag = context.Request.Query["tag"].ToString();
+
+    if (string.IsNullOrEmpty(tag))
+    {
+        // Если тег не передан, очищаем ВСЁ (на случай глобальных изменений)
+        await store.EvictByTagAsync("all-places", CancellationToken.None);
+        return Results.Ok(new { message = "All places cache cleared" });
+    }
+    else
+    {
+        // Очищаем конкретный тег (например, place:some-url)
+        await store.EvictByTagAsync(tag, CancellationToken.None);
+        return Results.Ok(new { message = $"Cache cleared for tag: {tag}" });
+    }
+});
+// ----------------------------------------------
 
 app.Run();
