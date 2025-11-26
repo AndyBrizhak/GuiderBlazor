@@ -1,7 +1,7 @@
 ﻿@using GuiderBlazor.Shared.Models
 @inject NavigationManager Navigation
 
-<a href="/place/@Place.Url" class="place-card">
+<a href="/place/@Place.Url" class="place-card" data-enhance-nav="false">
     <div class="card-image">
         @if (Place.ImgLink?.Any() == true)
         {
