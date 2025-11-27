@@ -373,3 +373,6 @@ wwwroot/images/
 # Но сохранять саму структуру папок (чтобы Git знал, что папки существуют)
 !wwwroot/cache/.gitkeep
 !wwwroot/images/.gitkeep
+/GuiderBlazor/GuiderBlazor/wwwroot/images/debug-province/debug-place/logo.png
+/GuiderBlazor/GuiderBlazor/wwwroot/cache
+/GuiderBlazor/GuiderBlazor/wwwroot/images/guanacaste
