@@ -7,29 +7,27 @@
 @using System.Globalization
 @using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.OutputCaching
+@using GuiderBlazor.Components
+
 @inject IHttpContextAccessor HttpContextAccessor
 
-@* Атрибут кэширования *@
-@* Ссылаемся на политику "PlaceDetails" из Program.cs *@
 @attribute [OutputCache(PolicyName = "PlaceDetails")]
 
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
+@* --- ДОБАВЛЕНО: Сервис картинок --- *@
+@inject GuiderBlazor.Shared.Services.ImageService ImageService
 
 <PageTitle>@(place?.Name ?? "Loading...") - Guider</PageTitle>
 
 @if (!string.IsNullOrEmpty(jsonLdBusiness))
 {
-    <script type="application/ld+json">
-        @((MarkupString)jsonLdBusiness)
-    </script>
+    <script type="application/ld+json">@((MarkupString)jsonLdBusiness)</script>
 }
 
 @if (!string.IsNullOrEmpty(jsonLdBreadcrumbs))
 {
-    <script type="application/ld+json">
-        @((MarkupString)jsonLdBreadcrumbs)
-    </script>
+    <script type="application/ld+json">@((MarkupString)jsonLdBreadcrumbs)</script>
 }
 
 @if (place != null && !string.IsNullOrEmpty(place.Description))
@@ -43,11 +41,6 @@
     </HeadContent>
 }
 
-
-@* Эта логика @if (isLoading) выполняtся ИСКЛЮЧИТЕЛЬНО на сервере.
-  Клиент (и бот) НИКОГДА не увидит <div class="loading">.
-  Он получит сразу либо <article>, либо <div class="error-message">.
-*@
 @if (isLoading)
 {
     <div class="loading">
@@ -61,53 +54,29 @@ else if (place != null)
 
         <div class="details-header">
             <h1 itemprop="name">@place.Name</h1>
-
             @if (place.Address != null && !string.IsNullOrEmpty(place.Address.City))
             {
                 <span class="place-city" itemprop="addressLocality">@place.Address.City</span>
             }
         </div>
 
-        @if (!string.IsNullOrEmpty(place.Category) &&
-            place.Address != null &&
-            !string.IsNullOrEmpty(place.Address.Province))
+        @if (!string.IsNullOrEmpty(place.Category) && place.Address != null && !string.IsNullOrEmpty(place.Address.Province))
         {
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumbs"
-                    itemscope
-                    itemtype="https://schema.org/BreadcrumbList">
-
-                    <li itemprop="itemListElement"
-                        itemscope
-                        itemtype="https://schema.org/ListItem">
-                        <a href="/" itemprop="item">
-                            <span itemprop="name">Home</span>
-                        </a>
+                <ol class="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList">
+                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                        <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
                         <meta itemprop="position" content="1" />
                     </li>
-
-                    <li itemprop="itemListElement"
-                        itemscope
-                        itemtype="https://schema.org/ListItem">
-                        <a href="/?Category=@place.Category" itemprop="item">
-                            <span itemprop="name">@FormatCategoryName(place.Category)</span>
-                        </a>
+                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                        <a href="/?Category=@place.Category" itemprop="item"><span itemprop="name">@FormatCategoryName(place.Category)</span></a>
                         <meta itemprop="position" content="2" />
                     </li>
-
-                    <li itemprop="itemListElement"
-                        itemscope
-                        itemtype="https://schema.org/ListItem">
-                        <a href="/?Category=@place.Category&Province=@place.Address.Province"
-                           itemprop="item">
-                            <span itemprop="name">@FormatProvinceName(place.Address.Province)</span>
-                        </a>
+                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                        <a href="/?Category=@place.Category&Province=@place.Address.Province" itemprop="item"><span itemprop="name">@FormatProvinceName(place.Address.Province)</span></a>
                         <meta itemprop="position" content="3" />
                     </li>
-
-                    <li itemprop="itemListElement"
-                        itemscope
-                        itemtype="https://schema.org/ListItem">
+                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
                         <span itemprop="name" aria-current="page">@place.Name</span>
                         <meta itemprop="position" content="4" />
                     </li>
@@ -115,33 +84,36 @@ else if (place != null)
             </nav>
         }
 
+        @* --- ИСПРАВЛЕННАЯ ГАЛЕРЕЯ --- *@
         @if (place.ImgLink?.Any() == true)
         {
-            <div class="horizontal-scroll-container"
-                 aria-label="Image Gallery"
-                 role="region">
-
+            <div class="horizontal-scroll-container" aria-label="Image Gallery" role="region">
                 <ul class="scroll-track">
-                    @foreach (var img in place.ImgLink)
+                    @foreach (var imgUrl in place.ImgLink)
                     {
                         <li class="scroll-item">
-                            <a href="@img"
+                            @* Ссылка на оригинал остается *@
+                            <a href="@imgUrl"
                                target="_blank"
                                rel="noopener noreferrer"
-                               aria-label="View full-size image"
-                               itemprop="image">
+                               aria-label="View full-size image">
 
-                                <img src="@img" alt="@($"Image of {place.Name}")" />
+                                @* Используем компонент ResponsiveImage *@
+                                <ResponsiveImage OriginalUrl="@imgUrl"
+                                                 PlaceName="@place.Name"
+                                                 Province="@place.Address?.Province"
+                                                 Alt="@($"Photo of {place.Name}")"
+                                                 Class="gallery-image" />
                             </a>
                         </li>
                     }
                 </ul>
             </div>
         }
+        @* ----------------------------- *@
 
         <div class="details-content">
             <section class="main-info">
-
                 @if (!string.IsNullOrEmpty(place.Description))
                 {
                     <div class="info-section" itemprop="description">
@@ -161,9 +133,8 @@ else if (place != null)
             </section>
 
             <aside class="sidebar-info">
-
+                @* Блок Sidebar оставляем без изменений, он был корректен *@
                 <div class="info-section">
-
                     @if (place.Address != null)
                     {
                         <div class="info-item" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
@@ -176,33 +147,20 @@ else if (place != null)
                                 @if (!string.IsNullOrEmpty(place.Address.Street))
                                 {
                                     <span itemprop="streetAddress">@place.Address.Street</span>
+                        
                                     <br />
                                 }
-
-                                @{
-                                    bool cityWasRendered = false;
-                                }
-
                                 @if (!string.IsNullOrEmpty(place.Address.City))
                                 {
                                     <span itemprop="addressLocality">@place.Address.City</span>
-                                    cityWasRendered = true;
+                                    @(!string.IsNullOrEmpty(place.Address.Province) ? "," : "")
                                 }
-
                                 @if (!string.IsNullOrEmpty(place.Address.Province))
                                 {
-                                    if (cityWasRendered)
-                                    {
-                                        @:,
-                                    }
                                     <span itemprop="addressRegion">@place.Address.Province</span>
-                                }
-
-                                @if (cityWasRendered || !string.IsNullOrEmpty(place.Address.Province))
-                                {
+                        
                                     <br />
                                 }
-
                                 @if (!string.IsNullOrEmpty(place.Address.Country))
                                 {
                                     <span itemprop="addressCountry">@place.Address.Country</span>
@@ -218,15 +176,12 @@ else if (place != null)
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
-
                             @{
-                                var latitude = place.Location.Coordinates[1].ToString(System.Globalization.CultureInfo.InvariantCulture);
-                                var longitude = place.Location.Coordinates[0].ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                var latitude = place.Location.Coordinates[1].ToString(CultureInfo.InvariantCulture);
+                                var longitude = place.Location.Coordinates[0].ToString(CultureInfo.InvariantCulture);
                                 var mapUrl = $"https://www.google.com/maps?q={latitude},{longitude}";
                             }
-                            <a href="@mapUrl" target="_blank" rel="noopener noreferrer">
-                                Open in Google Maps
-                            </a>
+                            <a href="@mapUrl" target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
                         </div>
                     }
 
@@ -236,19 +191,14 @@ else if (place != null)
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-
                                 <a href="@($"tel:{place.Phone.Callable}")" itemprop="telephone">@place.Phone.Callable</a>
                             </div>
                         }
-
                         @if (!string.IsNullOrEmpty(place.Phone.Whatsapp))
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-
-                                <a href="@($"https://wa.me/{place.Phone.Whatsapp}")" target="_blank" rel="noopener noreferrer">
-                                    Chat on WhatsApp (@place.Phone.Whatsapp)
-                                </a>
+                                <a href="@($"https://wa.me/{place.Phone.Whatsapp}")" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
                             </div>
                         }
                     }
@@ -271,7 +221,6 @@ else if (place != null)
                         }
                     }
                 </div>
-
                 @if (place.Schedule?.Any() == true)
                 {
                     <div class="info-section">
@@ -281,7 +230,6 @@ else if (place != null)
                                 var daysDisplay = string.Join(", ", entry.Days);
                                 <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
                                     <span class="day" itemprop="dayOfWeek">@daysDisplay</span>
-
                                     @foreach (var hour in entry.Hours)
                                     {
                                         <span class="time">
@@ -295,10 +243,8 @@ else if (place != null)
                         </ul>
                     </div>
                 }
-
             </aside>
         </div>
-
     </article>
 }
 else
@@ -310,16 +256,8 @@ else
     </div>
 }
 
-
-@* ВРЕМЕННО: Добавьте это в любое место (например, в самый низ перед @code), чтобы визуально проверить кэш *@
-@* <div style="background: #ffeb3b; color: black; padding: 10px; text-align: center; font-weight: bold;">
-    Server Render Time: @DateTime.Now.ToString("HH:mm:ss.fff")
-</div> *@
-
-
 @code {
-    [Parameter]
-    public string Url { get; set; } = string.Empty;
+    [Parameter] public string Url { get; set; } = string.Empty;
 
     private Place? place;
     private bool isLoading = true;
@@ -335,17 +273,9 @@ else
     {
         if (string.IsNullOrEmpty(provinceSlug)) return string.Empty;
         var parts = provinceSlug.Split('-');
-        var formattedParts = parts.Select(part =>
-            char.ToUpper(part[0]) + part.Substring(1)
-        );
+        var formattedParts = parts.Select(part => char.ToUpper(part[0]) + part.Substring(1));
         var result = string.Join(" ", formattedParts);
-
-        return result switch
-        {
-            "San Jose" => "San José",
-            "Limon" => "Limón",
-            _ => result
-        };
+        return result switch { "San Jose" => "San José", "Limon" => "Limón", _ => result };
     }
 
     private string FormatCategoryName(string categorySlug)
@@ -365,9 +295,7 @@ else
     {
         if (string.IsNullOrEmpty(Url))
         {
-            isLoading = false;
-            place = null;
-            return;
+            isLoading = false; place = null; return;
         }
 
         isLoading = true;
@@ -379,30 +307,23 @@ else
             BuildLocalBusinessJsonLd();
             BuildBreadcrumbsJsonLd();
 
-            // ---  тег для текущей страницы ---
             var httpContext = HttpContextAccessor.HttpContext;
             if (httpContext != null)
             {
                 var cacheFeature = httpContext.Features.Get<IOutputCacheFeature>();
                 if (cacheFeature != null)
                 {
-                    // Тег в формате "place:url-страницы"
                     cacheFeature.Context.Tags.Add($"place:{Url}");
                 }
             }
-            // -------------------------------------------------------
         }
         else
         {
             jsonLdBusiness = string.Empty;
             jsonLdBreadcrumbs = string.Empty;
         }
-
     }
 
-    /// <summary>
-    /// Строит JSON-LD для LocalBusiness на основе 'place'
-    /// </summary>
     private void BuildLocalBusinessJsonLd()
     {
         if (place == null) return;
@@ -416,10 +337,18 @@ else
             schema.Description = Regex.Replace(place.Description, "<.*?>", "").Replace("\"", "'");
         }
 
+        // --- SEO ОБНОВЛЕНИЕ ---
         if (place.ImgLink?.Any() == true)
         {
-            schema.Image = place.ImgLink; // Передаем весь список
+            var baseUrl = Navigation.BaseUri.TrimEnd('/');
+            // Генерируем правильную ссылку на картинку для Google
+            var mainImageLocal = ImageService.GetStructuredImageUrl(place.ImgLink.First(), place.Name, place.Address?.Province);
+            // Убираем параметры запроса, чтобы ссылка была чистой
+            if (mainImageLocal.Contains("?")) mainImageLocal = mainImageLocal.Substring(0, mainImageLocal.IndexOf("?"));
+
+            schema.Image = new List<string> { $"{baseUrl}{mainImageLocal}" };
         }
+        // ----------------------
 
         if (place.Address != null)
         {
@@ -441,16 +370,11 @@ else
             };
         }
 
-        if (place.Phone != null && !string.IsNullOrEmpty(place.Phone.Callable))
-        {
-            schema.Telephone = place.Phone.Callable;
-        }
-
+        // Остальные поля без изменений...
+        if (place.Phone != null && !string.IsNullOrEmpty(place.Phone.Callable)) schema.Telephone = place.Phone.Callable;
         if (place.Schedule?.Any() == true)
         {
-            var validSchedule = place.Schedule
-                .Where(s => s.Days.Any() && s.Hours.Any())
-                .ToList();
+            var validSchedule = place.Schedule.Where(s => s.Days.Any() && s.Hours.Any()).ToList();
             if (validSchedule.Any())
             {
                 schema.OpeningHoursSpecification = validSchedule.Select(entry => new OpeningHoursSpecificationLd
@@ -461,25 +385,17 @@ else
                 }).ToList();
             }
         }
-
         if (place.SocialNetwork != null)
         {
             var socialLinks = new List<string>();
             if (!string.IsNullOrEmpty(place.SocialNetwork.Facebook)) socialLinks.Add(place.SocialNetwork.Facebook);
             if (!string.IsNullOrEmpty(place.SocialNetwork.Instagram)) socialLinks.Add(place.SocialNetwork.Instagram);
-
-            if (socialLinks.Any())
-            {
-                schema.SameAs = socialLinks;
-            }
+            if (socialLinks.Any()) schema.SameAs = socialLinks;
         }
 
         jsonLdBusiness = JsonSerializer.Serialize(schema, jsonOptions);
     }
 
-    /// <summary>
-    /// Строит JSON-LD для Breadcrumbs на основе 'place'
-    /// </summary>
     private void BuildBreadcrumbsJsonLd()
     {
         if (place == null || string.IsNullOrEmpty(place.Category) || place.Address == null || string.IsNullOrEmpty(place.Address.Province))
@@ -493,30 +409,10 @@ else
             Type = "BreadcrumbList",
             ItemListElement = new List<ListItemLd>
             {
-                new ListItemLd
-                {
-                    Position = 1,
-                    Name = "Home",
-                    Item = Navigation.BaseUri
-                },
-                new ListItemLd
-                {
-                    Position = 2,
-                    Name = FormatCategoryName(place.Category),
-                    Item = $"{Navigation.BaseUri}?Category={place.Category}"
-                },
-                new ListItemLd
-                {
-                    Position = 3,
-                    Name = FormatProvinceName(place.Address.Province),
-                    Item = $"{Navigation.BaseUri}?Category={place.Category}&Province={place.Address.Province}"
-                },
-                new ListItemLd
-                {
-                    Position = 4,
-                    Name = place.Name,
-                    Item = Navigation.Uri // Или полный URL страницы: $"{Navigation.BaseUri}place/{place.Url}"
-                }
+                new ListItemLd { Position = 1, Name = "Home", Item = Navigation.BaseUri },
+                new ListItemLd { Position = 2, Name = FormatCategoryName(place.Category), Item = $"{Navigation.BaseUri}?Category={place.Category}" },
+                new ListItemLd { Position = 3, Name = FormatProvinceName(place.Address.Province), Item = $"{Navigation.BaseUri}?Category={place.Category}&Province={place.Address.Province}" },
+                new ListItemLd { Position = 4, Name = place.Name, Item = Navigation.Uri }
             }
         };
 

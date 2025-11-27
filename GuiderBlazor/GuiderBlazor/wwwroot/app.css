@@ -124,3 +124,32 @@ html, body {
     .dark-theme .breadcrumbs [aria-current="page"] {
         color: #e5e5e5;
     }
+
+/* --- Стили для компонента ResponsiveImage и Галереи --- */
+
+/* Обертка <picture> должна занимать всё доступное место в ячейке галереи */
+.responsive-picture-wrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Стили для самой картинки внутри галереи */
+.gallery-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ключевое свойство: заполняет контейнер, обрезая лишнее, сохраняя пропорции */
+    border-radius: 8px; /* Скругление углов */
+    /* Используем вашу переменную для фона, пока картинка грузится */
+    background-color: var(--bg-surface-hover);
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Дополнительная страховка для img внутри picture, чтобы стили точно применились */
+.responsive-picture-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}

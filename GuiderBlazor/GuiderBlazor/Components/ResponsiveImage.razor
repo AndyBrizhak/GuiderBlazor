@@ -1,0 +1,65 @@
+﻿@using GuiderBlazor.Shared.Services
+@inject ImageService ImageService
+
+<picture class="responsive-picture-wrapper">
+    @* --- 1. WEBP (Современный формат) --- *@
+
+    @* Десктоп (ширина > 1024px) -> грузим картинку 1920px *@
+    <source media="(min-width: 1024px)"
+            srcset="@GetUrl(1920, "webp")"
+            type="image/webp" />
+
+    @* Планшет (ширина > 640px) -> грузим картинку 1024px *@
+    <source media="(min-width: 640px)"
+            srcset="@GetUrl(1024, "webp")"
+            type="image/webp" />
+
+    @* Мобильный (ширина < 640px) -> грузим картинку 640px *@
+    <source media="(max-width: 639px)"
+            srcset="@GetUrl(640, "webp")"
+            type="image/webp" />
+
+
+    @* --- 2. JPEG (Fallback, если браузер не умеет WebP) --- *@
+
+    <source media="(min-width: 1024px)" srcset="@GetUrl(1920, null)" />
+    <source media="(min-width: 640px)" srcset="@GetUrl(1024, null)" />
+
+    @* --- 3. Обычный IMG (Обязателен) --- *@
+    <img src="@GetUrl(640, null)"
+         alt="@Alt"
+         class="@Class"
+         loading="lazy"
+         width="640"
+         height="480"
+         itemprop="image" />
+</picture>
+
+@code {
+    [Parameter] public string OriginalUrl { get; set; } = "";
+    [Parameter] public string Alt { get; set; } = "";
+    [Parameter] public string PlaceName { get; set; } = "place";
+    [Parameter] public string? Province { get; set; }
+    [Parameter] public string Class { get; set; } = "";
+
+    // Получаем базовый путь (например: /images/sanjose/market/img.jpg?source=...)
+    private string BaseStructuredUrl => ImageService.GetStructuredImageUrl(OriginalUrl, PlaceName, Province);
+
+    /// <summary>
+    /// Добавляет ширину и формат к ссылке для ImageSharp
+    /// </summary>
+    private string GetUrl(int width, string? format)
+    {
+        // Проверяем, есть ли уже '?' в ссылке (от ImageService)
+        var separator = BaseStructuredUrl.Contains("?") ? "&" : "?";
+
+        var url = $"{BaseStructuredUrl}{separator}width={width}&quality=80";
+
+        if (!string.IsNullOrEmpty(format))
+        {
+            url += $"&format={format}";
+        }
+
+        return url;
+    }
+}
