@@ -363,3 +363,13 @@ MigrationBackup/
 FodyWeavers.xsd
 /GuiderBlazor/GuiderBlazor/appsettings.json
 /GuiderBlazor/GuiderBlazor/wwwroot/images/logo.svg
+
+# Игнорировать кэш ImageSharp
+wwwroot/cache/
+
+# Игнорировать скачанные оригиналы
+wwwroot/images/
+
+# Но сохранять саму структуру папок (чтобы Git знал, что папки существуют)
+!wwwroot/cache/.gitkeep
+!wwwroot/images/.gitkeep
