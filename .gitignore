@@ -364,15 +364,17 @@ FodyWeavers.xsd
 /GuiderBlazor/GuiderBlazor/appsettings.json
 /GuiderBlazor/GuiderBlazor/wwwroot/images/logo.svg
 
-# Игнорировать кэш ImageSharp
-wwwroot/cache/
 
-# Игнорировать скачанные оригиналы
-wwwroot/images/
-
-# Но сохранять саму структуру папок (чтобы Git знал, что папки существуют)
-!wwwroot/cache/.gitkeep
-!wwwroot/images/.gitkeep
 /GuiderBlazor/GuiderBlazor/wwwroot/images/debug-province/debug-place/logo.png
 /GuiderBlazor/GuiderBlazor/wwwroot/cache
 /GuiderBlazor/GuiderBlazor/wwwroot/images/guanacaste
+
+# Игнорировать кэш ImageSharp (**/ означает искать во всех подпапках)
+**/wwwroot/cache/
+
+# Игнорировать скачанные оригиналы
+**/wwwroot/images/
+
+# Исключения для .gitkeep
+!**/wwwroot/cache/.gitkeep
+!**/wwwroot/images/.gitkeep
