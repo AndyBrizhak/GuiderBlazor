@@ -8,7 +8,6 @@ namespace GuiderBlazor.Middleware
         private readonly IWebHostEnvironment _env;
         private readonly HttpClient _httpClient;
 
-        // Регулярка: ловит запросы вида /images/.../.../file.jpg (или png/webp)
         private static readonly Regex ImagePathRegex = new Regex(@"^/images/[^/]+/[^/]+/.+\.(jpg|jpeg|png|webp)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public ImageMirrorMiddleware(RequestDelegate next, IWebHostEnvironment env)
@@ -23,16 +22,13 @@ namespace GuiderBlazor.Middleware
         {
             var path = context.Request.Path.Value;
 
-            // 1. Если запрос похож на путь к картинке
             if (path != null && ImagePathRegex.IsMatch(path))
             {
-                // Превращаем URL путь в физический путь на диске (wwwroot/images/...)
                 var localFilePath = Path.Combine(_env.WebRootPath, path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
 
-                // 2. Если файла НЕТ на диске
                 if (!File.Exists(localFilePath))
                 {
-                    // Проверяем, указан ли источник (?source=http...)
+                    // Файла НЕТ: качаем
                     var sourceUrl = context.Request.Query["source"].ToString();
 
                     if (!string.IsNullOrEmpty(sourceUrl) && Uri.TryCreate(sourceUrl, UriKind.Absolute, out var uri))
@@ -44,26 +40,37 @@ namespace GuiderBlazor.Middleware
                         catch (Exception ex)
                         {
                             Console.WriteLine($"[ImageMirror] Ошибка скачивания {sourceUrl}: {ex.Message}");
-                            // Не ломаем запрос, пусть вернется 404, если не скачалось
                         }
                     }
                 }
+                else
+                {
+                    // ---  Файл ЕСТЬ. Обновляем дату "посещения". ---
+                    // Это сигнал для ImageCleanupService не удалять этот файл.
+                    try
+                    {
+                        File.SetLastWriteTimeUtc(localFilePath, DateTime.UtcNow);
+                    }
+                    catch
+                    {
+                        // Игнорируем ошибки (например, если файл занят чтением), 
+                        // чтобы не замедлять отдачу контента пользователю.
+                    }
+                    // -----------------------------------------------------
+                }
             }
 
-            // Передаем управление дальше (ImageSharp подхватит файл, если он теперь есть)
             await _next(context);
         }
 
         private async Task DownloadAndSaveImageAsync(string sourceUrl, string localPath)
         {
-            // Создаем папки (province/place), если их нет
             var directory = Path.GetDirectoryName(localPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            // Качаем и сохраняем
             var imageBytes = await _httpClient.GetByteArrayAsync(sourceUrl);
             await File.WriteAllBytesAsync(localPath, imageBytes);
         }

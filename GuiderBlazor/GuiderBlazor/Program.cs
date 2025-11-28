@@ -2,7 +2,9 @@ using GuiderBlazor.Components;
 using GuiderBlazor.Shared.Services;
 using GuiderBlazor.Shared.Utils;
 using Microsoft.AspNetCore.OutputCaching;
-using SixLabors.ImageSharp.Web.DependencyInjection; // <--- ДОБАВЛЕНО (нужен этот using)
+using SixLabors.ImageSharp.Web.DependencyInjection; 
+using GuiderBlazor.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +62,9 @@ builder.Services.AddScoped<IProvincesService, ProvincesService>();
 
 
 builder.Services.AddScoped<GuiderBlazor.Shared.Services.ImageService>();
+// --- Регистрация фонового сервиса очистки ---
+builder.Services.AddHostedService<ImageCleanupService>();
+// -------------------------------------------------------
 
 
 var app = builder.Build();
