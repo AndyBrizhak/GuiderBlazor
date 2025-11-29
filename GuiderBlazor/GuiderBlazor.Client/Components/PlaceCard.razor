@@ -5,7 +5,13 @@
     <div class="card-image">
         @if (Place.ImgLink?.Any() == true)
         {
-            <img src="@Place.ImgLink.First()" alt="@Place.Name" />
+            @* Используем новый компонент с включенным режимом миниатюры *@
+            <ResponsiveImage OriginalUrl="@Place.ImgLink.First()"
+                             PlaceName="@Place.Name"
+                             Province="@Place.Address?.Province"
+                             Alt="@Place.Name"
+                             IsThumbnail="true"
+                             Class="card-img-element" />
         }
         else
         {

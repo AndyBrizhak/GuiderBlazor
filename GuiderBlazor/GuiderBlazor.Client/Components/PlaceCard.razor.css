@@ -23,18 +23,30 @@
     width: 100%;
     height: 200px;
     overflow: hidden;
-    /* ⬇️ ИЗМЕНЕНИЕ: Фон будет виден, если 'contain' создаст полосы */
     background: var(--bg-surface-hover);
+    display: flex; /* Чтобы picture растягивался */
+    align-items: center;
+    justify-content: center;
 }
 
-    .card-image img {
+    /* Добавляем правило для picture, чтобы он занимал все место */
+    .card-image picture {
         width: 100%;
         height: 100%;
-        /* ⬇️ ИЗМЕНЕНИЕ: 'contain' сохраняет пропорции и 
-           показывает все изображение (могут быть полосы).
-           'cover' (как было) сохраняет пропорции, но ОБРЕЗАЕТ.
-        */
-        object-fit: contain; /* Было 'cover' */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Обновляем селектор: теперь img находится внутри picture */
+    .card-image img,
+    .card-image .card-img-element {
+        width: 100%;
+        height: 100%;
+        /* contain - показывает картинку целиком с полосами,
+           cover - заполняет все место, но обрезает края.
+           Выберите то, что вам больше нравится. Сейчас стоит contain. */
+        object-fit: contain;
     }
 
 .no-image {

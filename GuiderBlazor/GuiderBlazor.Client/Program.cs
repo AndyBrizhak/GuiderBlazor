@@ -16,5 +16,6 @@ builder.Services.AddScoped<IPlacesService, PlacesService>();
 builder.Services.AddScoped<ICitiesService, CitiesService>();
 builder.Services.AddScoped<ITagsService, TagsService>();
 builder.Services.AddScoped<IProvincesService, ProvincesService>();
+builder.Services.AddScoped<GuiderBlazor.Shared.Services.ImageService>();
 
 await builder.Build().RunAsync();

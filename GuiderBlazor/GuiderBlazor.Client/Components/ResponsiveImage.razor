@@ -1,0 +1,83 @@
+﻿@using GuiderBlazor.Shared.Services
+@inject ImageService ImageService
+
+<picture class="@PictureClass">
+    @if (IsThumbnail)
+    {
+        @* --- РЕЖИМ МИНИАТЮРЫ (для карточек) --- *@
+        
+        @* 1. WEBP *@
+        <source media="(min-width: 500px)" srcset="@GetUrl(640, "webp")" type="image/webp" />
+        <source media="(max-width: 499px)" srcset="@GetUrl(400, "webp")" type="image/webp" />
+
+        @* 2. JPEG Fallback *@
+        <source media="(min-width: 500px)" srcset="@GetUrl(640, null)" />
+        <source media="(max-width: 499px)" srcset="@GetUrl(400, null)" />
+
+        @* 3. IMG *@
+        <img src="@GetUrl(400, null)"
+             alt="@Alt"
+             class="@Class"
+             loading="lazy"
+             width="400"
+             height="300" 
+             style="aspect-ratio: 4/3; object-fit: contain;"
+             itemprop="image" />
+    }
+    else
+    {
+        @* --- РЕЖИМ HEADER (для детальной страницы) --- *@
+
+        @* 1. WEBP *@
+        <source media="(min-width: 1024px)" srcset="@GetUrl(1920, "webp")" type="image/webp" />
+        <source media="(min-width: 640px)" srcset="@GetUrl(1024, "webp")" type="image/webp" />
+        <source media="(max-width: 639px)" srcset="@GetUrl(640, "webp")" type="image/webp" />
+
+        @* 2. JPEG Fallback *@
+        <source media="(min-width: 1024px)" srcset="@GetUrl(1920, null)" />
+        <source media="(min-width: 640px)" srcset="@GetUrl(1024, null)" />
+
+        @* 3. IMG *@
+        <img src="@GetUrl(640, null)"
+             alt="@Alt"
+             class="@Class"
+             loading="lazy"
+             width="640"
+             height="480"
+             itemprop="image" />
+    }
+</picture>
+
+@code {
+    [Parameter] public string OriginalUrl { get; set; } = "";
+    [Parameter] public string Alt { get; set; } = "";
+    [Parameter] public string PlaceName { get; set; } = "place";
+    [Parameter] public string? Province { get; set; }
+    
+    // CSS класс для самого тега <img>
+    [Parameter] public string Class { get; set; } = "";
+    
+    // CSS класс для обертки <picture> (если нужно позиционирование)
+    [Parameter] public string PictureClass { get; set; } = "";
+
+    // Включает режим маленьких картинок
+    [Parameter] public bool IsThumbnail { get; set; } = false;
+
+    private string BaseStructuredUrl => ImageService.GetStructuredImageUrl(OriginalUrl, PlaceName, Province);
+
+    private string GetUrl(int width, string? format)
+    {
+        var separator = BaseStructuredUrl.Contains("?") ? "&" : "?";
+        // Для миниатюр качество можно чуть снизить (75), для хедера лучше повыше (80-85)
+        var quality = IsThumbnail ? 75 : 80;
+        
+        var url = $"{BaseStructuredUrl}{separator}width={width}&quality={quality}";
+
+        if (!string.IsNullOrEmpty(format))
+        {
+            url += $"&format={format}";
+        }
+
+        return url;
+    }
+}
