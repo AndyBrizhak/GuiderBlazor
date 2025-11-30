@@ -9,7 +9,7 @@
 <div class="filter-container">
     <aside class="filter-card">
 
-        @* 1. ПОИСК *@
+        @*  ПОИСК *@
         <search class="search-bar-wrapper" role="search">
             <form method="get" action="/" data-enhance>
                 @RenderHiddenInputs()
@@ -53,7 +53,7 @@
         @* ================================================= *@
 
 
-        @* 2. КАТЕГОРИИ *@
+        @*  КАТЕГОРИИ *@
         <nav class="category-scroller" aria-label="Categories">
             <span class="scroller-label">Category:</span>
             <a class="category-btn chip-all @(string.IsNullOrEmpty(CurrentFilters.Category) ? "active" : "")"
@@ -68,7 +68,7 @@
                href="@GetUrl(category: "shops")" data-enhance>Shopping</a>
         </nav>
 
-        @* 3. ПРОВИНЦИИ *@
+        @*  ПРОВИНЦИИ *@
         <nav class="province-scroller" aria-label="Provinces">
             <span class="scroller-label">Province:</span>
             <a href="@GetUrl(province: "")" class="province-chip chip-all @(string.IsNullOrEmpty(CurrentFilters.Province) ? "active" : "")" data-enhance>All</a>
@@ -78,7 +78,7 @@
             }
         </nav>
 
-        @* 4. ГОРОДА (Теперь в одиночестве) *@
+        @*  ГОРОДА  *@
         <div class="location-controls-wrapper">
             <div class="location-controls">
 
@@ -121,9 +121,9 @@
             </div>
         </div>
 
-        @* 7. ТЕГИ *@
+        @*  ТЕГИ *@
         <div class="tags-section">
-            <details>
+            <details id="tags-details" open="@(CurrentFilters.Tags != null && CurrentFilters.Tags.Any())">
                 <summary class="tags-toggle">
                     <span class="scroller-label">Tags</span>
                     <span class="filter-toggle-icon">
@@ -163,6 +163,43 @@
     </aside>
 </div>
 
+@*  СКРИПТ ДЛЯ СОХРАНЕНИЯ СОСТОЯНИЯ *@
+<script>
+    (function () {
+        const detailsId = 'tags-details';
+        const storageKey = 'guider_tags_open';
+
+        function initTagsState() {
+            const details = document.getElementById(detailsId);
+            if (!details) return;
+
+            // А. ВОССТАНОВЛЕНИЕ: Если в хранилище написано "открыто", открываем принудительно
+            const savedState = sessionStorage.getItem(storageKey);
+            if (savedState === 'true') {
+                details.open = true;
+            }
+
+            // Б. СОХРАНЕНИЕ: Слушаем клики (toggle) и сохраняем состояние
+            // Проверка dataset нужна, чтобы не вешать событие 100 раз при навигации
+            if (!details.dataset.listenerAttached) {
+                details.addEventListener('toggle', (e) => {
+                    sessionStorage.setItem(storageKey, e.target.open);
+                });
+                details.dataset.listenerAttached = "true";
+            }
+        }
+
+        // Запускаем сразу (для первой загрузки)
+        initTagsState();
+
+        // Запускаем после Enhanced Navigation (когда Blazor подменяет HTML)
+        if (typeof Blazor !== 'undefined') {
+            Blazor.addEventListener('enhancedload', initTagsState);
+        }
+    })();
+</script>
+
+
 @code {
     
     [Parameter] public PlaceFilterParams CurrentFilters { get; set; } = new();
@@ -188,7 +225,30 @@
     private async Task LoadActiveTags()
     {
         isLoadingTags = true;
-        activeTags = await TagsService.GetActiveTagsAsync(CurrentFilters.Category, CurrentFilters.Province, CurrentFilters.City, null);
+
+        // 1. Загружаем доступные теги из базы (с учетом текущих фильтров)
+        var serviceTags = await TagsService.GetActiveTagsAsync(
+            CurrentFilters.Category,
+            CurrentFilters.Province,
+            CurrentFilters.City,
+            CurrentFilters.Tags
+        );
+
+        // 2. Берем список уже выбранных пользователем тегов (чтобы они не исчезли)
+        var selectedTags = CurrentFilters.Tags ?? new List<string>();
+
+        // 3. Объединяем списки (Union)
+        // Мы берем теги из базы + принудительно добавляем выбранные.
+        // OrderBy - сортируем по алфавиту, чтобы они не прыгали.
+        activeTags = serviceTags
+            .Union(selectedTags)
+            .Distinct()          // На всякий случай убираем дубли
+            .OrderBy(t => t)     // Сортировка А-Я
+            .ToList();
+
+        // Опционально: Если хотите, чтобы ВЫБРАННЫЕ теги были всегда в начале списка:
+        activeTags = activeTags.OrderByDescending(t => selectedTags.Contains(t)).ThenBy(t => t).ToList();
+
         isLoadingTags = false;
     }
     private async Task LoadActiveProvinces()
