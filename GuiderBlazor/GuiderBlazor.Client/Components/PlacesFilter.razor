@@ -53,32 +53,32 @@
         @* ================================================= *@
 
 
-        @*  КАТЕГОРИИ *@
+        @*  КАТЕГОРИИ - ИСПРАВЛЕНО: используем GetUrlForCategory *@
         <nav class="category-scroller" aria-label="Categories">
             <span class="scroller-label">Category:</span>
             <a class="category-btn chip-all @(string.IsNullOrEmpty(CurrentFilters.Category) ? "active" : "")"
-               href="@GetUrl(category: "")" data-enhance>All</a>
+               href="@GetUrlForCategory("")" data-enhance>All</a>
             <a class="category-btn @(CurrentFilters.Category == "services" ? "active" : "")"
-               href="@GetUrl(category: "services")" data-enhance>Services</a>
+               href="@GetUrlForCategory("services")" data-enhance>Services</a>
             <a class="category-btn @(CurrentFilters.Category == "to-eat" ? "active" : "")"
-               href="@GetUrl(category: "to-eat")" data-enhance>Foods</a>
+               href="@GetUrlForCategory("to-eat")" data-enhance>Foods</a>
             <a class="category-btn @(CurrentFilters.Category == "adventures" ? "active" : "")"
-               href="@GetUrl(category: "adventures")" data-enhance>Adventures</a>
+               href="@GetUrlForCategory("adventures")" data-enhance>Adventures</a>
             <a class="category-btn @(CurrentFilters.Category == "shops" ? "active" : "")"
-               href="@GetUrl(category: "shops")" data-enhance>Shopping</a>
+               href="@GetUrlForCategory("shops")" data-enhance>Shopping</a>
         </nav>
 
-        @*  ПРОВИНЦИИ *@
+        @*  ПРОВИНЦИИ - ИСПРАВЛЕНО: используем GetUrlForProvince *@
         <nav class="province-scroller" aria-label="Provinces">
             <span class="scroller-label">Province:</span>
-            <a href="@GetUrl(province: "")" class="province-chip chip-all @(string.IsNullOrEmpty(CurrentFilters.Province) ? "active" : "")" data-enhance>All</a>
+            <a href="@GetUrlForProvince("")" class="province-chip chip-all @(string.IsNullOrEmpty(CurrentFilters.Province) ? "active" : "")" data-enhance>All</a>
             @foreach (var province in activeProvinces)
             {
-                <a href="@GetUrl(province: province.Slug)" class="province-chip @(IsProvinceActive(province.Slug) ? "active" : "")" data-enhance>@province.Name</a>
+                <a href="@GetUrlForProvince(province.Slug)" class="province-chip @(IsProvinceActive(province.Slug) ? "active" : "")" data-enhance>@province.Name</a>
             }
         </nav>
 
-        @*  ГОРОДА  *@
+        @*  ГОРОДА - ИСПРАВЛЕНО: используем GetUrlForCity *@
         <div class="location-controls-wrapper">
             <div class="location-controls">
 
@@ -92,7 +92,6 @@
                             </span>
                         </summary>
 
-                        @* Возвращаем "Static" поведение (сдвиг вниз) *@
                         <div class="city-cloud-wrapper is-open">
                             <div class="city-cloud-content">
                                 @if (isLoadingCities)
@@ -102,11 +101,17 @@
                                 else if (activeCities.Any())
                                 {
                                     <a class="chip-tag chip-all @(string.IsNullOrEmpty(CurrentFilters.City) ? "active" : "")"
-                                       href="@GetUrl(city: "")" data-enhance>All Cities</a>
+                                       href="@GetUrlForCity("")"
+                                       data-enhance>
+                                        All Cities
+                                    </a>
                                     @foreach (var city in activeCities)
                                     {
                                         <a class="chip-tag @(CurrentFilters.City == city ? "active" : "")"
-                                           href="@GetUrl(city: city)" data-enhance>@city</a>
+                                           href="@GetUrlForCity(city)"
+                                           data-enhance>
+                                            @city
+                                        </a>
                                     }
                                 }
                                 else
@@ -173,14 +178,11 @@
             const details = document.getElementById(detailsId);
             if (!details) return;
 
-            // А. ВОССТАНОВЛЕНИЕ: Если в хранилище написано "открыто", открываем принудительно
             const savedState = sessionStorage.getItem(storageKey);
             if (savedState === 'true') {
                 details.open = true;
             }
 
-            // Б. СОХРАНЕНИЕ: Слушаем клики (toggle) и сохраняем состояние
-            // Проверка dataset нужна, чтобы не вешать событие 100 раз при навигации
             if (!details.dataset.listenerAttached) {
                 details.addEventListener('toggle', (e) => {
                     sessionStorage.setItem(storageKey, e.target.open);
@@ -189,10 +191,8 @@
             }
         }
 
-        // Запускаем сразу (для первой загрузки)
         initTagsState();
 
-        // Запускаем после Enhanced Navigation (когда Blazor подменяет HTML)
         if (typeof Blazor !== 'undefined') {
             Blazor.addEventListener('enhancedload', initTagsState);
         }
@@ -201,7 +201,7 @@
 
 
 @code {
-    
+
     [Parameter] public PlaceFilterParams CurrentFilters { get; set; } = new();
     private List<string> activeCities = new();
     private bool isLoadingCities = true;
@@ -216,17 +216,18 @@
         var t3 = LoadActiveProvinces();
         await Task.WhenAll(t1, t2, t3);
     }
+
     private async Task LoadActiveCities()
     {
         isLoadingCities = true;
         activeCities = await CitiesService.GetActiveCitiesAsync(CurrentFilters.Category, CurrentFilters.Province);
         isLoadingCities = false;
     }
+
     private async Task LoadActiveTags()
     {
         isLoadingTags = true;
 
-        // 1. Загружаем доступные теги из базы (с учетом текущих фильтров)
         var serviceTags = await TagsService.GetActiveTagsAsync(
             CurrentFilters.Category,
             CurrentFilters.Province,
@@ -234,52 +235,194 @@
             CurrentFilters.Tags
         );
 
-        // 2. Берем список уже выбранных пользователем тегов (чтобы они не исчезли)
         var selectedTags = CurrentFilters.Tags ?? new List<string>();
 
-        // 3. Объединяем списки (Union)
-        // Мы берем теги из базы + принудительно добавляем выбранные.
-        // OrderBy - сортируем по алфавиту, чтобы они не прыгали.
         activeTags = serviceTags
             .Union(selectedTags)
-            .Distinct()          // На всякий случай убираем дубли
-            .OrderBy(t => t)     // Сортировка А-Я
+            .Distinct()
+            .OrderByDescending(t => selectedTags.Contains(t))
+            .ThenBy(t => t)
             .ToList();
-
-        // Опционально: Если хотите, чтобы ВЫБРАННЫЕ теги были всегда в начале списка:
-        activeTags = activeTags.OrderByDescending(t => selectedTags.Contains(t)).ThenBy(t => t).ToList();
 
         isLoadingTags = false;
     }
+
     private async Task LoadActiveProvinces()
     {
         activeProvinces = await ProvincesService.GetActiveProvincesAsync(CurrentFilters.Category);
     }
+
     private bool IsProvinceActive(string provinceSlug)
     {
         if (string.IsNullOrEmpty(CurrentFilters.Province)) return false;
         return CurrentFilters.Province.Equals(provinceSlug, StringComparison.OrdinalIgnoreCase);
     }
-    private string GetUrl(string? category = null, string? province = null, string? city = null, bool? isOpen = null, bool clearTags = false)
+
+    // ОСНОВНОЙ МЕТОД ГЕНЕРАЦИИ URL
+    private string GetUrl(
+        string? q = null,
+        string? category = null,
+        string? province = null,
+        string? city = null,
+        int? page = null,
+        int? perPage = null,
+        bool? isOpen = null,
+        List<string>? tags = null,
+        bool clearTags = false)
     {
-        var newFilters = CloneFilters(CurrentFilters);
-        if (category != null) newFilters.Category = category;
-        if (province != null) newFilters.Province = province;
-        if (city != null) newFilters.City = city;
-        if (isOpen.HasValue) newFilters.IsOpen = isOpen.Value ? true : null;
-        if (clearTags) newFilters.Tags = null;
-        newFilters.Page = 1;
-        return GetQueryString(newFilters);
+        // 1. Определяем базовые значения
+        var finalQ = q ?? CurrentFilters.Q;
+        var finalCategory = category ?? CurrentFilters.Category;
+        var finalProvince = province == "" ? null : (province ?? CurrentFilters.Province);
+        var finalCity = city == "" ? null : (city ?? CurrentFilters.City);
+        var finalPage = page ?? CurrentFilters.Page;
+        var finalPerPage = perPage ?? CurrentFilters.PerPage;
+        var finalIsOpen = isOpen ?? CurrentFilters.IsOpen;
+
+        // 2. Определяем финальные теги
+        List<string>? finalTags;
+        if (clearTags)
+        {
+            finalTags = null; // Явно очищаем
+        }
+        else if (tags != null)
+        {
+            finalTags = tags; // Используем переданные теги
+        }
+        else
+        {
+            finalTags = CurrentFilters.Tags; // Используем текущие теги
+        }
+
+        // 3. Собираем query string
+        var queryParts = new List<string>();
+
+        if (!string.IsNullOrEmpty(finalQ))
+            queryParts.Add($"Q={Uri.EscapeDataString(finalQ)}");
+
+        if (!string.IsNullOrEmpty(finalCategory))
+            queryParts.Add($"Category={Uri.EscapeDataString(finalCategory)}");
+
+        if (!string.IsNullOrEmpty(finalProvince))
+            queryParts.Add($"Province={Uri.EscapeDataString(finalProvince)}");
+
+        if (!string.IsNullOrEmpty(finalCity))
+            queryParts.Add($"City={Uri.EscapeDataString(finalCity)}");
+
+        if (finalPage > 1)
+            queryParts.Add($"Page={finalPage}");
+
+        if (finalPerPage != 4)
+            queryParts.Add($"PerPage={finalPerPage}");
+
+        // Гео-параметры
+        if (CurrentFilters.Latitude.HasValue)
+            queryParts.Add($"Latitude={CurrentFilters.Latitude}");
+        if (CurrentFilters.Longitude.HasValue)
+            queryParts.Add($"Longitude={CurrentFilters.Longitude}");
+        if (CurrentFilters.Distance.HasValue)
+            queryParts.Add($"Distance={CurrentFilters.Distance}");
+
+        if (finalIsOpen == true)
+            queryParts.Add("IsOpen=true");
+
+        if (!string.IsNullOrEmpty(CurrentFilters.SortField))
+            queryParts.Add($"SortField={CurrentFilters.SortField}");
+        if (!string.IsNullOrEmpty(CurrentFilters.SortOrder))
+            queryParts.Add($"SortOrder={CurrentFilters.SortOrder}");
+
+        // Добавляем теги
+        if (finalTags != null && finalTags.Any())
+        {
+            foreach (var tag in finalTags)
+            {
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
+                }
+            }
+        }
+
+        return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
+
+    // СПЕЦИАЛИЗИРОВАННЫЕ МЕТОДЫ ДЛЯ ФИЛЬТРОВ
+
+    /// <summary>
+    /// Генерирует URL для категории с очисткой зависимых фильтров
+    /// </summary>
+    private string GetUrlForCategory(string category)
+    {
+        // При смене категории:
+        // - Сбрасываем провинцию и город (они могут стать недоступны)
+        // - Сбрасываем теги (они зависят от категории)
+        // - Сбрасываем страницу на 1
+        return GetUrl(
+            category: category,
+            province: "",
+            city: "",
+            page: 1,
+            clearTags: true
+        );
+    }
+
+    /// <summary>
+    /// Генерирует URL для провинции с очисткой зависимых фильтров
+    /// </summary>
+    private string GetUrlForProvince(string province)
+    {
+        // При смене провинции:
+        // - Сбрасываем город (он зависит от провинции)
+        // - Сбрасываем теги (они зависят от локации)
+        // - Сбрасываем страницу на 1
+        return GetUrl(
+            province: province,
+            city: "",
+            page: 1,
+            clearTags: true
+        );
+    }
+
+    /// <summary>
+    /// Генерирует URL для города с очисткой зависимых фильтров
+    /// </summary>
+    private string GetUrlForCity(string city)
+    {
+        // При смене города:
+        // - Сбрасываем теги (они зависят от города)
+        // - Сбрасываем страницу на 1
+        return GetUrl(
+            city: city,
+            page: 1,
+            clearTags: true
+        );
+    }
+
+    /// <summary>
+    /// Генерирует URL для переключения тега
+    /// </summary>
     private string GetUrlForTag(string tag)
     {
-        var newFilters = CloneFilters(CurrentFilters);
-        var tags = newFilters.Tags ?? new List<string>();
-        if (tags.Contains(tag)) tags.Remove(tag); else tags.Add(tag);
-        newFilters.Tags = tags.Any() ? tags : null;
-        newFilters.Page = 1;
-        return GetQueryString(newFilters);
+        var currentTags = CurrentFilters.Tags?.ToList() ?? new List<string>();
+
+        if (currentTags.Contains(tag))
+        {
+            currentTags.Remove(tag);
+        }
+        else
+        {
+            currentTags.Add(tag);
+        }
+
+        // Передаем явный список тегов
+        return GetUrl(
+            tags: currentTags.Any() ? currentTags : null,
+            page: 1
+        );
     }
+
+    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ (для совместимости)
+
     private PlaceFilterParams CloneFilters(PlaceFilterParams source)
     {
         return new PlaceFilterParams
@@ -299,6 +442,7 @@
             IsOpen = source.IsOpen
         };
     }
+
     private string GetQueryString(PlaceFilterParams filters)
     {
         var queryParams = new Dictionary<string, object?>();
@@ -314,20 +458,66 @@
         if (filters.IsOpen == true) queryParams["IsOpen"] = "true";
         if (!string.IsNullOrEmpty(filters.SortField)) queryParams["SortField"] = filters.SortField;
         if (!string.IsNullOrEmpty(filters.SortOrder)) queryParams["SortOrder"] = filters.SortOrder;
+
         var queryParts = new List<string>();
         queryParts.AddRange(queryParams.Where(kvp => kvp.Value != null).Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
+
         if (filters.Tags != null && filters.Tags.Any())
         {
-            foreach (var tag in filters.Tags) { if (!string.IsNullOrEmpty(tag)) queryParts.Add($"Tags={Uri.EscapeDataString(tag)}"); }
+            foreach (var tag in filters.Tags)
+            {
+                if (!string.IsNullOrEmpty(tag))
+                    queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
+            }
         }
+
         return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
+
     private RenderFragment RenderHiddenInputs() => builder =>
     {
-        if (!string.IsNullOrEmpty(CurrentFilters.Category)) { builder.OpenElement(0, "input"); builder.AddAttribute(1, "type", "hidden"); builder.AddAttribute(2, "name", "Category"); builder.AddAttribute(3, "value", CurrentFilters.Category); builder.CloseElement(); }
-        if (!string.IsNullOrEmpty(CurrentFilters.Province)) { builder.OpenElement(4, "input"); builder.AddAttribute(5, "type", "hidden"); builder.AddAttribute(6, "name", "Province"); builder.AddAttribute(7, "value", CurrentFilters.Province); builder.CloseElement(); }
-        if (!string.IsNullOrEmpty(CurrentFilters.City)) { builder.OpenElement(8, "input"); builder.AddAttribute(9, "type", "hidden"); builder.AddAttribute(10, "name", "City"); builder.AddAttribute(11, "value", CurrentFilters.City); builder.CloseElement(); }
-        if (CurrentFilters.Tags != null) { foreach (var tag in CurrentFilters.Tags) { builder.OpenElement(12, "input"); builder.AddAttribute(13, "type", "hidden"); builder.AddAttribute(14, "name", "Tags"); builder.AddAttribute(15, "value", tag); builder.CloseElement(); } }
-        if (CurrentFilters.IsOpen == true) { builder.OpenElement(16, "input"); builder.AddAttribute(17, "type", "hidden"); builder.AddAttribute(18, "name", "IsOpen"); builder.AddAttribute(19, "value", "true"); builder.CloseElement(); }
+        if (!string.IsNullOrEmpty(CurrentFilters.Category))
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "hidden");
+            builder.AddAttribute(2, "name", "Category");
+            builder.AddAttribute(3, "value", CurrentFilters.Category);
+            builder.CloseElement();
+        }
+        if (!string.IsNullOrEmpty(CurrentFilters.Province))
+        {
+            builder.OpenElement(4, "input");
+            builder.AddAttribute(5, "type", "hidden");
+            builder.AddAttribute(6, "name", "Province");
+            builder.AddAttribute(7, "value", CurrentFilters.Province);
+            builder.CloseElement();
+        }
+        if (!string.IsNullOrEmpty(CurrentFilters.City))
+        {
+            builder.OpenElement(8, "input");
+            builder.AddAttribute(9, "type", "hidden");
+            builder.AddAttribute(10, "name", "City");
+            builder.AddAttribute(11, "value", CurrentFilters.City);
+            builder.CloseElement();
+        }
+        if (CurrentFilters.Tags != null)
+        {
+            foreach (var tag in CurrentFilters.Tags)
+            {
+                builder.OpenElement(12, "input");
+                builder.AddAttribute(13, "type", "hidden");
+                builder.AddAttribute(14, "name", "Tags");
+                builder.AddAttribute(15, "value", tag);
+                builder.CloseElement();
+            }
+        }
+        if (CurrentFilters.IsOpen == true)
+        {
+            builder.OpenElement(16, "input");
+            builder.AddAttribute(17, "type", "hidden");
+            builder.AddAttribute(18, "name", "IsOpen");
+            builder.AddAttribute(19, "value", "true");
+            builder.CloseElement();
+        }
     };
 }
