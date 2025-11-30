@@ -10,22 +10,11 @@
     <link rel="stylesheet" href="GuiderBlazor.styles.css" />
     <HeadOutlet />
 
-    <!-- Применяем тему ДО загрузки Blazor -->
     <script>
         (function() {
-            // Проверяем cookie (серверная тема)
-            var cookieTheme = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('theme='))
-                ?.split('=')[1];
-
-            // Проверяем localStorage (клиентская тема)
+            var cookieTheme = document.cookie.split('; ').find(row => row.startsWith('theme='))?.split('=')[1];
             var localTheme = localStorage.getItem('theme');
-
-            // Приоритет: localStorage > cookie > default
             var theme = localTheme || cookieTheme || 'light-theme';
-
-            // Применяем тему мгновенно
             document.documentElement.className = theme;
             localStorage.setItem('theme', theme);
             document.cookie = `theme=${theme};path=/;max-age=31536000`;
@@ -35,14 +24,23 @@
 
 <body>
     <Routes />
-    @if (!IsStaticPage)
+
+    @* ВАЖНО: Грузим Blazor ТОЛЬКО если это НЕ страница деталей *@
+    @if (!IsDetailPage)
     {
         <script src="_framework/blazor.web.js"></script>
+        @* app.js нужен для геолокации, которая есть на главной *@
+        <script src="js/app.js"></script>
     }
-    
-    @* <script src="_framework/blazor.web.js"></script> *@
+
+    @* Эти скрипты нужны везде (меню, тема, слайдеры картинок если есть) *@
     <script src="js/theme.js"></script>
-    <script src="js/location.js"></script>
+
+    @* location.js скорее всего тоже нужен только на главной, проверьте *@
+    @if (!IsDetailPage)
+    {
+        <script src="js/location.js"></script>
+    }
 </body>
 
 </html>
@@ -50,13 +48,13 @@
 @inject NavigationManager NavManager
 
 @code {
-    // Проверяем, находимся ли мы на странице деталей места
-    private bool IsStaticPage
+    // Определяем, является ли страница "детальной"
+    private bool IsDetailPage
     {
         get
         {
             var uri = new Uri(NavManager.Uri);
-            // Если путь начинается с /place/, считаем страницу статической
+            // Если путь начинается с /place/, считаем страницу детальной -> скрипт не грузим
             return uri.AbsolutePath.StartsWith("/place/", StringComparison.OrdinalIgnoreCase);
         }
     }

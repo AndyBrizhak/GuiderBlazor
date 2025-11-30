@@ -1,108 +1,113 @@
 ﻿@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
-@inject IPlacesService PlacesService
+
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
 
 <div class="places-list-container">
 
-    <PlacesFilter CurrentFilters="currentFilters"
-                  OnFilterChanged="HandleFilterChanged" />
+    @* Передаем параметры вниз *@
+    <PlacesFilter CurrentFilters="CurrentFilters" />
 
-    @if (isLoading)
+    @if (IsLoading)
     {
         <div class="loading">
             <div class="spinner"></div>
             <p>Loading places...</p>
         </div>
     }
-    else if (placesResponse?.Places?.Any() == true)
+    else if (PlacesResponse?.Places?.Any() == true)
     {
-        @* 1. Оборачиваем результаты в section для семантики *@
         <section aria-label="Search Results">
-
-            @* 2. Добавляем невидимый H2, чтобы связать H1 страницы и H3 карточек *@
             <h2 class="visually-hidden">Found Places in Costa Rica</h2>
-                <div class="sort-controls">
+
+            <div class="sort-controls">
+                @* ФОРМА СОРТИРОВКИ 
+                   Используем data-enhance для "мягкой" навигации (Этап 2),
+                   а пока это просто сработает как GET-запрос.
+                *@
+                <form method="get" action="/" data-enhance>
+                    @* Сохраняем текущие фильтры в скрытых полях, чтобы они не слетели *@
+                    @RenderHiddenInputs()
+
                     <div class="form-group">
                         <label>Sort by:</label>
-                        <select class="form-control" @onchange="HandleSortFieldChange">
-                            <option value="name" selected="@(currentFilters.SortField == "name" || string.IsNullOrEmpty(currentFilters.SortField))">Name</option>
-                            <option value="category" selected="@(currentFilters.SortField == "category")">Category</option>
-                            @if (currentFilters.Latitude.HasValue)
+                        @* onchange="this.form.submit()" автоматически отправит форму при выборе *@
+                        <select name="SortField" class="form-control" onchange="this.form.submit()">
+                            <option value="name" selected="@(CurrentFilters.SortField == "name" || string.IsNullOrEmpty(CurrentFilters.SortField))">Name</option>
+                            <option value="category" selected="@(CurrentFilters.SortField == "category")">Category</option>
+                            @if (CurrentFilters.Latitude.HasValue)
                             {
-                                <option value="distance" selected="@(currentFilters.SortField == "distance")">Distance</option>
+                                <option value="distance" selected="@(CurrentFilters.SortField == "distance")">Distance</option>
                             }
                         </select>
                     </div>
+                </form>
 
-                    <button class="btn-sort-order" @onclick="ToggleSortOrder"
-                            title="Change Sort Order (@(IsSortAscending() ? "Ascending (A-Z)" : "Descending (Z-A)"))">
-                        @if (IsSortAscending())
-                        {
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 19V5m-6 6l6-6l6 6" />
-                            </svg>
-                        }
-                        else
-                        {
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 5v14m-6-6l6 6l6-6" />
-                            </svg>
-                        }
-                    </button>
-                </div>
-
-                <div class="places-grid">
-                    @foreach (var place in placesResponse.Places)
+                @* КНОПКА ПОРЯДКА СОРТИРОВКИ (Теперь это ссылка) *@
+                <a class="btn-sort-order"
+                   href="@GetUrlForSortOrder()"
+                   data-enhance
+                   title="Change Sort Order">
+                    @if (CurrentFilters.SortOrder == "desc")
                     {
-                        <PlaceCard Place="place" />
+                        @* Если сейчас DESC, показываем иконку Z-A *@
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14m-6-6l6 6l6-6" /></svg>
                     }
-                </div>
+                    else
+                    {
+                        @* Иначе показываем A-Z *@
+                        <svg viewBox="0 0 24 24"><path d="M12 19V5m-6 6l6-6l6 6" /></svg>
+                    }
+                </a>
+            </div>
 
-                <div class="pagination">
-                    <div class="pagination-controls">
+            <div class="places-grid">
+                @foreach (var place in PlacesResponse.Places)
+                {
+                    <PlaceCard Place="place" />
+                }
+            </div>
 
-                        <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
-                           href="@GetUrlForPage(1)"
-                           aria-label="First Page">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5m7-5-5 5 5 5" /></svg>
-                        </a>
+            <div class="pagination">
+                <div class="pagination-controls">
 
-                        <a class="btn-page @(currentFilters.Page == 1 ? "disabled" : "")"
-                           href="@GetUrlForPage(currentFilters.Page - 1)"
-                           aria-label="Previous Page">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-                        </a>
+                    @* Кнопка НАЗАД *@
+                    <a class="btn-page @(CurrentFilters.Page <= 1 ? "disabled" : "")"
+                       href="@GetUrlForPage(CurrentFilters.Page - 1)"
+                       data-enhance
+                       aria-label="Previous Page">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                    </a>
 
-                        <div class="pagination-per-page">
+                    @* PER PAGE (Тоже форма) *@
+                    <div class="pagination-per-page">
+                        <form method="get" action="/" data-enhance>
+                            @RenderHiddenInputs()
                             <label>Per Page:</label>
-                            <select class="form-control" @onchange="HandlePerPageChange">
-                                <option value="4" selected="@(currentFilters.PerPage == 4)">4</option>
-                                <option value="8" selected="@(currentFilters.PerPage == 8)">8</option>
-                                <option value="12" selected="@(currentFilters.PerPage == 12)">12</option>
-                                <option value="16" selected="@(currentFilters.PerPage == 16)">16</option>
-                                <option value="20" selected="@(currentFilters.PerPage == 20)">20</option>
+                            <select name="PerPage" class="form-control" onchange="this.form.submit()">
+                                <option value="4" selected="@(CurrentFilters.PerPage == 4)">4</option>
+                                <option value="8" selected="@(CurrentFilters.PerPage == 8)">8</option>
+                                <option value="12" selected="@(CurrentFilters.PerPage == 12)">12</option>
+                                <option value="16" selected="@(CurrentFilters.PerPage == 16)">16</option>
+                                <option value="20" selected="@(CurrentFilters.PerPage == 20)">20</option>
                             </select>
-                        </div>
-
-                        <div class="pagination-info">
-                            @placesResponse.Page / @placesResponse.TotalPages
-                        </div>
-
-                        <a class="btn-page @(currentFilters.Page >= placesResponse.TotalPages ? "disabled" : "")"
-                           href="@GetUrlForPage(currentFilters.Page + 1)"
-                           aria-label="Next Page">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                        </a>
-
-                        <a class="btn-page @(currentFilters.Page >= placesResponse.TotalPages ? "disabled" : "")"
-                           href="@GetUrlForPage(placesResponse.TotalPages)"
-                           aria-label="Last Page">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 5-5-5-5m7 10 5-5-5-5" /></svg>
-                        </a>
+                        </form>
                     </div>
+
+                    <div class="pagination-info">
+                        @PlacesResponse.Page / @PlacesResponse.TotalPages
+                    </div>
+
+                    @* Кнопка ВПЕРЕД *@
+                    <a class="btn-page @(CurrentFilters.Page >= PlacesResponse.TotalPages ? "disabled" : "")"
+                       href="@GetUrlForPage(CurrentFilters.Page + 1)"
+                       data-enhance
+                       aria-label="Next Page">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    </a>
+
                 </div>
+            </div>
 
         </section>
     }
@@ -116,144 +121,164 @@
 </div>
 
 @code {
-    [SupplyParameterFromQuery]
-    public string? Q { get; set; }
-    [SupplyParameterFromQuery]
-    public string? Category { get; set; }
-    [SupplyParameterFromQuery]
-    public string? Province { get; set; }
-    [SupplyParameterFromQuery]
-    public string? City { get; set; }
-    [SupplyParameterFromQuery]
-    public int Page { get; set; } = 1;
-    [SupplyParameterFromQuery]
-    public int PerPage { get; set; } = 4;
+    [Parameter] public PlacesResponse? PlacesResponse { get; set; }
+    [Parameter] public PlaceFilterParams CurrentFilters { get; set; } = new();
+    [Parameter] public bool IsLoading { get; set; }
 
-    // Геолокационные параметры
-    [SupplyParameterFromQuery]
-    public double? Latitude { get; set; }
-    [SupplyParameterFromQuery]
-    public double? Longitude { get; set; }
-    [SupplyParameterFromQuery]
-    public double? Distance { get; set; }
-    [SupplyParameterFromQuery]
-    public string? SortField { get; set; }
-    [SupplyParameterFromQuery]
-    public string? SortOrder { get; set; }
-    
-    [SupplyParameterFromQuery]
-    public bool? IsOpen { get; set; }
-    [SupplyParameterFromQuery(Name = "Tags")]
-    public string[]? Tags { get; set; }
-
-    private PlacesResponse? placesResponse;
-    private PlaceFilterParams currentFilters = new();
-    private bool isLoading = true;
-
-    protected override async Task OnParametersSetAsync()
+    /// <summary>
+    /// Рендерит скрытые инпуты для сохранения текущего состояния фильтров
+    /// внутри форм сортировки и пагинации
+    /// </summary>
+    private RenderFragment RenderHiddenInputs() => builder =>
     {
-        Console.WriteLine($"🟢 OnParametersSetAsync: Lat={Latitude}, Lon={Longitude}, Distance={Distance}, IsOpen={IsOpen}");
-
-        isLoading = true;
-        currentFilters = new PlaceFilterParams
+        if (!string.IsNullOrEmpty(CurrentFilters.Q))
         {
-            Q = this.Q,
-            Category = this.Category,
-            Province = this.Province,
-            City = this.City,
-            Page = this.Page,
-            PerPage = this.PerPage,
-            Status = "active",
-            Tags = this.Tags?.ToList(),
-            
-            Latitude = this.Latitude,
-            Longitude = this.Longitude,
-            Distance = this.Distance,
-            SortField = this.SortField,
-            SortOrder = this.SortOrder,
-            IsOpen = this.IsOpen  
-        };
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "hidden");
+            builder.AddAttribute(2, "name", "Q");
+            builder.AddAttribute(3, "value", CurrentFilters.Q);
+            builder.CloseElement();
+        }
+        if (!string.IsNullOrEmpty(CurrentFilters.Category))
+        {
+            builder.OpenElement(4, "input");
+            builder.AddAttribute(5, "type", "hidden");
+            builder.AddAttribute(6, "name", "Category");
+            builder.AddAttribute(7, "value", CurrentFilters.Category);
+            builder.CloseElement();
+        }
+        if (!string.IsNullOrEmpty(CurrentFilters.Province))
+        {
+            builder.OpenElement(8, "input");
+            builder.AddAttribute(9, "type", "hidden");
+            builder.AddAttribute(10, "name", "Province");
+            builder.AddAttribute(11, "value", CurrentFilters.Province);
+            builder.CloseElement();
+        }
+        if (!string.IsNullOrEmpty(CurrentFilters.City))
+        {
+            builder.OpenElement(12, "input");
+            builder.AddAttribute(13, "type", "hidden");
+            builder.AddAttribute(14, "name", "City");
+            builder.AddAttribute(15, "value", CurrentFilters.City);
+            builder.CloseElement();
+        }
+        // Гео и другие параметры...
+        if (CurrentFilters.Latitude.HasValue)
+        {
+            builder.OpenElement(16, "input");
+            builder.AddAttribute(17, "type", "hidden");
+            builder.AddAttribute(18, "name", "Latitude");
+            builder.AddAttribute(19, "value", CurrentFilters.Latitude);
+            builder.CloseElement();
 
-        if (currentFilters.Page <= 0) currentFilters.Page = 1;
-        if (currentFilters.PerPage <= 0) currentFilters.PerPage = 4;
+            builder.OpenElement(20, "input");
+            builder.AddAttribute(21, "type", "hidden");
+            builder.AddAttribute(22, "name", "Longitude");
+            builder.AddAttribute(23, "value", CurrentFilters.Longitude);
+            builder.CloseElement();
 
-        // Console.WriteLine($"🟢 Calling PlacesService.GetPlacesAsync with IsOpen={currentFilters.IsOpen}");
-        placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
-        // Console.WriteLine($"🟢 Received {placesResponse?.Places?.Count ?? 0} places");
+            if (CurrentFilters.Distance.HasValue)
+            {
+                builder.OpenElement(24, "input");
+                builder.AddAttribute(25, "type", "hidden");
+                builder.AddAttribute(26, "name", "Distance");
+                builder.AddAttribute(27, "value", CurrentFilters.Distance);
+                builder.CloseElement();
+            }
+        }
+        if (CurrentFilters.Tags != null)
+        {
+            foreach (var tag in CurrentFilters.Tags)
+            {
+                builder.OpenElement(28, "input");
+                builder.AddAttribute(29, "type", "hidden");
+                builder.AddAttribute(30, "name", "Tags");
+                builder.AddAttribute(31, "value", tag);
+                builder.CloseElement();
+            }
+        }
+        // IsOpen
+        if (CurrentFilters.IsOpen == true)
+        {
+            builder.OpenElement(32, "input");
+            builder.AddAttribute(33, "type", "hidden");
+            builder.AddAttribute(34, "name", "IsOpen");
+            builder.AddAttribute(35, "value", "true");
+            builder.CloseElement();
+        }
+    };
 
-        isLoading = false;
-    }
-
-    private void HandleFilterChanged(PlaceFilterParams newFilters)
+    // Генерирует URL для переключения порядка сортировки (ASC <-> DESC)
+    private string GetUrlForSortOrder()
     {
-        Console.WriteLine($"🟢 HandleFilterChanged: Lat={newFilters.Latitude}, Lon={newFilters.Longitude}, Distance={newFilters.Distance}");
-        Console.WriteLine($"🟢 Navigating to: {GetQueryString(newFilters)}");
-        Navigation.NavigateTo(GetQueryString(newFilters));
+        var newOrder = (CurrentFilters.SortOrder == "desc") ? "asc" : "desc";
+
+        var linkFilters = CloneFilters(CurrentFilters);
+        linkFilters.SortOrder = newOrder;
+
+        // Сбрасываем страницу на 1 при смене сортировки
+        linkFilters.Page = 1;
+
+        return GetQueryString(linkFilters);
     }
 
     private string GetUrlForPage(int newPage)
     {
         if (newPage < 1) newPage = 1;
-        if (placesResponse != null && newPage > placesResponse.TotalPages)
+        if (PlacesResponse != null && newPage > PlacesResponse.TotalPages)
         {
-            newPage = placesResponse.TotalPages;
+            newPage = PlacesResponse.TotalPages;
         }
 
-        var linkFilters = new PlaceFilterParams
-        {
-            Q = currentFilters.Q,
-            Category = currentFilters.Category,
-            Province = currentFilters.Province,
-            City = currentFilters.City,
-            PerPage = currentFilters.PerPage,
-            Page = newPage,
-            Tags = currentFilters.Tags,
-            // Сохраняем геопараметры при пагинации
-            Latitude = currentFilters.Latitude,
-            Longitude = currentFilters.Longitude,
-            Distance = currentFilters.Distance,
-            SortField = currentFilters.SortField,
-            SortOrder = currentFilters.SortOrder,
-            IsOpen = currentFilters.IsOpen
-        };
+        var linkFilters = CloneFilters(CurrentFilters);
+        linkFilters.Page = newPage;
 
         return GetQueryString(linkFilters);
+    }
+
+    // Хелпер для клонирования, чтобы не мутировать текущий стейт
+    private PlaceFilterParams CloneFilters(PlaceFilterParams source)
+    {
+        return new PlaceFilterParams
+        {
+            Q = source.Q,
+            Category = source.Category,
+            Province = source.Province,
+            City = source.City,
+            PerPage = source.PerPage,
+            Page = source.Page,
+            Tags = source.Tags?.ToList(),
+            Latitude = source.Latitude,
+            Longitude = source.Longitude,
+            Distance = source.Distance,
+            SortField = source.SortField,
+            SortOrder = source.SortOrder,
+            IsOpen = source.IsOpen
+        };
     }
 
     private string GetQueryString(PlaceFilterParams filters)
     {
         var queryParams = new Dictionary<string, object?>();
 
-        if (!string.IsNullOrEmpty(filters.Q))
-            queryParams["Q"] = filters.Q;
-        if (!string.IsNullOrEmpty(filters.Category))
-            queryParams["Category"] = filters.Category;
-        if (!string.IsNullOrEmpty(filters.Province))
-            queryParams["Province"] = filters.Province;
-        if (!string.IsNullOrEmpty(filters.City))
-            queryParams["City"] = filters.City;
-        if (filters.Page > 1)
-            queryParams["Page"] = filters.Page;
-        if (filters.PerPage != 4)
-            queryParams["PerPage"] = filters.PerPage;
+        if (!string.IsNullOrEmpty(filters.Q)) queryParams["Q"] = filters.Q;
+        if (!string.IsNullOrEmpty(filters.Category)) queryParams["Category"] = filters.Category;
+        if (!string.IsNullOrEmpty(filters.Province)) queryParams["Province"] = filters.Province;
+        if (!string.IsNullOrEmpty(filters.City)) queryParams["City"] = filters.City;
+        if (filters.Page > 1) queryParams["Page"] = filters.Page;
+        if (filters.PerPage != 4) queryParams["PerPage"] = filters.PerPage;
 
-        // КРИТИЧНО: Добавляем геопараметры в URL
-        if (filters.Latitude.HasValue)
-            queryParams["Latitude"] = filters.Latitude.Value;
-        if (filters.Longitude.HasValue)
-            queryParams["Longitude"] = filters.Longitude.Value;
-        if (filters.Distance.HasValue)
-            queryParams["Distance"] = filters.Distance.Value;
-        if (filters.IsOpen.HasValue)
-            queryParams["IsOpen"] = filters.IsOpen.Value;
+        if (filters.Latitude.HasValue) queryParams["Latitude"] = filters.Latitude.Value;
+        if (filters.Longitude.HasValue) queryParams["Longitude"] = filters.Longitude.Value;
+        if (filters.Distance.HasValue) queryParams["Distance"] = filters.Distance.Value;
 
-        if (!string.IsNullOrEmpty(filters.SortField))
-            queryParams["SortField"] = filters.SortField;
-        if (!string.IsNullOrEmpty(filters.SortOrder))
-            queryParams["SortOrder"] = filters.SortOrder;
+        if (filters.IsOpen == true) queryParams["IsOpen"] = "true";
+
+        if (!string.IsNullOrEmpty(filters.SortField)) queryParams["SortField"] = filters.SortField;
+        if (!string.IsNullOrEmpty(filters.SortOrder)) queryParams["SortOrder"] = filters.SortOrder;
 
         var queryParts = new List<string>();
-
         queryParts.AddRange(queryParams
             .Where(kvp => kvp.Value != null)
             .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
@@ -271,99 +296,4 @@
 
         return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
-
-    /// <summary>
-    /// Вызывается при изменении поля сортировки
-    /// </summary>
-    private void HandleSortFieldChange(ChangeEventArgs e)
-    {
-        var newSortField = e.Value?.ToString() ?? "name";
-
-        // Клонируем текущие фильтры, меняем поле и сбрасываем на 1 страницу
-        var newFilters = new PlaceFilterParams
-        {
-            Q = currentFilters.Q,
-            Category = currentFilters.Category,
-            Province = currentFilters.Province,
-            City = currentFilters.City,
-            PerPage = currentFilters.PerPage,
-            Page = 1, // Сброс на 1 страницу
-            Tags = currentFilters.Tags,
-            Latitude = currentFilters.Latitude,
-            Longitude = currentFilters.Longitude,
-            Distance = currentFilters.Distance,
-            IsOpen = currentFilters.IsOpen,
-            SortField = newSortField, // <-- Новое значение
-            SortOrder = currentFilters.SortOrder
-        };
-        Navigation.NavigateTo(GetQueryString(newFilters));
-    }
-
-    /// <summary>
-    /// Вспомогательный метод для проверки текущего порядка сортировки.
-    /// "ASC" - это по умолчанию, поэтому null или "ASC" - это true
-    /// </summary>
-    private bool IsSortAscending()
-    {
-        return string.IsNullOrEmpty(currentFilters.SortOrder) ||
-               currentFilters.SortOrder.Equals("ASC", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Вызывается при НАЖАТИИ на новую кнопку-иконку.
-    /// Он "переворачивает" текущий порядок.
-    /// </summary>
-    private void ToggleSortOrder()
-    {
-        // "Переворачиваем" значение
-        var newSortOrder = IsSortAscending() ? "DESC" : "ASC";
-
-        // Клонируем текущие фильтры, меняем порядок и сбрасываем на 1 страницу
-        var newFilters = new PlaceFilterParams
-        {
-            Q = currentFilters.Q,
-            Category = currentFilters.Category,
-            Province = currentFilters.Province,
-            City = currentFilters.City,
-            PerPage = currentFilters.PerPage,
-            Page = 1, // Сброс на 1 страницу
-            Tags = currentFilters.Tags,
-            Latitude = currentFilters.Latitude,
-            Longitude = currentFilters.Longitude,
-            Distance = currentFilters.Distance,
-            IsOpen = currentFilters.IsOpen,
-            SortField = currentFilters.SortField,
-            SortOrder = newSortOrder // <-- Новое значение
-        };
-        Navigation.NavigateTo(GetQueryString(newFilters));
-    }
-
-    /// <summary>
-    /// Вызывается при изменении кол-ва элементов на странице
-    /// </summary>
-    private void HandlePerPageChange(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int newPerPage))
-        {
-            // Клонируем текущие фильтры, меняем PerPage и сбрасываем на 1 страницу
-            var newFilters = new PlaceFilterParams
-            {
-                Q = currentFilters.Q,
-                Category = currentFilters.Category,
-                Province = currentFilters.Province,
-                City = currentFilters.City,
-                PerPage = newPerPage, // <-- Новое значение
-                Page = 1, // Сброс на 1 страницу
-                Tags = currentFilters.Tags,
-                Latitude = currentFilters.Latitude,
-                Longitude = currentFilters.Longitude,
-                Distance = currentFilters.Distance,
-                IsOpen = currentFilters.IsOpen,
-                SortField = currentFilters.SortField,
-                SortOrder = currentFilters.SortOrder
-            };
-            Navigation.NavigateTo(GetQueryString(newFilters));
-        }
-    }
-
 }

@@ -1,20 +1,83 @@
 ﻿@page "/"
+@using GuiderBlazor.Shared.Models
+@using GuiderBlazor.Shared.Services
 @using GuiderBlazor.Client.Components
-@* @attribute [StreamRendering] *@
+@inject IPlacesService PlacesService
+@inject NavigationManager Navigation
 
-@* SEO: Заголовок вкладки браузера *@
+@* Включаем потоковый рендеринг, чтобы пользователь увидел скелет страницы сразу *@
+@attribute [StreamRendering]
+
 <PageTitle>Guider - Costa Rica Business & Services Directory</PageTitle>
 
 <div class="home-container">
-    @* Семантическая секция для заголовка *@
     <section class="hero-section" aria-labelledby="hero-title">
-        @* H1 важен для Google, но мы стилизуем его компактно через CSS *@
         <h1 id="hero-title">
             Local Business & Services in Costa Rica
         </h1>
     </section>
-        
-    @* Список мест *@
-    <PlacesList />
+
+    @* Передаем загруженные данные вниз в презентационный компонент *@
+    <PlacesList PlacesResponse="placesResponse"
+                CurrentFilters="currentFilters"
+                IsLoading="isLoading" />
 </div>
+
+@code {
+    // 1. ПАРАМЕТРЫ URL (Перенесены из PlacesList)
+    [SupplyParameterFromQuery] public string? Q { get; set; }
+    [SupplyParameterFromQuery] public string? Category { get; set; }
+    [SupplyParameterFromQuery] public string? Province { get; set; }
+    [SupplyParameterFromQuery] public string? City { get; set; }
+    [SupplyParameterFromQuery] public int Page { get; set; } = 1;
+    [SupplyParameterFromQuery] public int PerPage { get; set; } = 4;
+
+    // Гео-параметры
+    [SupplyParameterFromQuery] public double? Latitude { get; set; }
+    [SupplyParameterFromQuery] public double? Longitude { get; set; }
+    [SupplyParameterFromQuery] public double? Distance { get; set; }
+
+    [SupplyParameterFromQuery] public string? SortField { get; set; }
+    [SupplyParameterFromQuery] public string? SortOrder { get; set; }
+    [SupplyParameterFromQuery] public bool? IsOpen { get; set; }
+
+    [SupplyParameterFromQuery(Name = "Tags")] public string[]? Tags { get; set; }
+
+    // 2. ВНУТРЕННЕЕ СОСТОЯНИЕ
+    private PlacesResponse? placesResponse;
+    private PlaceFilterParams currentFilters = new();
+    private bool isLoading = true;
+
+    // 3. ЗАГРУЗКА ДАННЫХ
+    // Используем OnInitializedAsync, так как это SSR.
+    // Каждый новый URL = новый запрос страницы = новый вызов этого метода.
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        // Собираем фильтры из свойств [SupplyParameterFromQuery]
+        currentFilters = new PlaceFilterParams
+        {
+            Q = Q,
+            Category = Category,
+            Province = Province,
+            City = City,
+            Page = Page < 1 ? 1 : Page,
+            PerPage = PerPage < 1 ? 4 : PerPage,
+            Status = "active",
+            Tags = Tags?.ToList(),
+            Latitude = Latitude,
+            Longitude = Longitude,
+            Distance = Distance,
+            SortField = SortField,
+            SortOrder = SortOrder,
+            IsOpen = IsOpen
+        };
+
+        // Запрашиваем данные у сервиса
+        placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
+
+        isLoading = false;
+    }
+}
 

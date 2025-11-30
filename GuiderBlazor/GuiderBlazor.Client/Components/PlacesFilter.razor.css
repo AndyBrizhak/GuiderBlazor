@@ -1,4 +1,7 @@
-﻿.filter-container {
+﻿/* =========================================
+   1. БАЗОВЫЕ КОНТЕЙНЕРЫ
+========================================= */
+.filter-container {
     padding: 0;
     margin-bottom: 0.5rem;
 }
@@ -9,7 +12,7 @@
     transition: background-color 0.3s ease;
     border-radius: 8px;
     padding: 1rem;
-    overflow: hidden; /* ⬅️ Важно для скроллеров */
+    overflow: visible; /* Важно: чтобы выпадающие элементы не обрезались, если нужно */
 }
 
 @media (min-width: 768px) {
@@ -19,892 +22,189 @@
 }
 
 /* =========================================
-    СТИЛИ ДЛЯ КАТЕГОРИЙ
-=========================================
-*/
-.category-scroller {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    gap: 8px;
-    margin: 0 -1rem 0 -1rem; 
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color); 
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-}
-/* Медиа-запрос для десктопа */
-@media (min-width: 768px) {
-    .category-scroller {
-        margin: 0 -1.5rem 0 -1.5rem;
-        padding: 1rem 1.5rem;
-    }
-}
+   2. БЛОК ПОИСКА (SEARCH BAR)
+========================================= */
 
-
-.category-scroller::-webkit-scrollbar {
-    display: none;
-}
-
-.category-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 6px 12px;
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-    .category-btn svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .category-btn:hover {
-        background: var(--bg-surface-hover);
-        border-color: var(--text-secondary);
-    }
-
-    .category-btn.active {
-        background-color: #007bff;
-        color: #ffffff;
-        border-color: #007bff;
-    }
-
-
-/* =========================================
-    СТИЛИ ДЛЯ HEADER (ADVANCED FILTERS)
-=========================================
-*/
-.filter-header {
-    padding: 0.75rem 0;
-    border-radius: 8px;
-    transition: background-color 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ сверху */
-    margin-top: 0.5rem; /* Было неявно 1rem от province-scroller */
-}
-
-    .filter-header:hover {
-        background-color: var(--bg-surface-hover);
-    }
-
-    .filter-header h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: var(--text-primary);
-    }
-
-.filter-toggle-icon {
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: #007bff;
-}
-
-    .filter-toggle-icon svg {
-        transition: transform 0.3s ease;
-        width: 20px;
-        height: 20px;
-    }
-
-    .filter-toggle-icon.is-open svg {
-        transform: rotate(180deg);
-    }
-
-
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.form-group {
-    margin-bottom: 0.75rem;
-}
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--text-primary);
-    }
-
-    .form-group small {
-        display: block;
-        margin-top: 0.25rem;
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-    }
-
-.form-control {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-}
-
-    .form-control:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-
-.button-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: #fff;
-}
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    .btn-primary:disabled {
-        background-color: #a0a0a0;
-        cursor: not-allowed;
-    }
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: #fff;
-}
-
-    .btn-secondary:hover {
-        background-color: #5a6268;
-    }
-
-
-/*
-=========================================
-    СТИЛИ ДЛЯ СКРОЛЛЕРА ПРОВИНЦИЙ
-=========================================
-*/
-.province-scroller {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    gap: 8px;
-    /* ⬇️ ИЗМЕНЕНИЕ: Уменьшаем отступ и убираем рамку сверху */
-    margin: 0 -1rem; /* Убираем вертикальные отступы */
-    padding: 0.75rem 1rem;
-    /* border-top: 1px solid var(--border-color); */ /* Убрано */
-    border-bottom: 1px solid var(--border-color);
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-}
-/* Медиа-запрос для десктопа */
-@media (min-width: 768px) {
-    .province-scroller {
-        margin: 0 -1.5rem;
-        padding: 0.75rem 1.5rem;
-    }
-}
-
-
-.province-scroller::-webkit-scrollbar {
-    display: none;
-}
-
-/* ⬇️ ИЗМЕНЕНИЕ: Объединяем селекторы для меток */
-.province-scroller .scroller-label,
-.category-scroller .scroller-label {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-/* "Чипы" (кнопки) провинций */
-.province-chip {
-    flex-shrink: 0;
-    display: inline-block;
-    padding: 6px 12px;
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-    .province-chip:hover {
-        background: var(--bg-surface-hover);
-        border-color: var(--text-secondary);
-    }
-
-    /* Активный "чип" */
-    .province-chip.active {
-        background-color: #007bff;
-        color: #ffffff;
-        border-color: #007bff;
-    }
-
-.section-title {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-top: 1rem;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-}
-
-/*
-=========================================
-    СТИЛИ ДЛЯ СКРОЛЛЕРА ГОРОДОВ
-=========================================
-*/
-.city-scroller {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    gap: 8px;
-    margin: 0 -1rem;
+/* Мобильный вид (по умолчанию) */
+.search-bar-wrapper {
+    /* Негативные отступы, чтобы фон прилегал к краям карточки */
+    margin: -1rem -1rem 0 -1rem;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-}
-
-@media (min-width: 768px) {
-    .city-scroller {
-        margin: 0 -1.5rem;
-        padding: 0.75rem 1.5rem;
-    }
-}
-
-.city-scroller::-webkit-scrollbar {
-    display: none;
-}
-
-/* Обновляем селектор для меток */
-.province-scroller .scroller-label,
-.category-scroller .scroller-label,
-.city-scroller .scroller-label,
-.tags-toggle .scroller-label {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-
-/*
-=========================================
-    НОВЫЙ СТИЛЬ ДЛЯ АКТИВНОЙ КНОПКИ "All"
-=========================================
-*/
-.chip-all.active {
-    background-color: var(--bg-surface); /* Прозрачный фон */
-    color: #007bff; /* Цветной текст */
-    border-color: #007bff; /* Цветная рамка */
-}
-
-    .chip-all.active:hover {
-        background-color: var(--bg-surface-hover);
-    }
-
-/*
-=========================================
-    КОМПАКТНЫЙ FORM CONTROL ДЛЯ ТЕГОВ
-=========================================
-*/
-.form-control-compact {
-    padding-top: 6px; /* Тот же отступ, что у .province-chip */
-    padding-bottom: 6px; /* Тот же отступ, что у .province-chip */
-    font-size: 0.9rem; /* Тот же размер шрифта, что у .province-chip */
-    /* Остальные стили (ширина, рамка и т.д.) 
-       возьмутся из .form-control */
-}
-
-/*
-=========================================
-    НОВЫЕ СТИЛИ ДЛЯ TAGS ВНУТРИ FILTER-CARD
-=========================================
-*/
-
-/* 1. Заголовок "Tags", стилизованный как скроллер */
-.tags-toggle {
-    /* Layout из .filter-header */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    /* Отступы и рамка из .city-scroller */
-    margin: 0 -1rem;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.2s;
-}
-
-@media (min-width: 768px) {
-    .tags-toggle {
-        margin: 0 -1.5rem;
-        padding: 0.5rem 1.5rem;
-    }
-}
-
-.tags-toggle:hover {
-    background-color: var(--bg-surface-hover);
-}
-
-/* 2. Контент "Tags", стилизованный как скроллер */
-.tags-content {
-    /* Отступы и рамка из .city-scroller */
-    margin: 0 -1rem;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    /* Логика скрытия/показа (вместо grid) */
-    display: none;
-    overflow: hidden;
-    background-color: var(--bg-surface-hover); /* Легкий фон */
-}
-
-@media (min-width: 768px) {
-    .tags-content {
-        margin: 0 -1.5rem;
-        padding: 0.5rem 1.5rem;
-    }
-}
-
-.tags-content.is-open {
+    background: var(--bg-surface-hover); /* Чуть выделяем фон поиска */
     display: block;
 }
 
-/* Используем flex для полей */
-.tags-content .form-group {
-    display: flex;
-    flex-wrap: wrap; /* Для мобильных */
-    gap: 8px;
-    margin-bottom: 0; /* Убираем лишний отступ */
-}
-
-    .tags-content .form-group .form-control-compact {
-        flex-grow: 1; /* Поля делят место */
-        min-width: 150px; /* Мин. ширина для полей */
+    /* Форма как Flex-контейнер */
+    .search-bar-wrapper form {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
     }
 
-    /* Скрываем подсказку, для нее нет места */
-    .tags-content .form-group small {
-        display: none;
+    /* Поле ввода растягивается */
+    .search-bar-wrapper .form-group {
+        flex-grow: 1;
+        margin-bottom: 0;
     }
 
+    .search-bar-wrapper .form-control {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+    }
 
-    /*Стили для облака тегов*/
-.tag-cloud-container {
-    display: flex;
-    flex-wrap: wrap; /* Это ключ к "облаку" - теги будут переноситься */
-    gap: 8px; /* Расстояние между тегами */
-    margin-bottom: 12px; /* Отступ снизу */
+    /* Группа кнопок на мобильном (иконки) */
+    .search-bar-wrapper .button-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+        .search-bar-wrapper .button-group .btn {
+            flex-grow: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            width: 42px; /* Квадратные/Круглые кнопки */
+            height: 42px;
+            border-radius: 50%;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            /* Скрываем текст на мобильном */
+            .search-bar-wrapper .button-group .btn span:last-child {
+                display: none;
+            }
+
+            .search-bar-wrapper .button-group .btn:hover {
+                background: var(--bg-surface-hover);
+                border-color: var(--text-secondary);
+            }
+
+/* Десктопный вид (от 768px) */
+@media (min-width: 768px) {
+    .search-bar-wrapper {
+        margin: -1.5rem -1.5rem 0 -1.5rem; /* Большие отступы */
+        padding: 1.5rem;
+    }
+
+        .search-bar-wrapper .button-group {
+            gap: 0.75rem;
+        }
+
+            .search-bar-wrapper .button-group .btn {
+                width: auto;
+                height: auto;
+                border-radius: 6px; /* Обычные кнопки */
+                padding: 0.6rem 1.2rem;
+                gap: 0.5rem;
+                background-color: #007bff; /* Primary цвет */
+                color: #fff;
+                border: none;
+            }
+
+                /* Кнопка сброса (серый) */
+                .search-bar-wrapper .button-group .btn.btn-secondary {
+                    background-color: #6c757d;
+                    color: #fff;
+                }
+
+                /* Показываем текст */
+                .search-bar-wrapper .button-group .btn span:last-child {
+                    display: inline;
+                }
 }
 
-.chip-tag {
-    /* Стилизация под "чип" или "тег" */
-    display: inline-flex;
+
+/* =========================================
+   3. БЛОК БЫСТРЫХ ДЕЙСТВИЙ (Geo + Open)
+========================================= */
+.quick-actions-wrapper {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.5;
-    background-color: var(--bg-surface); 
-    color: var(--text-primary); 
-    border: 1px solid var(--border-color); 
-    cursor: pointer;
-    transition: all 0.2s ease;
-    /* Сброс стилей кнопки по умолчанию */
-    appearance: none;
-    text-decoration: none;
-    box-shadow: none;
-}
-
-    .chip-tag:hover {
-        background-color: var(--bg-surface-hover); 
-        border-color: var(--text-secondary); /*  (как у .province-chip:hover) */
-    }
-
-    .chip-tag.active:not(.chip-all) {
-        /* Стиль для ВЫБРАННОГО тега (но НЕ для "All") */
-        /* Копируем стили из .province-chip.active */
-        background-color: #007bff; 
-        color: #ffffff; 
-        border-color: #007bff; 
-    }
-
-    .chip-tag.chip-all.active {
-        /*  Стиль для кнопки "All", когда она активна */
-        /* Копируем стили из .chip-all.active (строка 290) */
-        background-color: var(--bg-surface); 
-        color: #007bff; 
-        border-color: #007bff; 
-    }
-
-    .chip-tag .chip-remove {
-        /* "Крестик" для удаления тега */
-        margin-left: 6px;
-        font-size: 1.2rem;
-        font-weight: bold;
-        line-height: 1;
-    }
-
-    .chip-tag.active:not(.chip-all):hover {
-        /*  Стиль :hover для ВЫБРАННОГО тега */
-        background-color: #0056b3; /*  (темно-синий) */
-        border-color: #0056b3; 
-    }
-
-    
-
-    
-
-    
-
-    .chip-tag.disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-/*
-=========================================
-    НОВЫЕ СТИЛИ ДЛЯ "ВКЛАДОК" City / Geo
-=========================================
-*/
-
-/* Этот wrapper нужен, чтобы рамка .city-cloud-wrapper 
-  (которая имеет отрицательные отступы) 
-  не вылезала за пределы .filter-card 
-*/
-.location-controls-wrapper {
+    gap: 1rem;
+    /* Отступы как у скроллеров */
     margin: 0 -1rem;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
 }
 
 @media (min-width: 768px) {
-    .location-controls-wrapper {
+    .quick-actions-wrapper {
         margin: 0 -1.5rem;
         padding: 0.75rem 1.5rem;
+        justify-content: flex-start;
     }
 }
 
-/* 1. Контейнер для двух кнопок */
-.location-controls {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
-    align-items: stretch; /* Делаем кнопки одинаковой высоты */
-}
-
-/* 2. Блок кнопки "City" (растягивается) */
-.city-filter-block {
-    flex-grow: 1;
-}
-
-/* 3. Блок кнопки "Geo" (фиксированный) */
-.geo-filter-block {
-    flex-shrink: 0;
-}
-
-/* 4. Кнопка "City" - выглядит как .tags-toggle */
-.filter-toggle-btn {
-    display: flex;
-    justify-content: space-between;
+/* Кнопка "Find Near Me" */
+.hero-geo-btn {
+    display: inline-flex;
     align-items: center;
-    width: 100%;
-    padding: 6px 12px;
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
+    gap: 0.5rem;
+    padding: 6px 16px;
     border-radius: 16px;
     font-size: 0.9rem;
     font-weight: 500;
-    text-decoration: none;
-    transition: all 0.2s;
     cursor: pointer;
-    text-align: left;
-}
-
-    .filter-toggle-btn:hover {
-        background: var(--bg-surface-hover);
-        border-color: var(--text-secondary);
-    }
-
-    .filter-toggle-btn.is-active {
-        border-color: #007bff;
-        box-shadow: 0 0 0 1px #007bff;
-    }
-
-    .filter-toggle-btn .filter-toggle-icon {
-        color: var(--text-secondary);
-        transition: transform 0.3s ease;
-    }
-
-        .filter-toggle-btn .filter-toggle-icon.is-open svg {
-            transform: rotate(180deg);
-        }
-
-
-/*  "Геройская" кнопка Geo (теперь как "чип") */
-.hero-geo-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    height: 100%;
-    padding: 6px 12px;
-    /*  Стили по умолчанию (как у чипов) --- ⬇️ */
     background-color: var(--bg-surface);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
 }
 
-    /*  Ховер для НЕАКТИВНОГО состояния --- ⬇️ */
-    .hero-geo-btn:hover:not(.active) {
+    .hero-geo-btn:hover {
         background: var(--bg-surface-hover);
         border-color: var(--text-secondary);
-        color: var(--text-primary);
     }
 
-    /*  Активное состояние (синий фон) --- ⬇️ */
     .hero-geo-btn.active {
         background-color: #007bff;
         color: #ffffff;
         border-color: #007bff;
     }
 
-        /*  Ховер для АКТИВНОГО состояния --- ⬇️ */
         .hero-geo-btn.active:hover {
             background-color: #0056b3;
-            border-color: #0056b3;
         }
 
-    .hero-geo-btn:disabled,
-    .hero-geo-btn.is-loading {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-
-/* =========================================
-    НОВЫЕ СТИЛИ ДЛЯ ОБЛАКА ГОРОДОВ
-=========================================
-*/
-
-/* 1. Сворачиваемый контейнер */
-.city-cloud-wrapper {
-    /* Логика из .tags-content */
-    display: none;
-    overflow: hidden;
-    /* Убираем отступы, чтобы он был "под" кнопками */
-    margin: 0;
-    padding: 0;
-    background-color: transparent;
-}
-
-    .city-cloud-wrapper.is-open {
-        display: block;
-        /* Добавляем отступ сверху, когда открыто */
-        padding-top: 1rem;
-    }
-
-/* 2. Контейнер с "чипами" (облако) */
-.city-cloud-content {
-    /* Логика из .tag-cloud-container */
+/* Переключатель "Open Now" */
+.toggle-switch-link {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
-    margin-bottom: 0;
+    text-decoration: none;
+    cursor: pointer;
+    color: var(--text-primary);
 }
 
-    /* Заставляем <a> (ссылки городов) выглядеть 
-  как <button> (теги) для единообразия 
-*/
-    .city-cloud-content .chip-tag {
-        /* Стилизация под "чип" или "тег" */
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 10px;
-        border-radius: 16px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        line-height: 1.5;
-        background-color: var(--bg-surface);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-    }
-
-        .city-cloud-content .chip-tag:hover {
-            background-color: var(--bg-surface-hover);
-            border-color: var(--text-secondary);
-        }
-
-        .city-cloud-content .chip-tag.active {
-            background-color: #007bff;
-            color: #ffffff;
-            border-color: #007bff;
-        }
-
-        /* Стиль для "All Cities" (активный) */
-        .city-cloud-content .chip-tag.chip-all.active {
-            background-color: var(--bg-surface);
-            color: #007bff;
-            border-color: #007bff;
-        }
-
-        .city-cloud-content .chip-tag.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background-color: var(--bg-surface-hover);
-        }
-
-    .city-cloud-content .no-data {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        padding: 4px 0;
-    }
-
-/*
-=========================================
-    ДОПОЛНЕНИЯ ДЛЯ ГЕО-КНОПКИ
-=========================================
-*/
-
-/* Стилизуем иконку и спиннер */
-.hero-geo-btn .geo-icon {
-    width: 16px;
-    height: 16px;
-    /* Убедимся, что цвет иконки соответствует тексту */
-    stroke: currentColor;
-}
-
-/* Состояние ошибки */
-.hero-geo-btn.is-error {
-    background-color: #dc3545; /* Красный цвет */
-    border-color: #dc3545;
-}
-
-    .hero-geo-btn.is-error:hover {
-        background-color: #c82333;
-        border-color: #c82333;
-    }
-
-
-/* Маленький спиннер для кнопки */
-.spinner-sm {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* =========================================
-     БЛОК ПОИСКА (Mobile-First)
-=========================================
-*/
-
-/* * СТИЛИ ПО УМОЛЧАНИЮ (МОБИЛЬНЫЕ) 
- * Компактный вид: [ Input G ] [ O ] [ O ]
-*/
-.search-bar-wrapper {
-    margin: -1rem -1rem 0 -1rem;
-    padding: 0.75rem 1rem; /* ⬅️ Компактные отступы */
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-surface-hover);
-    /*  Включаем Flex-строку ⬇️ */
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-    /* Заставляем контейнер инпута расти */
-    .search-bar-wrapper .form-group {
-        flex-grow: 1;
-        margin-bottom: 0;
-    }
-
-    /* Стили поля ввода (без изменений) */
-    .search-bar-wrapper .form-control {
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-    }
-
-    /* Группа кнопок (мобильный вид) */
-    .search-bar-wrapper .button-group {
-        margin-top: 0; /* ⬅️ Убран отступ */
-        gap: 0.5rem; /* ⬅️ Уменьшен отступ */
-        flex-shrink: 0; /* ⬅️ Не сжиматься */
-    }
-
-        /* Кнопки (мобильный вид - иконки) */
-        .search-bar-wrapper .button-group .btn {
-            flex-grow: 0; /* ⬅️ НЕ расти */
-            flex-basis: auto;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            /*  Делаем круглые кнопки-иконки ⬇️ */
-            padding: 0;
-            width: 42px; /* Подбираем под высоту инпута */
-            height: 42px;
-            border-radius: 50%; /* Круглые */
-            /* Стили темы (из прошлого шага) */
-            background: var(--bg-surface);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-            /*  Скрываем текст "Search" / "Reset" на мобильных ⬇️ */
-            .search-bar-wrapper .button-group .btn span:last-child {
-                display: none;
-            }
-
-            /* Ховер для кнопок-иконок */
-            .search-bar-wrapper .button-group .btn:hover {
-                background: var(--bg-surface-hover);
-                border-color: var(--text-secondary);
-                color: var(--text-primary);
-            }
-
-
-/* * СТИЛИ ДЛЯ ДЕСКТОПА (от 768px и шире) 
- * Возвращаем "двухэтажный" вид
-*/
-@media (min-width: 768px) {
-
-    /* Возвращаем блочную модель */
-    .search-bar-wrapper {
-        display: block; /* ⬅️ ОТМЕНА flex */
-        margin: -1.5rem -1.5rem 0 -1.5rem;
-        padding: 1.5rem;
-    }
-
-        .search-bar-wrapper .form-group {
-            flex-grow: 0; /* ⬅️ ОТМЕНА */
-        }
-
-        /* Возвращаем отступ кнопкам */
-        .search-bar-wrapper .button-group {
-            margin-top: 0.75rem; /* ⬅️ ВОЗВРАТ */
-            gap: 0.75rem; /* ⬅️ ВОЗВРАТ */
-        }
-
-            /* Возвращаем 50/50 кнопки с текстом */
-            .search-bar-wrapper .button-group .btn {
-                flex-grow: 1; /* ⬅️ ВОЗВРАТ */
-                flex-basis: 0; /* ⬅️ ВОЗВРАТ */
-
-                width: auto; /* ⬅️ ОТМЕНА */
-                height: auto; /* ⬅️ ОТМЕНА */
-                border-radius: 16px; /* ⬅️ ВОЗВРАТ */
-                padding: 0.6rem 1.2rem; /* ⬅️ ВОЗВРАТ */
-                gap: 0.5rem; /* ⬅️ ВОЗВРАТ (был в старой версии) */
-            }
-
-                /*  Показываем текст обратно ⬇️ */
-                .search-bar-wrapper .button-group .btn span:last-child {
-                    display: inline;
-                }
-}
-
-/* =========================================
-    СТИЛИ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ "OPEN NOW"
-=========================================
-*/
-.open-now-filter-block {
-    flex-shrink: 0; /* Не сжиматься */
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    /* Небольшой отступ от кнопки "Find Near Me" */
-    padding-left: 0.5rem;
-}
-
-    .open-now-filter-block .toggle-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--text-primary);
-        cursor: pointer;
-        user-select: none;
-    }
-
-/* Сам переключатель */
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 44px; /* Уменьшенная ширина */
-    height: 24px; /* Уменьшенная высота */
+    width: 44px;
+    height: 24px;
 }
 
-    /* Прячем стандартный checkbox */
     .toggle-switch input {
         opacity: 0;
         width: 0;
         height: 0;
     }
 
-/* "Ползунок" */
 .slider {
     position: absolute;
     cursor: pointer;
@@ -920,10 +220,10 @@
     .slider:before {
         position: absolute;
         content: "";
-        height: 18px; /* Уменьшено */
-        width: 18px; /* Уменьшено */
-        left: 3px; /* Уменьшено */
-        bottom: 3px; /* Уменьшено */
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
         background-color: white;
         transition: .4s;
         border-radius: 50%;
@@ -933,11 +233,213 @@ input:checked + .slider {
     background-color: #007bff;
 }
 
-input:focus + .slider {
-    box-shadow: 0 0 1px #007bff;
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+
+.toggle-label {
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
-input:checked + .slider:before {
-    /* (44 - 18 - 3 - 3) = 20 */
-    transform: translateX(20px);
+
+/* =========================================
+   4. СКРОЛЛЕРЫ (Категории, Провинции)
+========================================= */
+.category-scroller,
+.province-scroller {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    scrollbar-width: none; /* Firefox */
+}
+
+    .category-scroller::-webkit-scrollbar,
+    .province-scroller::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+@media (min-width: 768px) {
+    .category-scroller,
+    .province-scroller {
+        margin: 0 -1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+.scroller-label {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+/* Кнопки-чипы (общий стиль) */
+.category-btn,
+.province-chip,
+.chip-tag {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .category-btn:hover,
+    .province-chip:hover,
+    .chip-tag:hover {
+        background: var(--bg-surface-hover);
+        border-color: var(--text-secondary);
+    }
+
+    .category-btn.active,
+    .province-chip.active,
+    .chip-tag.active:not(.chip-all) {
+        background-color: #007bff;
+        color: #fff;
+        border-color: #007bff;
+    }
+
+/* "Чип" для сброса (All) - когда активен, он прозрачный, но с синим текстом */
+.chip-all.active {
+    background-color: var(--bg-surface);
+    color: #007bff;
+    border-color: #007bff;
+}
+
+/* =========================================
+   5. ВЫБОР ГОРОДА (LOCATION CONTROLS)
+========================================= */
+.location-controls-wrapper {
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+    .location-controls-wrapper {
+        margin: 0 -1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+.location-controls {
+    display: block;
+}
+
+.city-filter-block {
+    width: 100%;
+}
+
+/* Кнопка-спойлер (выглядит как инпут) */
+.filter-toggle-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Облако городов (выпадающее вниз, сдвигает контент) */
+.city-cloud-wrapper {
+    display: none; /* Скрыто по умолчанию */
+    margin-top: 1rem;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+    .city-cloud-wrapper.is-open {
+        display: block;
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.city-cloud-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* =========================================
+   6. ТЕГИ (TAGS)
+========================================= */
+.tags-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin: 0 -1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+    .tags-toggle {
+        margin: 0 -1.5rem;
+        padding: 0.5rem 1.5rem;
+    }
+}
+
+.tags-content {
+    display: none;
+    margin: 0 -1rem;
+    padding: 1rem;
+    background-color: var(--bg-surface-hover);
+    border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+    .tags-content {
+        margin: 0 -1.5rem;
+        padding: 1rem 1.5rem;
+    }
+}
+
+.tags-content.is-open {
+    display: block;
+}
+
+.tag-cloud-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip-remove {
+    margin-left: 6px;
+    font-weight: bold;
 }

@@ -4,14 +4,11 @@
     padding: 0.5rem 0;
 }
 
-@/*media (min-width: 768px) {
-    .places-list-container {
-        padding: 0.5rem 1rem;
-    }
-}*/
-
 .loading {
     padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .spinner {
@@ -21,13 +18,24 @@
     width: 50px;
     height: 50px;
     animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .places-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
 }
 
 @media (min-width: 768px) {
@@ -42,211 +50,167 @@
     color: var(--text-secondary);
 }
 
-/* --- Стили пагинации --- */
-
-.pagination {
-    background: var(--bg-surface);
-    box-shadow: 0 2px 4px var(--shadow-color);
-    padding: 0.5rem;
-    border-radius: 12px;
-}
-
-.pagination-controls {
+/* =========================================
+    СТИЛИ ДЛЯ СОРТИРОВКИ (Mobile-First Fix)
+=========================================
+*/
+.sort-controls {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.25rem;
-    flex-wrap: nowrap;
+    flex-wrap: nowrap; /* 1. Запрещаем перенос на новую строку */
+    align-items: center; /* 2. Выравниваем все по центру вертикально */
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    background-color: var(--bg-surface);
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color); /* Опционально: рамка вокруг блока сортировки */
 }
 
-.pagination-info {
-    text-align: center;
-    margin-bottom: 0;
-    padding: 0 0.5rem;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    white-space: nowrap;
-}
+    /* Форма растягивается, чтобы занять место */
+    .sort-controls form {
+        flex-grow: 1;
+        min-width: 0;
+    }
 
-.btn-page {
-    padding: 0;
-    width: 38px;
+    /* Внутри формы делаем Flex, чтобы Label и Select были в ряд */
+    .sort-controls .form-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0; /* Убираем отступ снизу */
+    }
+
+    /* Метка "Sort by:" */
+    .sort-controls label {
+        margin-bottom: 0;
+        white-space: nowrap; /* Текст не переносится */
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    /* Выпадающий список */
+    .sort-controls .form-control {
+        width: 100%;
+        padding: 0.4rem 2rem 0.4rem 0.5rem; /* Отступ справа для стрелки */
+        font-size: 0.9rem;
+        background-color: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        height: 38px; /* Фиксируем высоту */
+    }
+
+/* Кнопка направления сортировки */
+.btn-sort-order {
+    flex-shrink: 0; /* Не сжиматься */
+    width: 38px; /* Квадратная кнопка */
     height: 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--border-color);
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-    text-decoration: none; /* ⬆️ Добавлено для <a> */
-}
-
-    .btn-page svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .btn-page:hover:not(.disabled) { /* ⬆️ Изменено :disabled на .disabled */
-        background: var(--bg-surface-hover);
-        border-color: #007bff;
-        color: #007bff;
-    }
-
-    /*  СТИЛЬ ДЛЯ <a> ССЫЛОК ⬇️ --- */
-    .btn-page.disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-        pointer-events: none; /* ⬆️ Запрещает клики */
-    }
-
-/* =========================================
-    СТИЛИ ДЛЯ СОРТИРОВКИ
-=========================================
-*/
-.sort-controls {
-    display: flex;
-    flex-wrap: wrap; /* Для мобильных */
-    gap: 1rem;
-    margin-bottom: 0.5rem; /* Отступ от сетки */
-}
-
-    /* Адаптируем .form-group из PlacesFilter.css */
-    .sort-controls .form-group {
-        flex-grow: 1; /* Растягиваем на 50% */
-        flex-basis: 150px; /* Мин. ширина */
-        margin-bottom: 0;
-    }
-
-    .sort-controls label {
-        display: block;
-        margin-bottom: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-    }
-
-    /* Адаптируем .form-control из PlacesFilter.css */
-    .sort-controls .form-control {
-        width: 100%;
-        padding: 0.5rem;
-        font-size: 0.9rem;
-        background: var(--bg-surface);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-    }
-
-/* =========================================
-     СТИЛИ ДЛЯ "RESULTS PER PAGE"
-=========================================
-*/
-
-/* * Контейнер для селектора.
- * Он будет "вклиниваться" между кнопками и 
- * информацией о страницах.
-*/
-.pagination-per-page {
-    display: none; /* Скрыто на мобильных */
-}
-
-/* Показываем на десктопах (планшетах) */
-@media (min-width: 576px) {
-    .pagination-per-page {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        /* Отступ, чтобы отделить от кнопок */
-        padding: 0 0.5rem;
-    }
-
-        .pagination-per-page label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-        }
-
-        /* Стилизуем select под окружение */
-        .pagination-per-page .form-control {
-            width: auto;
-            padding: 0.3rem 1.5rem 0.3rem 0.5rem; /* Отступ для стрелки */
-            font-size: 0.875rem;
-            background: var(--bg-surface);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            -moz-appearance: none;
-            -webkit-appearance: none;
-            appearance: none;
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1em 1em;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-        }
-}
-
-/* =========================================
-    КОМПАКТНАЯ СОРТИРОВКА
-=========================================
-*/
-
-.sort-controls {
-    
-    gap: 0.5rem; /* Уменьшаем отступ */
-    align-items: flex-end; /* Выравниваем селект и кнопку по низу */
-}
-
-    .sort-controls .form-group {
-        /* * Заставляем селект занять всё место, 
-     * оставив место для кнопки 
-     */
-        flex-grow: 1; /* Растягиваем */
-        flex-basis: 0; /* Начинаем с 0 */
-        min-width: 150px; /* Мин. ширина для селекта */
-    }
-
-/* кнопка-переключатель */
-.btn-sort-order {
-    /* * Копируем стили из .sort-controls .form-control 
-     * для 100% совпадения
-     */
-    padding: 0.5rem;
-    font-size: 0.9rem;
     background: var(--bg-surface);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    /* Устанавливаем размер */
-    flex-shrink: 0; /* Не сжиматься */
-    height: 38px; /* Подбираем высоту под <select> */
-    width: 42px; /* Чуть шире высоты */
-    /* Центрируем иконку */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
 }
 
     .btn-sort-order:hover {
-        border-color: #007bff;
         background: var(--bg-surface-hover);
+        border-color: #007bff;
+        color: #007bff;
     }
 
     .btn-sort-order svg {
         width: 20px;
         height: 20px;
         stroke: currentColor;
-        fill: none;
         stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+        fill: none;
     }
 
-/* Утилита для скрытия элемента визуально, но сохранения для SEO */
+/* На очень узких экранах (меньше 360px) скрываем текст "Sort by", чтобы влез селект */
+@media (max-width: 360px) {
+    .sort-controls label {
+        display: none;
+    }
+}
+
+
+/* =========================================
+    СТИЛИ ПАГИНАЦИИ
+=========================================
+*/
+
+.pagination {
+    background: var(--bg-surface);
+    /* box-shadow: 0 2px 4px var(--shadow-color); Убрал тень, чтобы не было лишнего нагромождения */
+    padding: 0.5rem;
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.btn-page {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+    .btn-page:hover:not(.disabled) {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+    .btn-page.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+/* Блок "Per Page" (скрыт на мобильных, виден на десктопе) */
+.pagination-per-page {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .pagination-per-page {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 1rem;
+        padding-left: 1rem;
+        border-left: 1px solid var(--border-color);
+    }
+
+        .pagination-per-page .form-control {
+            width: auto;
+            padding: 0.3rem 1.5rem 0.3rem 0.5rem;
+        }
+}
+
+/* Утилита для SEO */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -255,6 +219,5 @@
     margin: -1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
     border: 0;
 }

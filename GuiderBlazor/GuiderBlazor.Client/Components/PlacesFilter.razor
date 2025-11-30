@@ -1,669 +1,273 @@
 ﻿@using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
-@rendermode InteractiveServer
 
 @inject IProvincesService ProvincesService
 @inject ICitiesService CitiesService
 @inject ITagsService TagsService
-@inject IJSRuntime JSRuntime
-@implements IAsyncDisposable
+@inject NavigationManager Navigation
 
 <div class="filter-container">
     <aside class="filter-card">
-        
-        <search class="search-bar-wrapper" role="search"  >
-            <div class="form-group" style="margin-bottom: 0;">
-                <input type="text"
-                       class="form-control"
-                       @bind="filters.Q"
-                       aria-label="Search places"
-                       placeholder="Search places, services..."
-                       @onkeyup="HandleSearchKeyUp" />
-            </div>
-            <div class="button-group">
-                <button class="btn btn-primary" @onclick="ApplyFilters">
-                    <span>🔍</span>
-                    <span>Search</span>
-                </button>
-                <button class="btn btn-secondary" @onclick="ResetFilters">
-                    <span>🔄</span>
-                    <span>Reset</span>
-                </button>
-            </div>
+
+        @* 1. ПОИСК *@
+        <search class="search-bar-wrapper" role="search">
+            <form method="get" action="/" data-enhance>
+                @RenderHiddenInputs()
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="text" name="Q" class="form-control" value="@CurrentFilters.Q"
+                           aria-label="Search places" placeholder="Search places, services..." />
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" type="submit"><span>🔍</span><span>Search</span></button>
+                    <a href="/" class="btn btn-secondary" data-enhance><span>🔄</span><span>Reset</span></a>
+                </div>
+            </form>
         </search>
 
-        <nav class="category-scroller"  aria-label="Categories" >
+        @* === БЛОК: БЫСТРЫЕ ДЕЙСТВИЯ (Geo + Open) === *@
+        <div class="quick-actions-wrapper">
+
+            @* Кнопка Гео *@
+            <button type="button" class="hero-geo-btn @(CurrentFilters.Latitude.HasValue ? "active" : "")"
+                    onclick="window.locateMe && window.locateMe()">
+                <svg class="geo-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>Find Near Me</span>
+            </button>
+
+            @* Переключатель Open Now *@
+            @{
+                bool nextState = !(CurrentFilters.IsOpen ?? false);
+            }
+            <a href="@GetUrl(isOpen: nextState)" class="toggle-switch-link" data-enhance
+               style="text-decoration: none; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary);">
+                <div class="toggle-switch">
+                    <input type="checkbox" checked="@(CurrentFilters.IsOpen == true)" disabled style="pointer-events: none;" />
+                    <span class="slider"></span>
+                </div>
+                <span class="toggle-label" style="font-weight: 500; font-size: 0.9rem;">Open Now</span>
+            </a>
+        </div>
+        @* ================================================= *@
+
+
+        @* 2. КАТЕГОРИИ *@
+        <nav class="category-scroller" aria-label="Categories">
             <span class="scroller-label">Category:</span>
-            <a class="category-btn chip-all @(string.IsNullOrEmpty(filters.Category) ? "active" : "")"
-               href="@GetUrlForCategory("")">
-                All
-            </a>
-            <a class="category-btn @(filters.Category == "services" ? "active" : "")"
-               href="@GetUrlForCategory("services")">
-                Services
-            </a>
-            <a class="category-btn @(filters.Category == "to-eat" ? "active" : "")"
-               href="@GetUrlForCategory("to-eat")">
-                Foods
-            </a>
-            <a class="category-btn @(filters.Category == "adventures" ? "active" : "")"
-               href="@GetUrlForCategory("adventures")">
-                Adventures
-            </a>
-            <a class="category-btn @(filters.Category == "shops" ? "active" : "")"
-               href="@GetUrlForCategory("shops")">
-                Shopping
-            </a>
+            <a class="category-btn chip-all @(string.IsNullOrEmpty(CurrentFilters.Category) ? "active" : "")"
+               href="@GetUrl(category: "")" data-enhance>All</a>
+            <a class="category-btn @(CurrentFilters.Category == "services" ? "active" : "")"
+               href="@GetUrl(category: "services")" data-enhance>Services</a>
+            <a class="category-btn @(CurrentFilters.Category == "to-eat" ? "active" : "")"
+               href="@GetUrl(category: "to-eat")" data-enhance>Foods</a>
+            <a class="category-btn @(CurrentFilters.Category == "adventures" ? "active" : "")"
+               href="@GetUrl(category: "adventures")" data-enhance>Adventures</a>
+            <a class="category-btn @(CurrentFilters.Category == "shops" ? "active" : "")"
+               href="@GetUrl(category: "shops")" data-enhance>Shopping</a>
         </nav>
 
-        <nav class="province-scroller" aria-label="Provinces" >
+        @* 3. ПРОВИНЦИИ *@
+        <nav class="province-scroller" aria-label="Provinces">
             <span class="scroller-label">Province:</span>
-             
-            <a href="@GetUrlForProvince("")"
-               class="province-chip chip-all @(string.IsNullOrEmpty(filters.Province) ? "active" : "")">
-                All
-            </a>
-
-            @if (isLoadingProvinces)
+            <a href="@GetUrl(province: "")" class="province-chip chip-all @(string.IsNullOrEmpty(CurrentFilters.Province) ? "active" : "")" data-enhance>All</a>
+            @foreach (var province in activeProvinces)
             {
-                <span class="province-chip disabled">Loading...</span>
-            }
-            else
-            {
-                @foreach (var province in activeProvinces)
-                {
-                    <a href="@GetUrlForProvince(province.Slug)"
-                       class="province-chip @(IsProvinceActive(province.Slug) ? "active" : "")">
-                        @province.Name
-                    </a>
-                }
+                <a href="@GetUrl(province: province.Slug)" class="province-chip @(IsProvinceActive(province.Slug) ? "active" : "")" data-enhance>@province.Name</a>
             }
         </nav>
 
+        @* 4. ГОРОДА (Теперь в одиночестве) *@
         <div class="location-controls-wrapper">
             <div class="location-controls">
+
+                @* City Filter Block *@
                 <div class="city-filter-block">
-                    <button type="button" class="filter-toggle-btn @(!isCityCollapsed ? "is-active" : "")" @onclick="ToggleCityCollapse">
-                        City
-                        <span class="filter-toggle-icon @(!isCityCollapsed ? "is-open" : "")">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
-                        </span>
-                    </button>
-                </div>
-                
-                <div class="geo-filter-block">
-                    <button type="button" 
-                        class="hero-geo-btn @(filters.Latitude.HasValue ? "active" : "") @(isLocating ? "is-loading" : "") @(!string.IsNullOrEmpty(geoErrorMessage) ? "is-error" : "")" 
-                        @onclick="RequestGeoLocation" 
-                        disabled="@isLocating">
-                        
-                        @if (isLocating)
-                        {
-                            <span class="spinner-sm"></span> <span>Locating...</span>
-                        }
-                        else if (!string.IsNullOrEmpty(geoErrorMessage))
-                        {
-                            <span>@geoErrorMessage</span>
-                        }
-                        else
-                        {
-                            <svg class="geo-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
-                            <span>Find Near Me</span>
-                        }
-                    </button>
+                    <details open="@(!string.IsNullOrEmpty(CurrentFilters.City))">
+                        <summary class="filter-toggle-btn">
+                            City
+                            <span class="filter-toggle-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                            </span>
+                        </summary>
+
+                        @* Возвращаем "Static" поведение (сдвиг вниз) *@
+                        <div class="city-cloud-wrapper is-open">
+                            <div class="city-cloud-content">
+                                @if (isLoadingCities)
+                                {
+                                    <span class="chip-tag disabled">Loading...</span>
+                                }
+                                else if (activeCities.Any())
+                                {
+                                    <a class="chip-tag chip-all @(string.IsNullOrEmpty(CurrentFilters.City) ? "active" : "")"
+                                       href="@GetUrl(city: "")" data-enhance>All Cities</a>
+                                    @foreach (var city in activeCities)
+                                    {
+                                        <a class="chip-tag @(CurrentFilters.City == city ? "active" : "")"
+                                           href="@GetUrl(city: city)" data-enhance>@city</a>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="no-data">No cities for this filter.</span>
+                                }
+                            </div>
+                        </div>
+                    </details>
                 </div>
 
-                <div class="open-now-filter-block">
-            
-                 <label class="toggle-switch">
-                    <input type="checkbox" 
-                            checked="@IsOpenToggle"
-                            @onchange="ToggleOpenFilter" />
-                 
-                     <span class="slider"></span>
-                </label>
-                <label class="toggle-label" @onclick="ToggleOpenFilter"  >Open</label>
-                
-            </div>
-
-            </div>
-
-            <div class="city-cloud-wrapper @(isCityCollapsed ? "" : "is-open")">
-                <div class="city-cloud-content">
-                    @if (isLoadingCities)
-                    {
-                        <span class="chip-tag disabled">Loading...</span>
-                    }
-                    else if (activeCities.Any())
-                    {
-                        <a class="chip-tag chip-all @(string.IsNullOrEmpty(filters.City) ? "active" : "")"
-                           href="@GetUrlForCity("")">
-                            All Cities
-                        </a>
-                        @foreach (var city in activeCities)
-                        {
-                            <a class="chip-tag @(filters.City == city ? "active" : "")"
-                               href="@GetUrlForCity(city)">
-                                @city
-                            </a>
-                        }
-                    }
-                    else
-                    {
-                        <span class="no-data">No cities for this filter.</span>
-                    }
-                </div>
             </div>
         </div>
 
-        <div class="tags-toggle" @onclick="ToggleTagsFilter">
-            <span class="scroller-label">Tags</span>
-            <span class="filter-toggle-icon @(isTagsFilterOpen ? "is-open" : "")">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-            </span>
-        </div>
-        <div class="tags-content @(isTagsFilterOpen ? "is-open" : "")">
-             <div class="form-group">
-                <div class="tag-cloud-container">
-                    <button class="chip-tag chip-all @(filters.Tags == null || !filters.Tags.Any() ? "active" : "")"
-                            @onclick="ClearAllTags">
-                        All
-                    </button>
-                    @if (filters.Tags != null && filters.Tags.Any())
-                    {
-                        @foreach (var selectedTag in filters.Tags)
-                        {
-                            <button class="chip-tag active" @onclick="() => ToggleTag(selectedTag)">
-                                @selectedTag
-                                <span class="chip-remove">×</span>
-                            </button>
-                        }
-                    }
-                    @if (isLoadingTags)
-                    {
-                        <span class="chip-tag disabled">Loading tags...</span>
-                    }
-                    else
-                    {
-                        @foreach (var availableTag in activeTags.Where(at => !(filters.Tags?.Contains(at) ?? false)))
-                        {
-                            <button class="chip-tag" @onclick="() => ToggleTag(availableTag)">
-                                @availableTag
-                            </button>
-                        }
-                    }
+        @* 7. ТЕГИ *@
+        <div class="tags-section">
+            <details>
+                <summary class="tags-toggle">
+                    <span class="scroller-label">Tags</span>
+                    <span class="filter-toggle-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                    </span>
+                </summary>
+                <div class="tags-content is-open">
+                    <div class="form-group">
+                        <div class="tag-cloud-container">
+                            <a class="chip-tag chip-all @(CurrentFilters.Tags == null || !CurrentFilters.Tags.Any() ? "active" : "")"
+                               href="@GetUrl(clearTags: true)" data-enhance>All</a>
+                            @if (isLoadingTags)
+                            {
+                                <span class="chip-tag disabled">Loading tags...</span>
+                            }
+                            else
+                            {
+                                var currentTags = CurrentFilters.Tags ?? new List<string>();
+                                @foreach (var tag in activeTags)
+                                {
+                                    bool isSelected = currentTags.Contains(tag);
+                                    <a class="chip-tag @(isSelected ? "active" : "")"
+                                       href="@GetUrlForTag(tag)" data-enhance>
+                                        @tag
+                                        @if (isSelected)
+                                        {
+                                            <span class="chip-remove">×</span>
+                                        }
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
-                @if (!isLoadingTags && activeTags.Count == 0 && (filters.Tags == null || !filters.Tags.Any()))
-                {
-                    <small>No tags found for the current filter.</small>
-                }
-            </div>
+            </details>
         </div>
-    </aside> 
- </div>
+    </aside>
+</div>
 
 @code {
-    [Parameter]
-    public PlaceFilterParams CurrentFilters { get; set; } = new();
-
-    private const double DEFAULT_SEARCH_DISTANCE_METERS = 10000; // 10 км
-
-    [Parameter]
-    public EventCallback<PlaceFilterParams> OnFilterChanged { get; set; }
-        
-    private PlaceFilterParams filters = new();
-    private string tagsInput = string.Empty;
-    private string? latitudeInput;
-    private string? longitudeInput;
-    private string? distanceInput;
-    private bool IsOpenToggle { get; set; }
-    private bool isTagsFilterOpen = false;
+    
+    [Parameter] public PlaceFilterParams CurrentFilters { get; set; } = new();
     private List<string> activeCities = new();
     private bool isLoadingCities = true;
     private List<string> activeTags = new();
     private bool isLoadingTags = true;
-    private bool isCityCollapsed = true;
-
     private List<ProvinceDto> activeProvinces = new();
-    private bool isLoadingProvinces = true;
-    
-    // Геолокация
-    private DotNetObjectReference<PlacesFilter>? objRef;
-    private bool isLocating = false;
-    private string? geoErrorMessage = null;
-    private bool _isInitialized = false;
-    
+
     protected override async Task OnParametersSetAsync()
-{
-    // Сохраняем текущее состояние переключателя
-    bool currentToggleState = IsOpenToggle;
-    
-    filters = CurrentFilters;
-    tagsInput = string.Join(", ", filters.Tags ?? new List<string>());
-    latitudeInput = filters.Latitude?.ToString();
-    longitudeInput = filters.Longitude?.ToString();
-    distanceInput = filters.Distance?.ToString();
-    
-    // Восстанавливаем состояние переключателя, если оно было изменено пользователем
-    // но еще не синхронизировалось с CurrentFilters
-    if (filters.IsOpen == true)
-        IsOpenToggle = true;
-    else if (filters.IsOpen == null)
-        IsOpenToggle = false;
-    else
-        IsOpenToggle = currentToggleState; // Оставляем как было
-
-    await LoadActiveCities();
-    await LoadActiveTags();
-    await LoadActiveProvinces();
-
-    // 🔍 ПРОВЕРОЧНЫЙ КОД - добавить здесь
-    // Console.WriteLine($"🔍 filters.Province = '{filters.Province}'");
-    // Console.WriteLine($"🔍 activeProvinces count = {activeProvinces.Count}");
-    // foreach(var p in activeProvinces) {
-    //     Console.WriteLine($"   - Name: '{p.Name}', Slug: '{p.Slug}', IsActive: {IsProvinceActive(p.Slug)}");
-    // }
-}
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            _isInitialized = true;
-        }
+        var t1 = LoadActiveCities();
+        var t2 = LoadActiveTags();
+        var t3 = LoadActiveProvinces();
+        await Task.WhenAll(t1, t2, t3);
     }
-
-    /// <summary>
-    /// Запрос геолокации через JavaScript
-    /// </summary>
-    private async Task RequestGeoLocation()
-    {
-        // Console.WriteLine($"🔵 RequestGeoLocation called. isLocating={isLocating}, _isInitialized={_isInitialized}");
-        
-        if (isLocating)
-        {
-            // Console.WriteLine("⚠️ Already locating, skipping");
-            return;
-        }
-        
-        if (!_isInitialized)
-        {
-            // Console.WriteLine("⚠️ Not initialized yet, skipping");
-            return;
-        }
-
-        isLocating = true;
-        geoErrorMessage = null;
-        // Console.WriteLine("🔵 Setting isLocating=true, calling StateHasChanged");
-        StateHasChanged();
-
-        await Task.Delay(100);
-
-        try
-        {
-            if (objRef == null)
-            {
-                // Console.WriteLine("🔵 Creating DotNetObjectReference");
-                objRef = DotNetObjectReference.Create(this);
-            }
-            else
-            {
-                // Console.WriteLine("🔵 Reusing existing DotNetObjectReference");
-            }
-            
-            // Console.WriteLine("🔵 Calling JSRuntime.InvokeVoidAsync('getBrowserLocation')");
-            await JSRuntime.InvokeVoidAsync("getBrowserLocation", objRef);
-            // Console.WriteLine("✅ JSRuntime.InvokeVoidAsync completed");
-        }
-        catch (Exception ex)
-        {
-            // Console.WriteLine($"❌ Exception in RequestGeoLocation: {ex.GetType().Name}");
-            // Console.WriteLine($"❌ Message: {ex.Message}");
-            // Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-            await LocationError(-2, $"JS Error: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Вызывается из JS при УСПЕШНОМ получении координат.
-    /// </summary>
-    [JSInvokable]
-    public async Task SetLocation(double latitude, double longitude, double accuracy)
-    {
-        //  Порог 150 метров ⬇️
-        // Это отсечет Wi-Fi (200м+) и IP (5000м+),
-        // но пропустит хороший GPS-сигнал (10-100м).
-        const double MAX_ACCURACY_METERS = 150;
-
-        if (accuracy > MAX_ACCURACY_METERS)
-        {
-            // --- ТОЧНОСТЬ СЛИШКОМ НИЗКАЯ ---
-            await InvokeAsync(async () =>
-            {
-                isLocating = false;
-                
-                // Сообщаем, что точность (в метрах) недостаточная
-                geoErrorMessage = $"📍 Accuracy > {MAX_ACCURACY_METERS}m";
-                StateHasChanged();
-
-                await Task.Delay(4000); 
-
-                if (!isLocating)
-                {
-                    geoErrorMessage = null;
-                    StateHasChanged();
-                }
-            });
-        }
-        else
-        {
-            // --- ТОЧНОСТЬ ХОРОШАЯ (GPS) ---
-            await InvokeAsync(async () =>
-            {
-                isLocating = false;
-                geoErrorMessage = null;
-
-                // Применяем гео-фильтры
-                filters.Latitude = latitude;
-                filters.Longitude = longitude;
-                filters.SortField = "distance"; 
-                // filters.Distance = null; 
-                filters.Distance = DEFAULT_SEARCH_DISTANCE_METERS;
-
-                // Сбрасываем город и провинцию
-                filters.City = null; 
-                filters.Province = null;
-                filters.Page = 1;
-
-                // Обновляем список мест
-                await OnFilterChanged.InvokeAsync(filters);
-                StateHasChanged();
-            });
-        }
-    }
-
-    /// <summary>
-    /// Callback при ошибке получения координат (вызывается из JS)
-    /// </summary>
-    [JSInvokable]
-    public async Task LocationError(int errorCode, string message)
-    {
-        // Console.WriteLine($"LocationError called: code={errorCode}, message={message}");
-        
-        await InvokeAsync(async () =>
-        {
-            isLocating = false;
-
-            geoErrorMessage = errorCode switch
-            {
-                1 => "🚫 Access Denied",
-                2 => "❓ Unavailable",
-                3 => "⏱️ Timeout",
-                _ => "⚠️ Not Available"
-            };
-            
-            StateHasChanged();
-
-            await Task.Delay(4000);
-            
-            if (!isLocating)
-            {
-                geoErrorMessage = null;
-                StateHasChanged();
-            }
-        });
-    }
-
-    private void ToggleCityCollapse()
-    {
-        isCityCollapsed = !isCityCollapsed;
-    }
-        
-    private void ToggleTagsFilter()
-    {
-        isTagsFilterOpen = !isTagsFilterOpen;
-    }
-
-    private async Task HandleSearchKeyUp(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await ApplyFilters();
-        }
-    }
-
-       private async Task ApplyFilters()
-    {
-        if (!string.IsNullOrWhiteSpace(tagsInput))
-        {
-            var tagsFromInput = tagsInput
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(t => t.Trim())
-                .ToList();
-            var existingTags = filters.Tags ?? new List<string>();
-            filters.Tags = existingTags.Union(tagsFromInput).ToList();
-            if (!filters.Tags.Any()) filters.Tags = null;
-        }
-
-        if (double.TryParse(latitudeInput, out double lat))
-            filters.Latitude = lat;
-        else
-            filters.Latitude = null;
-        if (double.TryParse(longitudeInput, out double lon))
-            filters.Longitude = lon;
-        else
-            filters.Longitude = null;
-        if (double.TryParse(distanceInput, out double dist))
-            filters.Distance = dist;
-        else
-            filters.Distance = null;
-    
-        // IsOpen уже установлен в ToggleOpenFilter(), не трогаем его здесь
-
-        filters.Page = 1;
-        filters.Status = "active";
-        if (filters.PerPage <= 0)
-            filters.PerPage = 4;
-
-        await OnFilterChanged.InvokeAsync(filters);
-    }
-
-    private async Task ResetFilters()
-    {
-        filters = new PlaceFilterParams
-        {
-            Page = 1,
-            PerPage = 4,
-            Status = "active"
-        };
-        tagsInput = string.Empty;
-        latitudeInput = null;
-        longitudeInput = null;
-        distanceInput = null;
-        IsOpenToggle = false;
-        
-        geoErrorMessage = null;
-        isLocating = false;
-        
-        await OnFilterChanged.InvokeAsync(filters);
-        await LoadActiveCities();
-        await LoadActiveTags();
-    }
-
-    private async Task LoadActiveTags()
-    {
-        isLoadingTags = true;
-        activeTags = await TagsService.GetActiveTagsAsync(
-            filters.Category,
-            filters.Province,
-            filters.City,
-            filters.Tags
-        );
-        isLoadingTags = false;
-    }
-
-    private async Task ToggleTag(string tagToToggle)
-    {
-        if (filters.Tags == null)
-        {
-            filters.Tags = new List<string>();
-        }
-
-        if (filters.Tags.Contains(tagToToggle))
-        {
-            filters.Tags.Remove(tagToToggle);
-            if (!filters.Tags.Any())
-            {
-                filters.Tags = null;
-            }
-        }
-        else
-        {
-            filters.Tags.Add(tagToToggle);
-        }
-
-        filters.Page = 1;
-        await OnFilterChanged.InvokeAsync(filters);
-    }
-
-    private async Task ClearAllTags()
-    {
-        if (filters.Tags == null || !filters.Tags.Any()) return; 
-
-        filters.Tags = null;
-        filters.Page = 1;
-        await OnFilterChanged.InvokeAsync(filters);
-    }
-
-    private async Task ToggleOpenFilter()
-{
-    IsOpenToggle = !IsOpenToggle;
-    filters.IsOpen = IsOpenToggle ? true : (bool?)null;
-    filters.Page = 1;
-    
-    // Сначала обновляем UI
-    StateHasChanged();
-    
-    // Небольшая задержка для гарантии отрисовки
-    await Task.Yield();
-    
-    // Потом уведомляем родителя
-    await OnFilterChanged.InvokeAsync(filters);
-}
-
-    private string GetUrlForCategory(string category)
-    {
-        var linkFilters = new PlaceFilterParams
-        {
-            Q = filters.Q,
-            Province = filters.Province,
-            City = "",
-            PerPage = filters.PerPage,
-            Page = 1,
-            Category = category,
-            Status = "active",
-            Tags = filters.Tags,
-            IsOpen = filters.IsOpen
-        };
-        return GetQueryString(linkFilters);
-    }
-
-    private string GetUrlForProvince(string province)
-    {
-        var linkFilters = new PlaceFilterParams
-        {
-            Q = filters.Q,
-            Page = 1,
-            Category = filters.Category,
-            Province = province,
-            City = "",
-            PerPage = filters.PerPage,
-            Status = "active",
-            Tags = filters.Tags,
-            IsOpen = filters.IsOpen
-        };
-        return GetQueryString(linkFilters);
-    }
-
-    private string GetUrlForCity(string city)
-    {
-        var linkFilters = new PlaceFilterParams
-        {
-            Q = filters.Q,
-            Page = 1,
-            Category = filters.Category, 
-            Province = filters.Province, 
-            City = city, 
-            PerPage = filters.PerPage, 
-            Status = "active",
-            Tags = filters.Tags,
-            IsOpen = filters.IsOpen
-        };
-        return GetQueryString(linkFilters);
-    }
-
-    private bool IsProvinceActive(string provinceSlug)
-    {
-        if (string.IsNullOrEmpty(filters.Province)) return false;
-        return filters.Province.Equals(provinceSlug, StringComparison.OrdinalIgnoreCase);
-    }
-
     private async Task LoadActiveCities()
     {
         isLoadingCities = true;
-        activeCities = await CitiesService.GetActiveCitiesAsync(filters.Category, filters.Province);
+        activeCities = await CitiesService.GetActiveCitiesAsync(CurrentFilters.Category, CurrentFilters.Province);
         isLoadingCities = false;
     }
-
+    private async Task LoadActiveTags()
+    {
+        isLoadingTags = true;
+        activeTags = await TagsService.GetActiveTagsAsync(CurrentFilters.Category, CurrentFilters.Province, CurrentFilters.City, null);
+        isLoadingTags = false;
+    }
     private async Task LoadActiveProvinces()
     {
-        isLoadingProvinces = true;
-        // Используем новый сервис для получения списка объектов (Name + Slug)
-        activeProvinces = await ProvincesService.GetActiveProvincesAsync(filters.Category);
-        isLoadingProvinces = false;
+        activeProvinces = await ProvincesService.GetActiveProvincesAsync(CurrentFilters.Category);
     }
-    
+    private bool IsProvinceActive(string provinceSlug)
+    {
+        if (string.IsNullOrEmpty(CurrentFilters.Province)) return false;
+        return CurrentFilters.Province.Equals(provinceSlug, StringComparison.OrdinalIgnoreCase);
+    }
+    private string GetUrl(string? category = null, string? province = null, string? city = null, bool? isOpen = null, bool clearTags = false)
+    {
+        var newFilters = CloneFilters(CurrentFilters);
+        if (category != null) newFilters.Category = category;
+        if (province != null) newFilters.Province = province;
+        if (city != null) newFilters.City = city;
+        if (isOpen.HasValue) newFilters.IsOpen = isOpen.Value ? true : null;
+        if (clearTags) newFilters.Tags = null;
+        newFilters.Page = 1;
+        return GetQueryString(newFilters);
+    }
+    private string GetUrlForTag(string tag)
+    {
+        var newFilters = CloneFilters(CurrentFilters);
+        var tags = newFilters.Tags ?? new List<string>();
+        if (tags.Contains(tag)) tags.Remove(tag); else tags.Add(tag);
+        newFilters.Tags = tags.Any() ? tags : null;
+        newFilters.Page = 1;
+        return GetQueryString(newFilters);
+    }
+    private PlaceFilterParams CloneFilters(PlaceFilterParams source)
+    {
+        return new PlaceFilterParams
+        {
+            Q = source.Q,
+            Category = source.Category,
+            Province = source.Province,
+            City = source.City,
+            PerPage = source.PerPage,
+            Page = source.Page,
+            Tags = source.Tags?.ToList(),
+            Latitude = source.Latitude,
+            Longitude = source.Longitude,
+            Distance = source.Distance,
+            SortField = source.SortField,
+            SortOrder = source.SortOrder,
+            IsOpen = source.IsOpen
+        };
+    }
     private string GetQueryString(PlaceFilterParams filters)
     {
         var queryParams = new Dictionary<string, object?>();
-        if (!string.IsNullOrEmpty(filters.Q))
-            queryParams["Q"] = filters.Q;
-        if (!string.IsNullOrEmpty(filters.Category))
-            queryParams["Category"] = filters.Category;
-        if (!string.IsNullOrEmpty(filters.Province))
-            queryParams["Province"] = filters.Province;
-        if (!string.IsNullOrEmpty(filters.City))
-            queryParams["City"] = filters.City;
-        if (filters.Page > 1)
-            queryParams["Page"] = filters.Page;
-        if (filters.PerPage != 4)
-            queryParams["PerPage"] = filters.PerPage;
-        if (filters.IsOpen == true)
-            queryParams["IsOpen"] = "true";
-
+        if (!string.IsNullOrEmpty(filters.Q)) queryParams["Q"] = filters.Q;
+        if (!string.IsNullOrEmpty(filters.Category)) queryParams["Category"] = filters.Category;
+        if (!string.IsNullOrEmpty(filters.Province)) queryParams["Province"] = filters.Province;
+        if (!string.IsNullOrEmpty(filters.City)) queryParams["City"] = filters.City;
+        if (filters.Page > 1) queryParams["Page"] = filters.Page;
+        if (filters.PerPage != 4) queryParams["PerPage"] = filters.PerPage;
+        if (filters.Latitude.HasValue) queryParams["Latitude"] = filters.Latitude.Value;
+        if (filters.Longitude.HasValue) queryParams["Longitude"] = filters.Longitude.Value;
+        if (filters.Distance.HasValue) queryParams["Distance"] = filters.Distance.Value;
+        if (filters.IsOpen == true) queryParams["IsOpen"] = "true";
+        if (!string.IsNullOrEmpty(filters.SortField)) queryParams["SortField"] = filters.SortField;
+        if (!string.IsNullOrEmpty(filters.SortOrder)) queryParams["SortOrder"] = filters.SortOrder;
         var queryParts = new List<string>();
-        queryParts.AddRange(queryParams
-            .Where(kvp => kvp.Value != null)
-            .Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
+        queryParts.AddRange(queryParams.Where(kvp => kvp.Value != null).Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
         if (filters.Tags != null && filters.Tags.Any())
         {
-            foreach (var tag in filters.Tags)
-            {
-                queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
-            }
+            foreach (var tag in filters.Tags) { if (!string.IsNullOrEmpty(tag)) queryParts.Add($"Tags={Uri.EscapeDataString(tag)}"); }
         }
-
         return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
     }
-
-    public async ValueTask DisposeAsync()
+    private RenderFragment RenderHiddenInputs() => builder =>
     {
-        objRef?.Dispose();
-        objRef = null;
-    }
+        if (!string.IsNullOrEmpty(CurrentFilters.Category)) { builder.OpenElement(0, "input"); builder.AddAttribute(1, "type", "hidden"); builder.AddAttribute(2, "name", "Category"); builder.AddAttribute(3, "value", CurrentFilters.Category); builder.CloseElement(); }
+        if (!string.IsNullOrEmpty(CurrentFilters.Province)) { builder.OpenElement(4, "input"); builder.AddAttribute(5, "type", "hidden"); builder.AddAttribute(6, "name", "Province"); builder.AddAttribute(7, "value", CurrentFilters.Province); builder.CloseElement(); }
+        if (!string.IsNullOrEmpty(CurrentFilters.City)) { builder.OpenElement(8, "input"); builder.AddAttribute(9, "type", "hidden"); builder.AddAttribute(10, "name", "City"); builder.AddAttribute(11, "value", CurrentFilters.City); builder.CloseElement(); }
+        if (CurrentFilters.Tags != null) { foreach (var tag in CurrentFilters.Tags) { builder.OpenElement(12, "input"); builder.AddAttribute(13, "type", "hidden"); builder.AddAttribute(14, "name", "Tags"); builder.AddAttribute(15, "value", tag); builder.CloseElement(); } }
+        if (CurrentFilters.IsOpen == true) { builder.OpenElement(16, "input"); builder.AddAttribute(17, "type", "hidden"); builder.AddAttribute(18, "name", "IsOpen"); builder.AddAttribute(19, "value", "true"); builder.CloseElement(); }
+    };
 }
