@@ -48,6 +48,8 @@ builder.Services.AddOutputCache(options =>
         builder.SetVaryByRouteValue("url");
         builder.Tag("all-places");
     });
+
+    options.AddPolicy("HomePage", new SmartHomePagePolicy());
 });
 
 builder.Services.AddScoped(sp => new HttpClient

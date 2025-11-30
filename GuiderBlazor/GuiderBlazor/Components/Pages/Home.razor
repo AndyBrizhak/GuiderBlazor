@@ -2,11 +2,17 @@
 @using GuiderBlazor.Shared.Models
 @using GuiderBlazor.Shared.Services
 @using GuiderBlazor.Client.Components
+@using Microsoft.AspNetCore.OutputCaching
+
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
 
 @* Включаем потоковый рендеринг, чтобы пользователь увидел скелет страницы сразу *@
+@* 1. StreamRendering работает для "живых" запросов (поиск, гео) *@
 @attribute [StreamRendering]
+
+@* 2. OutputCache работает для "стандартных" запросов (главная, категории) *@
+@attribute [OutputCache(PolicyName = "HomePage")]
 
 <PageTitle>Guider - Costa Rica Business & Services Directory</PageTitle>
 
