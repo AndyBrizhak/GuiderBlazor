@@ -172,14 +172,17 @@
         border-color: var(--text-secondary);
     }
 
+    /* Активное состояние (Красный - для отмены) */
     .hero-geo-btn.active {
-        background-color: #007bff;
-        color: #ffffff;
-        border-color: #007bff;
+        background-color: #dc3545; /* Красный цвет (Bootstrap danger) */
+        border-color: #dc3545;
+        color: #ffffff; /* Белый текст всегда, независимо от темы */
     }
 
         .hero-geo-btn.active:hover {
-            background-color: #0056b3;
+            background-color: #bb2d3b; /* Чуть темнее при наведении */
+            border-color: #b02a37;
+            color: #ffffff;
         }
 
 /* Переключатель "Open Now" */
