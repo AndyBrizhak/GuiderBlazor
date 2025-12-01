@@ -28,13 +28,28 @@
         <div class="quick-actions-wrapper">
 
             @* Кнопка Гео *@
-            <button type="button" class="hero-geo-btn @(CurrentFilters.Latitude.HasValue ? "active" : "")"
-                    onclick="window.locateMe && window.locateMe()">
+            <button type="button"
+                    class="hero-geo-btn @(CurrentFilters.Latitude.HasValue ? "active" : "")"
+                    onclick="window.toggleGeoLocation()"
+                    title="@(CurrentFilters.Latitude.HasValue ? "Turn off geo search" : "Find near me")">
+
                 <svg class="geo-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
+                    @if (CurrentFilters.Latitude.HasValue)
+                    {
+                        @* Иконка "Выключить" (Крестик или перечеркнутый GPS) *@
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    }
+                    else
+                    {
+                        @* Иконка "Найти" *@
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    }
                 </svg>
-                <span>Find Near Me</span>
+                <span>
+                    @(CurrentFilters.Latitude.HasValue ? "Clear Geo" : "Find Near Me")
+                </span>
             </button>
 
             @* Переключатель Open Now *@
@@ -51,7 +66,6 @@
             </a>
         </div>
         @* ================================================= *@
-
 
         @*  КАТЕГОРИИ - ИСПРАВЛЕНО: используем GetUrlForCategory *@
         <nav class="category-scroller" aria-label="Categories">
@@ -167,6 +181,19 @@
         </div>
     </aside>
 </div>
+
+@* === MODAL WARNING (Native Dialog) === *@
+@* Этот HTML будет существовать только на страницах, где есть PlacesFilter *@
+<dialog id="geo-warning-dialog" class="geo-dialog">
+    <div class="geo-dialog-content">
+        <h3>⚠️ Weak GPS Signal</h3>
+        <p id="geo-warning-text">Accuracy is low.</p>
+        <div class="geo-dialog-actions">
+            <button class="btn btn-secondary" onclick="window.closeGeoDialog(false)">Cancel</button>
+            <button class="btn btn-primary" onclick="window.closeGeoDialog(true)">Use Anyway</button>
+        </div>
+    </div>
+</dialog>
 
 @*  СКРИПТ ДЛЯ СОХРАНЕНИЯ СОСТОЯНИЯ *@
 <script>

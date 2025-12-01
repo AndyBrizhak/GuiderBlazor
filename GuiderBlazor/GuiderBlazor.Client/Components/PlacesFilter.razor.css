@@ -443,3 +443,84 @@ input:checked + .slider {
     margin-left: 6px;
     font-weight: bold;
 }
+
+/* =========================================
+   7. ДИАЛОГОВОЕ ОКНО (GEO WARNING)
+========================================= */
+
+dialog#geo-warning-dialog {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 10px 25px var(--shadow-color);
+    max-width: 400px;
+    width: 90%;
+    background: transparent; /* Фон задаем внутри контента */
+    color: var(--text-primary);
+}
+
+    /* Затемнение фона (работает для нативного dialog) */
+    dialog#geo-warning-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+    }
+
+.geo-dialog-content {
+    padding: 24px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 12px; /* Скругление здесь */
+}
+
+    .geo-dialog-content h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 1.25rem;
+    }
+
+.geo-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+    /* Стили для кнопок внутри диалога */
+    .geo-dialog-actions .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .geo-dialog-actions .btn-secondary {
+        background-color: var(--bg-canvas); /* Чуть темнее фона */
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .geo-dialog-actions .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+/* Анимация спиннера для кнопки поиска (класс добавляется через JS) */
+.hero-geo-btn.loading-state {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+    /* Добавляем маленькую крутилку внутрь кнопки при загрузке */
+    .hero-geo-btn.loading-state::after {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border: 2px solid currentColor;
+        border-top-color: transparent;
+        border-radius: 50%;
+        margin-left: 8px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
