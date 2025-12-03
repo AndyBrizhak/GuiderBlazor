@@ -3,65 +3,181 @@
 @using GuiderBlazor.Shared.Services
 @using GuiderBlazor.Client.Components
 @using Microsoft.AspNetCore.OutputCaching
+@using System.Text
+@using System.Web
 
 @inject IPlacesService PlacesService
 @inject NavigationManager Navigation
 
-@* Включаем потоковый рендеринг, чтобы пользователь увидел скелет страницы сразу *@
-@* 1. StreamRendering работает для "живых" запросов (поиск, гео) *@
+@* 1. StreamRendering для быстрой отдачи "скелета" при долгих запросах *@
 @attribute [StreamRendering]
 
-@* 2. OutputCache работает для "стандартных" запросов (главная, категории) *@
+@* 2. OutputCache: Полагаемся на политику "HomePage", которая уже настроена в SmartHomePagePolicy.cs *@
 @attribute [OutputCache(PolicyName = "HomePage")]
 
-<PageTitle>Guider - Costa Rica Business & Services Directory</PageTitle>
+<PageTitle>@SeoTitle</PageTitle>
+
+<HeadContent>
+    @* Мета-описание *@
+    <meta name="description" content="@SeoDescription" />
+
+    @* Управление индексацией (Index/Noindex) *@
+    <meta name="robots" content="@RobotsTag" />
+
+    @* Каноническая ссылка (защита от дублей) *@
+    <link rel="canonical" href="@CanonicalUrl" />
+
+    @* Open Graph для красивых ссылок в соцсетях *@
+    <meta property="og:title" content="@SeoTitle" />
+    <meta property="og:description" content="@SeoDescription" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="@Navigation.Uri" />
+    @*  ВАЖНО! Перед production  деплоя добавить дефолтную картинку для шеринга *@
+    @* Идеальный размер для соцсетей — 1200 x 630 пикселей. *@
+    <meta property="og:image" content="@(Navigation.BaseUri + "logo.svg")" />
+    @* <meta property="og:image" content="https://guider.pro/images/og-share-default.jpg" /> *@
+    <meta property="og:site_name" content="Guider Costa Rica" />
+</HeadContent>
 
 <div class="home-container">
     <section class="hero-section" aria-labelledby="hero-title">
+        @* Динамический заголовок H1 *@
         <h1 id="hero-title">
-            Local Business & Services in Costa Rica
+            @H1Title
         </h1>
     </section>
 
-    @* Передаем загруженные данные вниз в презентационный компонент *@
     <PlacesList PlacesResponse="placesResponse"
                 CurrentFilters="currentFilters"
                 IsLoading="isLoading" />
 </div>
 
 @code {
-    // 1. ПАРАМЕТРЫ URL (Перенесены из PlacesList)
+    // === 1. ПАРАМЕТРЫ URL ===
     [SupplyParameterFromQuery] public string? Q { get; set; }
     [SupplyParameterFromQuery] public string? Category { get; set; }
     [SupplyParameterFromQuery] public string? Province { get; set; }
     [SupplyParameterFromQuery] public string? City { get; set; }
+    [SupplyParameterFromQuery(Name = "Tags")] public string[]? Tags { get; set; }
     [SupplyParameterFromQuery] public int Page { get; set; } = 1;
     [SupplyParameterFromQuery] public int PerPage { get; set; } = 4;
 
-    // Гео-параметры
+    // Технические параметры
     [SupplyParameterFromQuery] public double? Latitude { get; set; }
     [SupplyParameterFromQuery] public double? Longitude { get; set; }
     [SupplyParameterFromQuery] public double? Distance { get; set; }
-
     [SupplyParameterFromQuery] public string? SortField { get; set; }
     [SupplyParameterFromQuery] public string? SortOrder { get; set; }
     [SupplyParameterFromQuery] public bool? IsOpen { get; set; }
 
-    [SupplyParameterFromQuery(Name = "Tags")] public string[]? Tags { get; set; }
-
-    // 2. ВНУТРЕННЕЕ СОСТОЯНИЕ
+    // === 2. ВНУТРЕННЕЕ СОСТОЯНИЕ ===
     private PlacesResponse? placesResponse;
     private PlaceFilterParams currentFilters = new();
     private bool isLoading = true;
 
-    // 3. ЗАГРУЗКА ДАННЫХ
-    // Используем OnInitializedAsync, так как это SSR.
-    // Каждый новый URL = новый запрос страницы = новый вызов этого метода.
+    // === 3. SEO ЛОГИКА ===
+
+    // Заголовок вкладки браузера и поисковой выдачи
+    private string SeoTitle
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(Q)) return $"Search results for \"{Q}\" | Guider";
+
+            var sb = new StringBuilder();
+
+            // Что ищем?
+            if (!string.IsNullOrEmpty(Category)) sb.Append($"{FormatText(Category)} ");
+            else if (Tags != null && Tags.Any()) sb.Append($"{string.Join(", ", Tags)} ");
+            else sb.Append("Local Business & Services ");
+
+            // Где ищем?
+            if (!string.IsNullOrEmpty(City)) sb.Append($"in {City} ");
+            else if (!string.IsNullOrEmpty(Province)) sb.Append($"in {Province} ");
+            else sb.Append("in Costa Rica ");
+
+            sb.Append("| Guider.pro");
+            return sb.ToString();
+        }
+    }
+
+    // Мета-описание ( сниппет в Google)
+    private string SeoDescription
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(Q)) return $"Search results for {Q} in Costa Rica. Find best places matching your request on Guider.";
+
+            var what = !string.IsNullOrEmpty(Category) ? FormatText(Category) : "best places and services";
+            var where = !string.IsNullOrEmpty(City) ? $"{City}, {Province ?? "Costa Rica"}" : (Province ?? "Costa Rica");
+
+            return $"Discover the {what} in {where}. Read reviews, check opening hours, view photos and get directions on Guider Business Directory.";
+        }
+    }
+
+    // Видимый заголовок на странице
+    private string H1Title => SeoTitle.Replace("| Guider.pro", "").Trim();
+
+    // Инструкции для роботов
+    private string RobotsTag
+    {
+        get
+        {
+            // Закрываем от индексации "мусорные" страницы:
+            // 1. Результаты поиска по тексту (Q)
+            // 2. Поиск по координатам (Latitude)
+            // 3. Сортировки отличные от дефолтных
+            // 4. Пагинация (Page > 1) - чтобы вес оставался на первой странице
+            if (!string.IsNullOrEmpty(Q) ||
+                Latitude.HasValue ||
+                !string.IsNullOrEmpty(SortField) ||
+                (Page > 1))
+            {
+                return "noindex, follow";
+            }
+
+            return "index, follow";
+        }
+    }
+
+    // Канонический URL (очищенный от технических параметров)
+    private string CanonicalUrl
+    {
+        get
+        {
+            var uri = new Uri(Navigation.Uri);
+            var baseUri = uri.GetLeftPart(UriPartial.Path); // http://localhost:3000/
+
+            // Если роботам запрещено это индексировать, canonical не критичен, но полезен
+            // Собираем URL только из "SEO-значимых" параметров
+            var query = HttpUtility.ParseQueryString(string.Empty);
+
+            if (!string.IsNullOrEmpty(Category)) query["Category"] = Category;
+            if (!string.IsNullOrEmpty(Province)) query["Province"] = Province;
+            if (!string.IsNullOrEmpty(City)) query["City"] = City;
+
+            // Теги добавляем только если это не комбинация с категорией (чтобы избежать переспама)
+            // Или по вашей логике. Здесь добавим все:
+            if (Tags != null) foreach (var t in Tags) query.Add("Tags", t);
+
+            return query.HasKeys() ? $"{baseUri}?{query}" : baseUri;
+        }
+    }
+
+    // Вспомогательный метод для форматирования текста (services -> Services, to-eat -> To Eat)
+    private string FormatText(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return "";
+        // Заменяем дефисы на пробелы и делаем первую букву заглавной
+        var text = input.Replace("-", " ");
+        return char.ToUpper(text[0]) + text.Substring(1);
+    }
+
+    // === 4. ЗАГРУЗКА ДАННЫХ ===
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
 
-        // Собираем фильтры из свойств [SupplyParameterFromQuery]
         currentFilters = new PlaceFilterParams
         {
             Q = Q,
@@ -80,10 +196,20 @@
             IsOpen = IsOpen
         };
 
-        // Запрашиваем данные у сервиса
-        placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
-
-        isLoading = false;
+        try
+        {
+            placesResponse = await PlacesService.GetPlacesAsync(currentFilters);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading places: {ex.Message}");
+            // Можно инициализировать пустой список, чтобы не падало
+            placesResponse = new PlacesResponse { Places = new List<Place>(), TotalCount = 0 };
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }
 
