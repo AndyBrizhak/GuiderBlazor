@@ -69,11 +69,13 @@ else if (place != null)
                         <meta itemprop="position" content="1" />
                     </li>
                     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <a href="/?Category=@place.Category" itemprop="item"><span itemprop="name">@FormatCategoryName(place.Category)</span></a>
+                        <a href="@SemanticUrlHandler.BuildPath(place.Category, null, null)" itemprop="item">
+                            <span itemprop="name">@FormatCategoryName(place.Category)</span></a>
                         <meta itemprop="position" content="2" />
                     </li>
                     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <a href="/?Category=@place.Category&Province=@place.Address.Province" itemprop="item"><span itemprop="name">@FormatProvinceName(place.Address.Province)</span></a>
+                        <a href="@SemanticUrlHandler.BuildPath(place.Category, place.Address.Province, null)" itemprop="item">
+                            <span itemprop="name">@FormatProvinceName(place.Address.Province)</span></a>
                         <meta itemprop="position" content="3" />
                     </li>
                     <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
@@ -84,7 +86,7 @@ else if (place != null)
             </nav>
         }
 
-        @* --- ИСПРАВЛЕННАЯ ГАЛЕРЕЯ --- *@
+        
         @if (place.ImgLink?.Any() == true)
         {
             <div class="horizontal-scroll-container" aria-label="Image Gallery" role="region">
@@ -110,7 +112,7 @@ else if (place != null)
                 </ul>
             </div>
         }
-        @* ----------------------------- *@
+        
 
         <div class="details-content">
             <section class="main-info">
@@ -337,7 +339,7 @@ else
             schema.Description = Regex.Replace(place.Description, "<.*?>", "").Replace("\"", "'");
         }
 
-        // --- SEO ОБНОВЛЕНИЕ ---
+        // --- SEO  ---
         if (place.ImgLink?.Any() == true)
         {
             var baseUrl = Navigation.BaseUri.TrimEnd('/');
@@ -369,8 +371,7 @@ else
                 Longitude = place.Location.Coordinates[0].ToString(CultureInfo.InvariantCulture)
             };
         }
-
-        // Остальные поля без изменений...
+                
         if (place.Phone != null && !string.IsNullOrEmpty(place.Phone.Callable)) schema.Telephone = place.Phone.Callable;
         if (place.Schedule?.Any() == true)
         {
@@ -410,8 +411,10 @@ else
             ItemListElement = new List<ListItemLd>
             {
                 new ListItemLd { Position = 1, Name = "Home", Item = Navigation.BaseUri },
-                new ListItemLd { Position = 2, Name = FormatCategoryName(place.Category), Item = $"{Navigation.BaseUri}?Category={place.Category}" },
-                new ListItemLd { Position = 3, Name = FormatProvinceName(place.Address.Province), Item = $"{Navigation.BaseUri}?Category={place.Category}&Province={place.Address.Province}" },
+                new ListItemLd { Position = 2, Name = FormatCategoryName(place.Category),
+                    Item = $"{Navigation.BaseUri.TrimEnd('/')}{SemanticUrlHandler.BuildPath(place.Category, null, null)}" },
+                new ListItemLd { Position = 3, Name = FormatProvinceName(place.Address.Province), 
+                    Item = $"{Navigation.BaseUri.TrimEnd('/')}{SemanticUrlHandler.BuildPath(place.Category, place.Address.Province, null)}" },
                 new ListItemLd { Position = 4, Name = place.Name, Item = Navigation.Uri }
             }
         };
