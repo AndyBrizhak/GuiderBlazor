@@ -285,7 +285,7 @@
         return CurrentFilters.Province.Equals(provinceSlug, StringComparison.OrdinalIgnoreCase);
     }
 
-    // ОСНОВНОЙ МЕТОД ГЕНЕРАЦИИ URL
+    // ОСНОВНОЙ МЕТОД ГЕНЕРАЦИИ URL (обновленный для семантических путей)
     private string GetUrl(
         string? q = null,
         string? category = null,
@@ -310,67 +310,33 @@
         List<string>? finalTags;
         if (clearTags)
         {
-            finalTags = null; // Явно очищаем
+            finalTags = null;
         }
         else if (tags != null)
         {
-            finalTags = tags; // Используем переданные теги
+            finalTags = tags;
         }
         else
         {
-            finalTags = CurrentFilters.Tags; // Используем текущие теги
+            finalTags = CurrentFilters.Tags;
         }
 
-        // 3. Собираем query string
-        var queryParts = new List<string>();
-
-        if (!string.IsNullOrEmpty(finalQ))
-            queryParts.Add($"Q={Uri.EscapeDataString(finalQ)}");
-
-        if (!string.IsNullOrEmpty(finalCategory))
-            queryParts.Add($"Category={Uri.EscapeDataString(finalCategory)}");
-
-        if (!string.IsNullOrEmpty(finalProvince))
-            queryParts.Add($"Province={Uri.EscapeDataString(finalProvince)}");
-
-        if (!string.IsNullOrEmpty(finalCity))
-            queryParts.Add($"City={Uri.EscapeDataString(finalCity)}");
-
-        if (finalPage > 1)
-            queryParts.Add($"Page={finalPage}");
-
-        if (finalPerPage != 4)
-            queryParts.Add($"PerPage={finalPerPage}");
-
-        // Гео-параметры
-        if (CurrentFilters.Latitude.HasValue)
-            queryParts.Add($"Latitude={CurrentFilters.Latitude}");
-        if (CurrentFilters.Longitude.HasValue)
-            queryParts.Add($"Longitude={CurrentFilters.Longitude}");
-        if (CurrentFilters.Distance.HasValue)
-            queryParts.Add($"Distance={CurrentFilters.Distance}");
-
-        if (finalIsOpen == true)
-            queryParts.Add("IsOpen=true");
-
-        if (!string.IsNullOrEmpty(CurrentFilters.SortField))
-            queryParts.Add($"SortField={CurrentFilters.SortField}");
-        if (!string.IsNullOrEmpty(CurrentFilters.SortOrder))
-            queryParts.Add($"SortOrder={CurrentFilters.SortOrder}");
-
-        // Добавляем теги
-        if (finalTags != null && finalTags.Any())
-        {
-            foreach (var tag in finalTags)
-            {
-                if (!string.IsNullOrEmpty(tag))
-                {
-                    queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
-                }
-            }
-        }
-
-        return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
+        // 3. Используем SemanticUrlHandler для построения URL
+        return SemanticUrlHandler.BuildFullUrl(
+            category: finalCategory,
+            province: finalProvince,
+            city: finalCity,
+            q: finalQ,
+            tags: finalTags,
+            page: finalPage,
+            perPage: finalPerPage,
+            latitude: CurrentFilters.Latitude,
+            longitude: CurrentFilters.Longitude,
+            distance: CurrentFilters.Distance,
+            isOpen: finalIsOpen,
+            sortField: CurrentFilters.SortField,
+            sortOrder: CurrentFilters.SortOrder
+        );
     }
 
     // СПЕЦИАЛИЗИРОВАННЫЕ МЕТОДЫ ДЛЯ ФИЛЬТРОВ
@@ -450,56 +416,56 @@
 
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ (для совместимости)
 
-    private PlaceFilterParams CloneFilters(PlaceFilterParams source)
-    {
-        return new PlaceFilterParams
-        {
-            Q = source.Q,
-            Category = source.Category,
-            Province = source.Province,
-            City = source.City,
-            PerPage = source.PerPage,
-            Page = source.Page,
-            Tags = source.Tags?.ToList(),
-            Latitude = source.Latitude,
-            Longitude = source.Longitude,
-            Distance = source.Distance,
-            SortField = source.SortField,
-            SortOrder = source.SortOrder,
-            IsOpen = source.IsOpen
-        };
-    }
+    // private PlaceFilterParams CloneFilters(PlaceFilterParams source)
+    // {
+    //     return new PlaceFilterParams
+    //     {
+    //         Q = source.Q,
+    //         Category = source.Category,
+    //         Province = source.Province,
+    //         City = source.City,
+    //         PerPage = source.PerPage,
+    //         Page = source.Page,
+    //         Tags = source.Tags?.ToList(),
+    //         Latitude = source.Latitude,
+    //         Longitude = source.Longitude,
+    //         Distance = source.Distance,
+    //         SortField = source.SortField,
+    //         SortOrder = source.SortOrder,
+    //         IsOpen = source.IsOpen
+    //     };
+    // }
 
-    private string GetQueryString(PlaceFilterParams filters)
-    {
-        var queryParams = new Dictionary<string, object?>();
-        if (!string.IsNullOrEmpty(filters.Q)) queryParams["Q"] = filters.Q;
-        if (!string.IsNullOrEmpty(filters.Category)) queryParams["Category"] = filters.Category;
-        if (!string.IsNullOrEmpty(filters.Province)) queryParams["Province"] = filters.Province;
-        if (!string.IsNullOrEmpty(filters.City)) queryParams["City"] = filters.City;
-        if (filters.Page > 1) queryParams["Page"] = filters.Page;
-        if (filters.PerPage != 4) queryParams["PerPage"] = filters.PerPage;
-        if (filters.Latitude.HasValue) queryParams["Latitude"] = filters.Latitude.Value;
-        if (filters.Longitude.HasValue) queryParams["Longitude"] = filters.Longitude.Value;
-        if (filters.Distance.HasValue) queryParams["Distance"] = filters.Distance.Value;
-        if (filters.IsOpen == true) queryParams["IsOpen"] = "true";
-        if (!string.IsNullOrEmpty(filters.SortField)) queryParams["SortField"] = filters.SortField;
-        if (!string.IsNullOrEmpty(filters.SortOrder)) queryParams["SortOrder"] = filters.SortOrder;
+    // private string GetQueryString(PlaceFilterParams filters)
+    // {
+    //     var queryParams = new Dictionary<string, object?>();
+    //     if (!string.IsNullOrEmpty(filters.Q)) queryParams["Q"] = filters.Q;
+    //     if (!string.IsNullOrEmpty(filters.Category)) queryParams["Category"] = filters.Category;
+    //     if (!string.IsNullOrEmpty(filters.Province)) queryParams["Province"] = filters.Province;
+    //     if (!string.IsNullOrEmpty(filters.City)) queryParams["City"] = filters.City;
+    //     if (filters.Page > 1) queryParams["Page"] = filters.Page;
+    //     if (filters.PerPage != 4) queryParams["PerPage"] = filters.PerPage;
+    //     if (filters.Latitude.HasValue) queryParams["Latitude"] = filters.Latitude.Value;
+    //     if (filters.Longitude.HasValue) queryParams["Longitude"] = filters.Longitude.Value;
+    //     if (filters.Distance.HasValue) queryParams["Distance"] = filters.Distance.Value;
+    //     if (filters.IsOpen == true) queryParams["IsOpen"] = "true";
+    //     if (!string.IsNullOrEmpty(filters.SortField)) queryParams["SortField"] = filters.SortField;
+    //     if (!string.IsNullOrEmpty(filters.SortOrder)) queryParams["SortOrder"] = filters.SortOrder;
 
-        var queryParts = new List<string>();
-        queryParts.AddRange(queryParams.Where(kvp => kvp.Value != null).Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
+    //     var queryParts = new List<string>();
+    //     queryParts.AddRange(queryParams.Where(kvp => kvp.Value != null).Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString()!)}"));
 
-        if (filters.Tags != null && filters.Tags.Any())
-        {
-            foreach (var tag in filters.Tags)
-            {
-                if (!string.IsNullOrEmpty(tag))
-                    queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
-            }
-        }
+    //     if (filters.Tags != null && filters.Tags.Any())
+    //     {
+    //         foreach (var tag in filters.Tags)
+    //         {
+    //             if (!string.IsNullOrEmpty(tag))
+    //                 queryParts.Add($"Tags={Uri.EscapeDataString(tag)}");
+    //         }
+    //     }
 
-        return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
-    }
+    //     return queryParts.Count == 0 ? "/" : $"?{string.Join("&", queryParts)}";
+    // }
 
     private RenderFragment RenderHiddenInputs() => builder =>
     {
