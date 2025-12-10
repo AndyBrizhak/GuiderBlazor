@@ -50,36 +50,43 @@
 }
 else if (place != null)
 {
-    <article class="place-details-container" itemscope itemtype="http://schema.org/@(GetBusinessType(place.Category))">
+    <article class="place-details-container" >
 
         <div class="details-header">
-            <h1 itemprop="name">@place.Name</h1>
+            <h1>@place.Name</h1>
             @if (place.Address != null && !string.IsNullOrEmpty(place.Address.City))
             {
-                <span class="place-city" itemprop="addressLocality">@place.Address.City</span>
+                <span class="place-city" >@place.Address.City</span>
             }
         </div>
 
         @if (!string.IsNullOrEmpty(place.Category) && place.Address != null && !string.IsNullOrEmpty(place.Address.Province))
         {
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList">
-                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
-                        <meta itemprop="position" content="1" />
+                @* Убрали itemscope itemtype="https://schema.org/BreadcrumbList" *@
+                <ol class="breadcrumbs">
+
+                    @* Элемент 1: Home *@
+                    <li>
+                        <a href="/">Home</a>
+                        @* Убрали itemprop="item", meta position и span itemprop *@
                     </li>
-                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <a href="/?Category=@place.Category" itemprop="item"><span itemprop="name">@FormatCategoryName(place.Category)</span></a>
-                        <meta itemprop="position" content="2" />
+
+                    @* Элемент 2: Category *@
+                    <li>
+                        <a href="/?Category=@place.Category">@FormatCategoryName(place.Category)</a>
                     </li>
-                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <a href="/?Category=@place.Category&Province=@place.Address.Province" itemprop="item"><span itemprop="name">@FormatProvinceName(place.Address.Province)</span></a>
-                        <meta itemprop="position" content="3" />
+
+                    @* Элемент 3: Province *@
+                    <li>
+                        <a href="/?Category=@place.Category&Province=@place.Address.Province">@FormatProvinceName(place.Address.Province)</a>
                     </li>
-                    <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <span itemprop="name" aria-current="page">@place.Name</span>
-                        <meta itemprop="position" content="4" />
+
+                    @* Элемент 4: Current Place *@
+                    <li>
+                        <span aria-current="page">@place.Name</span>
                     </li>
+
                 </ol>
             </nav>
         }
@@ -116,7 +123,7 @@ else if (place != null)
             <section class="main-info">
                 @if (!string.IsNullOrEmpty(place.Description))
                 {
-                    <div class="info-section" itemprop="description">
+                    <div class="info-section" >
                         <p>@((MarkupString)place.Description.Replace("\n", "<br />"))</p>
                     </div>
                 }
@@ -126,7 +133,7 @@ else if (place != null)
                     <div class="tags-container">
                         @foreach (var tag in place.Tags)
                         {
-                            <span class="tag" itemprop="keywords">@tag</span>
+                            <span class="tag" >@tag</span>
                         }
                     </div>
                 }
@@ -137,7 +144,7 @@ else if (place != null)
                 <div class="info-section">
                     @if (place.Address != null)
                     {
-                        <div class="info-item" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                        <div class="info-item">
                             <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"></path>
                                 <line x1="8" y1="2" x2="8" y2="18"></line>
@@ -146,24 +153,24 @@ else if (place != null)
                             <div class="address-details">
                                 @if (!string.IsNullOrEmpty(place.Address.Street))
                                 {
-                                    <span itemprop="streetAddress">@place.Address.Street</span>
+                                    <span >@place.Address.Street</span>
                         
                                     <br />
                                 }
                                 @if (!string.IsNullOrEmpty(place.Address.City))
                                 {
-                                    <span itemprop="addressLocality">@place.Address.City</span>
+                                    <span >@place.Address.City</span>
                                     @(!string.IsNullOrEmpty(place.Address.Province) ? "," : "")
                                 }
                                 @if (!string.IsNullOrEmpty(place.Address.Province))
                                 {
-                                    <span itemprop="addressRegion">@place.Address.Province</span>
+                                    <span >@place.Address.Province</span>
                         
                                     <br />
                                 }
                                 @if (!string.IsNullOrEmpty(place.Address.Country))
                                 {
-                                    <span itemprop="addressCountry">@place.Address.Country</span>
+                                    <span >@place.Address.Country</span>
                                 }
                             </div>
                         </div>
@@ -191,7 +198,7 @@ else if (place != null)
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                <a href="@($"tel:{place.Phone.Callable}")" itemprop="telephone">@place.Phone.Callable</a>
+                                <a href="@($"tel:{place.Phone.Callable}")" >@place.Phone.Callable</a>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(place.Phone.Whatsapp))
@@ -209,14 +216,14 @@ else if (place != null)
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                                <a href="@place.SocialNetwork.Facebook" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Facebook</a>
+                                <a href="@place.SocialNetwork.Facebook" target="_blank" rel="noopener noreferrer" >Facebook</a>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(place.SocialNetwork.Instagram))
                         {
                             <div class="info-item">
                                 <svg class="info-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                                <a href="@place.SocialNetwork.Instagram" target="_blank" rel="noopener noreferrer" itemprop="sameAs">Instagram</a>
+                                <a href="@place.SocialNetwork.Instagram" target="_blank" rel="noopener noreferrer" >Instagram</a>
                             </div>
                         }
                     }
@@ -228,13 +235,11 @@ else if (place != null)
                             @foreach (var entry in place.Schedule.Where(s => s.Days.Any() && s.Hours.Any()))
                             {
                                 var daysDisplay = string.Join(", ", entry.Days);
-                                <li itemprop="openingHoursSpecification" itemscope itemtype="http://schema.org/OpeningHoursSpecification">
-                                    <span class="day" itemprop="dayOfWeek">@daysDisplay</span>
+                                <li>
+                                    <span class="day">@daysDisplay</span>
                                     @foreach (var hour in entry.Hours)
                                     {
                                         <span class="time">
-                                            <meta itemprop="opens" content="@hour.Start" />
-                                            <meta itemprop="closes" content="@hour.End" />
                                             @hour.Start - @hour.End
                                         </span>
                                     }
