@@ -83,20 +83,32 @@
         get
         {
             if (!string.IsNullOrEmpty(Q)) return $"Search results for \"{Q}\" | Guider";
-
             var sb = new StringBuilder();
 
-            // Что ищем?
-            if (!string.IsNullOrEmpty(Category)) sb.Append($"{FormatText(Category)} ");
-            else if (Tags != null && Tags.Any()) sb.Append($"{string.Join(", ", Tags)} ");
-            else sb.Append("Local Business & Services ");
+            // 1. ЧТО ищем
+            string categoryName = !string.IsNullOrEmpty(Category)
+                ? GetHumanReadableCategory(Category)
+                : "Best Places & Services";
+            sb.Append(categoryName);
+            sb.Append(" ");
 
-            // Где ищем?
-            if (!string.IsNullOrEmpty(City)) sb.Append($"in {City} ");
-            else if (!string.IsNullOrEmpty(Province)) sb.Append($"in {Province} ");
-            else sb.Append("in Costa Rica ");
+            // 2. ГДЕ ищем
+            if (!string.IsNullOrEmpty(City))
+            {
+                // Для города форматирование уже было, оставляем
+                sb.Append($"in {FormatText(City)}, Costa Rica");
+            }
+            else if (!string.IsNullOrEmpty(Province))
+            {
+                                
+                sb.Append($"in {FormatText(Province)} Province");
+            }
+            else
+            {
+                sb.Append("in Costa Rica");
+            }
 
-            sb.Append("| Guider.pro");
+            sb.Append(" | Guider.pro");
             return sb.ToString();
         }
     }
@@ -106,12 +118,21 @@
     {
         get
         {
-            if (!string.IsNullOrEmpty(Q)) return $"Search results for {Q} in Costa Rica. Find best places matching your request on Guider.";
+            if (!string.IsNullOrEmpty(Q)) return $"Search results for {Q}...";
 
-            var what = !string.IsNullOrEmpty(Category) ? FormatText(Category) : "best places and services";
-            var where = !string.IsNullOrEmpty(City) ? $"{City}, {Province ?? "Costa Rica"}" : (Province ?? "Costa Rica");
+            // 1. Получаем красивые названия
+            var what = !string.IsNullOrEmpty(Category) ? GetHumanReadableCategory(Category) : "local businesses";
+            var verb = GetCategoryActionVerb(Category); // <--- ВНЕДРЕНИЕ ЗДЕСЬ
 
-            return $"Discover the {what} in {where}. Read reviews, check opening hours, view photos and get directions on Guider Business Directory.";
+            // 2. Формируем локацию
+            var where = "Costa Rica";
+            if (!string.IsNullOrEmpty(City)) where = $"{FormatText(City)}, {FormatText(Province)}";
+            else if (!string.IsNullOrEmpty(Province)) where = $"{FormatText(Province)} Province";
+
+            // 3. Формируем "умное" предложение
+            // Было: "Looking for {what} in {where}? ..."
+            // Стало: "Planning to eat in Tamarindo? ..." или "Planning to shop in Guanacaste? ..."
+            return $"Planning to {verb} in {where}? Discover the best {what}, check opening hours, read reviews and get directions on Guider Business Directory.";
         }
     }
 
@@ -146,19 +167,17 @@
         get
         {
             var uri = new Uri(Navigation.Uri);
-            var baseUri = uri.GetLeftPart(UriPartial.Path); // http://localhost:3000/
+            var baseUri = uri.GetLeftPart(UriPartial.Path);
 
-            // Если роботам запрещено это индексировать, canonical не критичен, но полезен
-            // Собираем URL только из "SEO-значимых" параметров
             var query = HttpUtility.ParseQueryString(string.Empty);
 
+            // Добавляем ТОЛЬКО параметры, формирующие "посадочную страницу"
             if (!string.IsNullOrEmpty(Category)) query["Category"] = Category;
             if (!string.IsNullOrEmpty(Province)) query["Province"] = Province;
             if (!string.IsNullOrEmpty(City)) query["City"] = City;
 
-            // Теги добавляем только если это не комбинация с категорией (чтобы избежать переспама)
-            // Или по вашей логике. Здесь добавим все:
-            if (Tags != null) foreach (var t in Tags) query.Add("Tags", t);
+            
+            // Мы НЕ добавляем Tags, SortField, Page, Latitude и т.д.
 
             return query.HasKeys() ? $"{baseUri}?{query}" : baseUri;
         }
@@ -171,6 +190,33 @@
         // Заменяем дефисы на пробелы и делаем первую букву заглавной
         var text = input.Replace("-", " ");
         return char.ToUpper(text[0]) + text.Substring(1);
+    }
+
+    private string GetCategoryActionVerb(string? slug)
+    {
+        if (string.IsNullOrEmpty(slug)) return "visit";
+
+        return slug.ToLower() switch
+        {
+            "to-eat" => "eat",         // Planning to eat in...
+            "shops" => "shop",         // Planning to shop in...
+            "adventures" => "explore", // Planning to explore in...
+            _ => "visit"               // Planning to visit...
+        };
+    }
+
+    private string GetHumanReadableCategory(string? slug)
+    {
+        if (string.IsNullOrEmpty(slug)) return "Local Business & Services"; // Дефолтное значение
+
+        return slug.ToLower() switch
+        {
+            "to-eat" => "Best Restaurants & Food",      // Ключевик: Restaurants
+            "services" => "Essential Services",         // Ключевик: Services
+            "adventures" => "Tours & Adventures",       // Ключевик: Tours
+            "shops" => "Shops & Stores",                // Ключевик: Shops
+            _ => FormatText(slug) // Фоллбэк на старую логику
+        };
     }
 
     // === 4. ЗАГРУЗКА ДАННЫХ ===
@@ -211,5 +257,7 @@
             isLoading = false;
         }
     }
+
+
 }
 
