@@ -91,7 +91,7 @@ else if (place != null)
             </nav>
         }
 
-        @* --- ИСПРАВЛЕННАЯ ГАЛЕРЕЯ --- *@
+        @* ---  ГАЛЕРЕЯ --- *@
         @if (place.ImgLink?.Any() == true)
         {
             <div class="horizontal-scroll-container" aria-label="Image Gallery" role="region">
@@ -99,13 +99,15 @@ else if (place != null)
                     @foreach (var imgUrl in place.ImgLink)
                     {
                         <li class="scroll-item">
-                            @* Ссылка на оригинал остается *@
-                            <a href="@imgUrl"
+                            @* Вызываем сервис прямо здесь. 
+                                перед ImageService стоит символ @, 
+                               чтобы Razor понял, что это код C#.
+                            *@
+                            <a href="@ImageService.GetStructuredImageUrl(imgUrl, place.Name, place.Address?.Province)"
                                target="_blank"
                                rel="noopener noreferrer"
                                aria-label="View full-size image">
 
-                                @* Используем компонент ResponsiveImage *@
                                 <ResponsiveImage OriginalUrl="@imgUrl"
                                                  PlaceName="@place.Name"
                                                  Province="@place.Address?.Province"

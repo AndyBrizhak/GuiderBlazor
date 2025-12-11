@@ -14,6 +14,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddMemoryCache();
+
 // --- НАСТРОЙКА IMAGESHARP  ---
 builder.Services.AddImageSharp()
     .SetRequestParser<SixLabors.ImageSharp.Web.Commands.QueryCollectionRequestParser>()
