@@ -24,13 +24,13 @@ namespace GuiderBlazor.Middleware
 
             if (path != null && ImagePathRegex.IsMatch(path))
             {
+                // Путь к физическому файлу
                 var localFilePath = Path.Combine(_env.WebRootPath, path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
 
                 if (!File.Exists(localFilePath))
                 {
                     // Файла НЕТ: качаем
                     var sourceUrl = context.Request.Query["source"].ToString();
-
                     if (!string.IsNullOrEmpty(sourceUrl) && Uri.TryCreate(sourceUrl, UriKind.Absolute, out var uri))
                     {
                         try
@@ -45,18 +45,22 @@ namespace GuiderBlazor.Middleware
                 }
                 else
                 {
-                    // ---  Файл ЕСТЬ. Обновляем дату "посещения". ---
-                    // Это сигнал для ImageCleanupService не удалять этот файл.
+                    // --- Файл ЕСТЬ. Обновляем дату "посещения" УМНО ---
                     try
                     {
-                        File.SetLastWriteTimeUtc(localFilePath, DateTime.UtcNow);
+                        var lastWriteTime = File.GetLastWriteTimeUtc(localFilePath);
+
+                        // Если файл не обновлялся более 10 дней, обновляем метку времени.
+                        // ImageSharp пересоздаст кеш только 1 раз в 10 дней, а не каждый раз.
+                        if (DateTime.UtcNow - lastWriteTime > TimeSpan.FromDays(10))
+                        {
+                            File.SetLastWriteTimeUtc(localFilePath, DateTime.UtcNow);
+                        }
                     }
                     catch
                     {
-                        // Игнорируем ошибки (например, если файл занят чтением), 
-                        // чтобы не замедлять отдачу контента пользователю.
+                        // Игнорируем ошибки (файл занят и т.д.)
                     }
-                    // -----------------------------------------------------
                 }
             }
 
