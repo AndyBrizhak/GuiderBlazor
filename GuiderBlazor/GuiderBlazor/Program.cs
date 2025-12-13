@@ -1,9 +1,11 @@
 using GuiderBlazor.Components;
+using GuiderBlazor.Services;
+using GuiderBlazor.Shared.Models;
 using GuiderBlazor.Shared.Services;
 using GuiderBlazor.Shared.Utils;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Caching.Memory;
 using SixLabors.ImageSharp.Web.DependencyInjection; 
-using GuiderBlazor.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,20 +103,55 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(GuiderBlazor.Client._Imports).Assembly);
 
-app.MapGet("/sitemap.xml", async () =>
+//app.MapGet("/sitemap.xml", async () =>
+//{
+//    var apiBaseUrl = "https://localhost:8081/";
+//    var siteBaseUrl = "http://localhost:3000";
+//    List<string> slugs = new();
+//    using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
+//    {
+//        try
+//        {
+//            slugs = await client.GetFromJsonAsync<List<string>>("sitemap/places-slugs") ?? new();
+//        }
+//        catch { }
+//    }
+//    var xmlContent = SitemapLogic.Generate(siteBaseUrl, slugs);
+//    return Results.Text(xmlContent, "application/xml");
+//});
+
+app.MapGet("/sitemap.xml", async (IConfiguration config, IMemoryCache cache) =>
 {
     var apiBaseUrl = "https://localhost:8081/";
     var siteBaseUrl = "http://localhost:3000";
-    List<string> slugs = new();
-    using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
+    string cacheKey = "sitemap_xml_content";
+
+    if (!cache.TryGetValue(cacheKey, out string? xmlContent))
     {
-        try
+        List<SitemapPlaceDto> sitemapData = new();
+
+        using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
         {
-            slugs = await client.GetFromJsonAsync<List<string>>("sitemap/places-slugs") ?? new();
+            try
+            {
+                // 🔴 БРЕЙКПОИНТ: После этой строки
+                var response = await client.GetFromJsonAsync<List<SitemapPlaceDto>>("sitemap/places-slugs");
+
+                if (response != null && response.Count > 0)
+                {
+                    sitemapData = response;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Sitemap fetch error: {ex.Message}");
+            }
         }
-        catch { }
+
+        xmlContent = SitemapLogic.Generate(siteBaseUrl, sitemapData);
+        cache.Set(cacheKey, xmlContent, TimeSpan.FromHours(1));
     }
-    var xmlContent = SitemapLogic.Generate(siteBaseUrl, slugs);
+
     return Results.Text(xmlContent, "application/xml");
 });
 
