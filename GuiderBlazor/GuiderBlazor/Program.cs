@@ -1,9 +1,11 @@
 using GuiderBlazor.Components;
+using GuiderBlazor.Services;
+using GuiderBlazor.Shared.Models;
 using GuiderBlazor.Shared.Services;
 using GuiderBlazor.Shared.Utils;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Caching.Memory;
 using SixLabors.ImageSharp.Web.DependencyInjection; 
-using GuiderBlazor.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,20 +103,61 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(GuiderBlazor.Client._Imports).Assembly);
 
-app.MapGet("/sitemap.xml", async () =>
+//app.MapGet("/sitemap.xml", async () =>
+//{
+//    var apiBaseUrl = "https://localhost:8081/";
+//    var siteBaseUrl = "http://localhost:3000";
+//    List<string> slugs = new();
+//    using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
+//    {
+//        try
+//        {
+//            slugs = await client.GetFromJsonAsync<List<string>>("sitemap/places-slugs") ?? new();
+//        }
+//        catch { }
+//    }
+//    var xmlContent = SitemapLogic.Generate(siteBaseUrl, slugs);
+//    return Results.Text(xmlContent, "application/xml");
+//});
+
+app.MapGet("/sitemap.xml", async (IConfiguration config, IMemoryCache cache) =>
 {
+    // ... настройки URL ...
     var apiBaseUrl = "https://localhost:8081/";
-    var siteBaseUrl = "http://localhost:3000";
-    List<string> slugs = new();
-    using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
+    var siteBaseUrl = "http://localhost:5000";
+
+    string cacheKey = "sitemap_xml_content";
+
+    if (!cache.TryGetValue(cacheKey, out string? xmlContent))
     {
-        try
+        // Создаем пустой список по умолчанию
+        List<SitemapItemDto> sitemapItems = new();
+
+        using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
         {
-            slugs = await client.GetFromJsonAsync<List<string>>("sitemap/places-slugs") ?? new();
+            try
+            {
+                // ВАЖНО: Используем новый класс SitemapItemDto
+                var response = await client.GetFromJsonAsync<List<SitemapItemDto>>("sitemap/places-slugs");
+
+                if (response != null)
+                {
+                    sitemapItems = response;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Sitemap error: {ex.Message}");
+            }
         }
-        catch { }
+
+        // Генерируем XML
+        xmlContent = SitemapLogic.Generate(siteBaseUrl, sitemapItems);
+
+        // Кешируем
+        cache.Set(cacheKey, xmlContent, TimeSpan.FromHours(1));
     }
-    var xmlContent = SitemapLogic.Generate(siteBaseUrl, slugs);
+
     return Results.Text(xmlContent, "application/xml");
 });
 
