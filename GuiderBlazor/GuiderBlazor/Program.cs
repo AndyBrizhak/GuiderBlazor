@@ -122,33 +122,39 @@ app.MapRazorComponents<App>()
 
 app.MapGet("/sitemap.xml", async (IConfiguration config, IMemoryCache cache) =>
 {
+    // ... настройки URL ...
     var apiBaseUrl = "https://localhost:8081/";
     var siteBaseUrl = "http://localhost:5000";
+
     string cacheKey = "sitemap_xml_content";
 
     if (!cache.TryGetValue(cacheKey, out string? xmlContent))
     {
-        List<SitemapPlaceDto> sitemapData = new();
+        // Создаем пустой список по умолчанию
+        List<SitemapItemDto> sitemapItems = new();
 
         using (var client = new HttpClient { BaseAddress = new Uri(apiBaseUrl) })
         {
             try
             {
-                // 🔴 БРЕЙКПОИНТ: После этой строки
-                var response = await client.GetFromJsonAsync<List<SitemapPlaceDto>>("sitemap/places-slugs");
+                // ВАЖНО: Используем новый класс SitemapItemDto
+                var response = await client.GetFromJsonAsync<List<SitemapItemDto>>("sitemap/places-slugs");
 
-                if (response != null && response.Count > 0)
+                if (response != null)
                 {
-                    sitemapData = response;
+                    sitemapItems = response;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Sitemap fetch error: {ex.Message}");
+                Console.WriteLine($"Sitemap error: {ex.Message}");
             }
         }
 
-        xmlContent = SitemapLogic.Generate(siteBaseUrl, sitemapData);
+        // Генерируем XML
+        xmlContent = SitemapLogic.Generate(siteBaseUrl, sitemapItems);
+
+        // Кешируем
         cache.Set(cacheKey, xmlContent, TimeSpan.FromHours(1));
     }
 

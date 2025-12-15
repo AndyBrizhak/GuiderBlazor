@@ -1,17 +1,16 @@
-﻿using GuiderBlazor.Shared.Models;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+using GuiderBlazor.Shared.Models; // Подключите ваш DTO
 
 namespace GuiderBlazor.Shared.Utils
 {
     public static class SitemapLogic
     {
-        public static string Generate(string siteBaseUrl, List<SitemapPlaceDto> items)
+        public static string Generate(string siteBaseUrl, IEnumerable<SitemapItemDto> items)
         {
-            // 🔴 БРЕЙКПОИНТ: Проверить items.Count
-
             XNamespace xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9";
             var root = new XElement(xmlns + "urlset");
 
+            // 1. Главная страница (Всегда Priority 1.0)
             root.Add(new XElement(xmlns + "url",
                 new XElement(xmlns + "loc", $"{siteBaseUrl}/"),
                 new XElement(xmlns + "changefreq", "daily"),
@@ -19,19 +18,54 @@ namespace GuiderBlazor.Shared.Utils
                 new XElement(xmlns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd"))
             ));
 
-            foreach (var item in items)
+            // 2. Динамические страницы (Места + Фильтры)
+            if (items != null)
             {
-                // 🔴 БРЕЙКПОИНТ: Проверить item.Url и item.LastMod
-
-                if (!string.IsNullOrEmpty(item.Url))
+                foreach (var item in items)
                 {
-                    var urlElement = new XElement(xmlns + "url",
-                        new XElement(xmlns + "loc", $"{siteBaseUrl}/place/{item.Url}"),
-                        new XElement(xmlns + "changefreq", "weekly"),
-                        new XElement(xmlns + "priority", "0.8"),
-                        new XElement(xmlns + "lastmod", item.LastMod)
-                    );
-                    root.Add(urlElement);
+                    if (string.IsNullOrEmpty(item.Url)) continue;
+
+                    string fullUrl;
+                    string priority;
+                    string changefreq;
+
+                    // Убираем начальный слеш, если он вдруг пришел из API, чтобы не было двойных слешей
+                    string cleanUrl = item.Url.TrimStart('/');
+
+                    // Логика определения типа страницы
+                    if (cleanUrl.StartsWith("?"))
+                    {
+                        // ЭТО ФИЛЬТР (Category, Province, City)
+                        // Пример: http://localhost:5000/?Category=to-eat
+                        fullUrl = $"{siteBaseUrl}/{cleanUrl}";
+
+                        // Фильтры — это хабы, они важны для навигации бота
+                        priority = "0.9";
+                        changefreq = "daily";
+                    }
+                    else
+                    {
+                        // ЭТО МЕСТО (Place)
+                        // API уже вернул нам "place/slug", просто клеим
+                        // Пример: http://localhost:5000/place/some-place
+                        fullUrl = $"{siteBaseUrl}/{cleanUrl}";
+
+                        // Отдельные места чуть менее важны, чем разделы
+                        priority = "0.8";
+                        changefreq = "weekly";
+                    }
+
+                    // Дата: если пустая, ставим старую заглушку
+                    var date = string.IsNullOrEmpty(item.LastMod)
+                        ? "2024-01-01"
+                        : item.LastMod;
+
+                    root.Add(new XElement(xmlns + "url",
+                        new XElement(xmlns + "loc", fullUrl),
+                        new XElement(xmlns + "changefreq", changefreq),
+                        new XElement(xmlns + "priority", priority),
+                        new XElement(xmlns + "lastmod", date)
+                    ));
                 }
             }
 
