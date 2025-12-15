@@ -123,7 +123,7 @@ app.MapRazorComponents<App>()
 app.MapGet("/sitemap.xml", async (IConfiguration config, IMemoryCache cache) =>
 {
     var apiBaseUrl = "https://localhost:8081/";
-    var siteBaseUrl = "http://localhost:3000";
+    var siteBaseUrl = "http://localhost:5000";
     string cacheKey = "sitemap_xml_content";
 
     if (!cache.TryGetValue(cacheKey, out string? xmlContent))
