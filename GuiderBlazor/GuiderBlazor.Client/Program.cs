@@ -7,8 +7,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 // Настройка HttpClient для прямого обращения к API
 builder.Services.AddScoped(sp => new HttpClient
 {
-    //BaseAddress = new Uri("https://api.guider.pro/")
-    BaseAddress = new Uri("https://localhost:8081/")
+    BaseAddress = new Uri("https://api.guider.pro/")
+    //BaseAddress = new Uri("https://localhost:8081/")
 });
 
 // Регистрация сервиса
